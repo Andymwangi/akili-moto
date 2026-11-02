@@ -1,6 +1,10 @@
 import { hc } from 'hono/client';
 import {
   ApiErrorSchema,
+  type PlayerHistory,
+  PlayerHistorySchema,
+  type PlayerProfile,
+  PlayerProfileSchema,
   type QuizLeaderboard,
   QuizLeaderboardSchema,
   type QuizState,
@@ -72,4 +76,36 @@ export async function submitQuizAnswer(
 export async function getQuizLeaderboard(): Promise<QuizLeaderboard> {
   const response = await client.api.quiz.leaderboard.$get();
   return parseResponse(response, QuizLeaderboardSchema);
+}
+
+export async function getPlayerProfile(): Promise<PlayerProfile> {
+  const response = await client.api.player.$get();
+  return parseResponse(response, PlayerProfileSchema);
+}
+
+export async function updatePlayerName(displayName: string): Promise<PlayerProfile> {
+  const response = await client.api.player.name.$patch({ json: { displayName } });
+  return parseResponse(response, PlayerProfileSchema);
+}
+
+export async function rotatePlayerRecoveryCode(): Promise<PlayerProfile> {
+  const response = await client.api.player['recovery-code'].$post();
+  return parseResponse(response, PlayerProfileSchema);
+}
+
+export async function recoverPlayer(recoveryCode: string): Promise<PlayerProfile> {
+  const response = await client.api.player.recover.$post({ json: { recoveryCode } });
+  return parseResponse(response, PlayerProfileSchema);
+}
+
+export async function getPlayerHistory(
+  input: { limit?: number; before?: string } = {},
+): Promise<PlayerHistory> {
+  const response = await client.api.player.history.$get({
+    query: {
+      ...(input.limit ? { limit: String(input.limit) } : {}),
+      ...(input.before ? { before: input.before } : {}),
+    },
+  });
+  return parseResponse(response, PlayerHistorySchema);
 }

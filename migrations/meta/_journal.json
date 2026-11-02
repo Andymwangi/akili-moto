@@ -15,6 +15,27 @@
       "when": 1793608712618,
       "tag": "0001_purple_the_captain",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1793618624705,
+      "tag": "0002_lowly_titanium_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1793618680796,
+      "tag": "0003_backfill_question_set_keys",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1793620891344,
+      "tag": "0004_unusual_havok",
+      "breakpoints": true
     }
   ]
 }

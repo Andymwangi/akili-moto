@@ -7,6 +7,11 @@ export const publicRoutes = new Set([
   'GET /api/quiz',
   'POST /api/quiz/answer',
   'GET /api/quiz/leaderboard',
+  'GET /api/player',
+  'PATCH /api/player/name',
+  'POST /api/player/recovery-code',
+  'POST /api/player/recover',
+  'GET /api/player/history',
 ]);
 
 export const publicRouteGuard: MiddlewareHandler<AppEnvironment> = async (context, next) => {

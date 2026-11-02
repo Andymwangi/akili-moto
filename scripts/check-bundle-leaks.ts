@@ -65,11 +65,13 @@ async function main(): Promise<void> {
   } catch {
     throw new Error('Client build output is missing; run the production build first.');
   }
-  const [answers, dictionary, questionContent] = await Promise.all([
+  const [answers, dictionary, currentQuestionContent, legacyQuestionContent] = await Promise.all([
     readFinalList(resolve(root, 'data/answers.txt')),
     readFinalList(resolve(root, 'data/dictionary.txt')),
     readQuestionContent(resolve(root, 'data/quiz-questions.json')),
+    readQuestionContent(resolve(root, 'data/legacy-quiz-questions-v1.json')),
   ]);
+  const questionContent = [...currentQuestionContent, ...legacyQuestionContent];
   const assets = await Promise.all(files.map((path) => readFile(path, 'utf8')));
   const allWords = [...answers, ...dictionary];
   const leaked = findLeakedWords(allWords, assets);

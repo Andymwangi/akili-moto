@@ -5,13 +5,17 @@ import { QUIZ_QUESTION_SET_VERSION, questionById, selectDailyQuestionIds } from 
 export async function ensureDailyQuiz(repository: QuizRepository, day: string): Promise<string[]> {
   const existing = await repository.getDailyQuestionIds(day);
   if (existing) return validateQuestionIds(existing);
-  const assigned = await repository.assignDailyQuiz(
-    day,
-    selectDailyQuestionIds(day),
-    QUIZ_QUESTION_SET_VERSION,
-  );
-  if (!assigned) throw new Error('DAILY_QUIZ_UNAVAILABLE');
-  return validateQuestionIds(assigned);
+  const usedQuestionSetKeys = await repository.getUsedQuestionSetKeys();
+  for (let variant = 0; variant < 4_096; variant += 1) {
+    const questionIds = selectDailyQuestionIds(day, variant);
+    const questionSetKey = [...questionIds].sort().join(',');
+    if (usedQuestionSetKeys.has(questionSetKey)) continue;
+    const assigned = await repository.assignDailyQuiz(day, questionIds, QUIZ_QUESTION_SET_VERSION);
+    if (assigned) return validateQuestionIds(assigned);
+    const racedAssignment = await repository.getDailyQuestionIds(day);
+    if (racedAssignment) return validateQuestionIds(racedAssignment);
+  }
+  throw new Error('DAILY_QUIZ_SET_EXHAUSTED');
 }
 
 function validateQuestionIds(ids: string[]): string[] {

@@ -1,7 +1,7 @@
-import { and, asc, count, desc, eq, gt, isNotNull } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gt, isNotNull, lt } from 'drizzle-orm';
 import { QUIZ_QUESTION_COUNT } from '../../../shared/constants';
 import { createDatabase, type Database } from '../client';
-import { dailyQuizzes, quizAnswers, quizSessions } from '../schema';
+import { dailyQuizzes, players, quizAnswers, quizSessions } from '../schema';
 
 export type StoredQuizAnswer = typeof quizAnswers.$inferSelect;
 export type CompletedScore = Readonly<{
@@ -31,13 +31,23 @@ export class QuizRepository {
     return parsed;
   }
 
+  async getUsedQuestionSetKeys(): Promise<Set<string>> {
+    const rows = await this.db
+      .select({ questionSetKey: dailyQuizzes.questionSetKey })
+      .from(dailyQuizzes)
+      .where(isNotNull(dailyQuizzes.questionSetKey));
+    return new Set(rows.flatMap((row) => (row.questionSetKey ? [row.questionSetKey] : [])));
+  }
+
   async assignDailyQuiz(day: string, questionIds: string[], questionSetVersion: string) {
     const now = new Date().toISOString();
+    const questionSetKey = [...questionIds].sort().join(',');
     await this.db
       .insert(dailyQuizzes)
       .values({
         day,
         questionIds: JSON.stringify(questionIds),
+        questionSetKey,
         questionSetVersion,
         createdAt: now,
         updatedAt: now,
@@ -148,8 +158,13 @@ export class QuizRepository {
 
   async getLeaderboard(day: string, limit = 20) {
     return this.db
-      .select({ score: quizSessions.score, correctCount: quizSessions.correctCount })
+      .select({
+        score: quizSessions.score,
+        correctCount: quizSessions.correctCount,
+        displayName: players.displayName,
+      })
       .from(quizSessions)
+      .leftJoin(players, eq(players.id, quizSessions.playerId))
       .where(and(eq(quizSessions.day, day), isNotNull(quizSessions.completedAt)))
       .orderBy(
         desc(quizSessions.score),
@@ -157,6 +172,39 @@ export class QuizRepository {
         asc(quizSessions.completedAt),
       )
       .limit(limit);
+  }
+
+  async getPlayerHistory(playerId: string, limit: number, before?: string) {
+    const ownerScope = and(
+      eq(quizSessions.playerId, playerId),
+      isNotNull(quizSessions.completedAt),
+      ...(before ? [lt(quizSessions.day, before)] : []),
+    );
+    const rows = await this.db
+      .select({
+        day: quizSessions.day,
+        score: quizSessions.score,
+        correctCount: quizSessions.correctCount,
+        completedAt: quizSessions.completedAt,
+      })
+      .from(quizSessions)
+      .where(ownerScope)
+      .orderBy(desc(quizSessions.day))
+      .limit(limit + 1);
+    const hasMore = rows.length > limit;
+    const items = rows.slice(0, limit).flatMap((row) =>
+      row.completedAt
+        ? [
+            {
+              day: row.day,
+              score: row.score,
+              correctCount: row.correctCount,
+              completedAt: row.completedAt,
+            },
+          ]
+        : [],
+    );
+    return { items, nextBefore: hasMore ? (items.at(-1)?.day ?? null) : null };
   }
 
   async countCompletedPlayers(day: string): Promise<number> {

@@ -76,6 +76,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Request Origin is not allowed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
         "429":
           description: Answer rate limit exceeded
           content:
@@ -87,7 +92,7 @@ paths:
   /quiz/leaderboard:
     get:
       summary: Get today's completed-player leaderboard
-      description: Scores are server computed. Equal scores share rank. Player IDs and handles are never returned.
+      description: Scores are server computed. Equal scores share rank. Display names are returned, but player IDs are not.
       responses:
         "200":
           description: Top completed scores and the current player's rank, if finished
@@ -99,6 +104,116 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "503":
           $ref: "#/components/responses/Unavailable"
+  /player:
+    get:
+      summary: Get or create the signed-in player's profile
+      description: A recovery code is returned only when the profile is first created or the code is rotated.
+      responses:
+        "200":
+          description: Player profile
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PlayerProfile" }
+        "503": { $ref: "#/components/responses/Unavailable" }
+  /player/name:
+    patch:
+      summary: Change the signed-in player's display name
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [displayName]
+              properties:
+                displayName: { type: string, minLength: 2, maxLength: 24 }
+      responses:
+        "200":
+          description: Updated player profile
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PlayerProfile" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "409":
+          description: Display name is already in use
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+        "403":
+          description: Request Origin is not allowed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+  /player/recovery-code:
+    post:
+      summary: Rotate the player's recovery code
+      description: The new code is returned once; the previous code becomes invalid.
+      responses:
+        "200":
+          description: Profile and new recovery code
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PlayerProfile" }
+        "503": { $ref: "#/components/responses/Unavailable" }
+        "403":
+          description: Request Origin is not allowed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+  /player/recover:
+    post:
+      summary: Restore a player identity with its recovery code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [recoveryCode]
+              properties:
+                recoveryCode: { type: string, minLength: 40, maxLength: 47 }
+      responses:
+        "200":
+          description: Restored player profile and signed cookie
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PlayerProfile" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "404":
+          description: Recovery code not recognized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+        "429":
+          description: Recovery rate limit exceeded
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+        "403":
+          description: Request Origin is not allowed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+  /player/history:
+    get:
+      summary: List the signed-in player's completed games
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+        - in: query
+          name: before
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: Player-scoped history page
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PlayerHistory" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "503": { $ref: "#/components/responses/Unavailable" }
 components:
   securitySchemes:
     playerCookie:
@@ -128,10 +243,11 @@ components:
     QuizQuestion:
       type: object
       additionalProperties: false
-      required: [id, language, prompt, options]
+      required: [id, language, difficulty, prompt, options]
       properties:
         id: { type: string }
         language: { type: string, enum: [en, sw] }
+        difficulty: { type: string, enum: [medium, challenging, hard, very_hard] }
         prompt: { type: string }
         options:
           type: array
@@ -196,12 +312,38 @@ components:
           maxItems: 20
           items:
             type: object
-            required: [position, rank, score, correctCount]
+            required: [position, rank, score, correctCount, displayName]
             properties:
               position: { type: integer, minimum: 1 }
               rank: { type: integer, minimum: 1 }
+              displayName: { type: string, minLength: 1, maxLength: 24 }
               score: { type: integer, minimum: 0, maximum: 1200 }
               correctCount: { type: integer, minimum: 0, maximum: 10 }
+    PlayerProfile:
+      type: object
+      additionalProperties: false
+      required: [playerId, displayName]
+      properties:
+        playerId: { type: string, format: uuid }
+        displayName: { type: string, minLength: 2, maxLength: 24 }
+        recoveryCode: { type: string, pattern: "^(?:[A-F0-9]{5}-){7}[A-F0-9]{5}$" }
+    PlayerHistory:
+      type: object
+      additionalProperties: false
+      required: [items, nextBefore]
+      properties:
+        items:
+          type: array
+          maxItems: 50
+          items:
+            type: object
+            required: [day, score, correctCount, completedAt]
+            properties:
+              day: { type: string, format: date }
+              score: { type: integer, minimum: 0, maximum: 1200 }
+              correctCount: { type: integer, minimum: 0, maximum: 10 }
+              completedAt: { type: string, format: date-time }
+        nextBefore: { type: [string, "null"], format: date }
   responses:
     InvalidRequest:
       description: Invalid headers or answer payload
