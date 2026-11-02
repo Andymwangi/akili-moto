@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { cors } from 'hono/cors';
-import type { AppEnvironment } from '../env';
+import { type AppEnvironment, readAllowedOrigins } from '../env';
 
 export const requestIdentity: MiddlewareHandler<AppEnvironment> = async (context, next) => {
   context.set('requestId', crypto.randomUUID());
@@ -24,12 +24,15 @@ export const securityHeaders: MiddlewareHandler<AppEnvironment> = async (context
     'Content-Security-Policy',
     `default-src 'self'; script-src 'self'; ${stylePolicy}; img-src 'self' data:; ${connectPolicy}; base-uri 'self'; form-action 'self'; frame-ancestors 'none'`,
   );
+  if (context.req.path.startsWith('/api/')) {
+    context.header('Cache-Control', 'private, no-store');
+  }
   await next();
 };
 
 export const apiCors: MiddlewareHandler<AppEnvironment> = async (context, next) => {
   return cors({
-    origin: context.env.ALLOWED_ORIGIN,
+    origin: [...readAllowedOrigins(context.env.ALLOWED_ORIGIN)],
     credentials: true,
     allowMethods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Idempotency-Key'],
@@ -45,7 +48,8 @@ export const apiOriginGuard: MiddlewareHandler<AppEnvironment> = async (context,
     return;
   }
   const origin = context.req.header('Origin');
-  const isConfiguredOrigin = origin === context.env.ALLOWED_ORIGIN;
+  const allowedOrigins = readAllowedOrigins(context.env.ALLOWED_ORIGIN);
+  const isConfiguredOrigin = origin !== undefined && allowedOrigins.includes(origin);
   const isSameOriginDevelopmentRequest =
     context.env.APP_ENV === 'development' && origin === new URL(context.req.url).origin;
   if (isConfiguredOrigin || isSameOriginDevelopmentRequest) {
