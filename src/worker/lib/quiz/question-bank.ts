@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import legacyQuestionData from '../../../../data/legacy-quiz-questions-v1.json';
 import questionData from '../../../../data/quiz-questions.json';
+import currentQuestionData from '../../../../data/quiz-questions-v4.json';
 import {
   QUIZ_ENGLISH_QUESTION_COUNT,
   QUIZ_QUESTION_COUNT,
@@ -8,10 +9,25 @@ import {
 } from '../../../shared/constants';
 import type { QuizQuestion } from '../../../shared/schemas/quiz';
 
+export const QuestionTopicSchema = z.enum([
+  'art',
+  'culture',
+  'economics',
+  'environment',
+  'geography',
+  'history',
+  'literature',
+  'mathematics',
+  'music',
+  'science',
+]);
+export type QuestionTopic = z.infer<typeof QuestionTopicSchema>;
+
 const QuestionBankEntrySchema = z.strictObject({
   id: z.string().min(1).max(64),
   language: z.enum(['en', 'sw']),
   difficulty: z.enum(['medium', 'challenging', 'hard', 'very_hard']),
+  topic: QuestionTopicSchema.optional(),
   prompt: z.string().min(1).max(500),
   options: z.array(z.string().min(1).max(160)).length(4),
   correctOptionIndex: z.number().int().min(0).max(3),
@@ -21,13 +37,15 @@ const QuestionBankEntrySchema = z.strictObject({
 
 export type QuestionBankEntry = z.infer<typeof QuestionBankEntrySchema>;
 
-const entries = z.array(QuestionBankEntrySchema).parse(questionData);
+const currentEntries = z.array(QuestionBankEntrySchema).parse(currentQuestionData);
+const previousEntries = z.array(QuestionBankEntrySchema).parse(questionData);
 const legacyEntries = z.array(QuestionBankEntrySchema).parse(legacyQuestionData);
-const allEntries = [...entries, ...legacyEntries];
+const allEntries = [...currentEntries, ...previousEntries, ...legacyEntries];
 
 if (new Set(allEntries.map((entry) => entry.id)).size !== allEntries.length) {
   throw new Error('Quiz question IDs must be unique.');
 }
+
 const dailySlots: ReadonlyArray<
   readonly [QuestionBankEntry['difficulty'], QuestionBankEntry['language']]
 > = [
@@ -42,26 +60,30 @@ const dailySlots: ReadonlyArray<
   ['very_hard', 'sw'],
   ['very_hard', 'en'],
 ];
+
 for (const [index, [difficulty, language]] of dailySlots.entries()) {
   if (dailySlots.findIndex(([level, lang]) => level === difficulty && lang === language) !== index)
     continue;
-  const required = dailySlots.filter(
-    ([level, lang]) => level === difficulty && lang === language,
-  ).length;
-  const available = entries.filter(
+  const requiredForTwoRounds =
+    dailySlots.filter(([level, lang]) => level === difficulty && lang === language).length * 2;
+  const available = currentEntries.filter(
     (entry) => entry.difficulty === difficulty && entry.language === language,
   ).length;
-  if (available < required)
-    throw new Error(`The quiz bank needs ${required} ${difficulty} ${language} questions.`);
+  if (available < requiredForTwoRounds) {
+    throw new Error(
+      `The v4 quiz bank needs ${requiredForTwoRounds} ${difficulty} ${language} questions for two rounds.`,
+    );
+  }
 }
+
 for (const entry of allEntries) {
   if (new Set(entry.options.map((option) => option.toLocaleLowerCase())).size !== 4) {
     throw new Error(`Quiz question ${entry.id} must have four unique options.`);
   }
 }
 
-export const QUIZ_QUESTION_SET_VERSION = 'v3';
-export const questionBank: readonly QuestionBankEntry[] = entries;
+export const QUIZ_QUESTION_SET_VERSION = 'v4';
+export const questionBank: readonly QuestionBankEntry[] = currentEntries;
 
 export function questionById(id: string): QuestionBankEntry | undefined {
   return allEntries.find((question) => question.id === id);
@@ -74,10 +96,7 @@ export function toPublicQuestion(question: QuestionBankEntry, day: string): Quiz
     language: question.language,
     difficulty: question.difficulty,
     prompt: question.prompt,
-    options: options.map((text, index) => ({
-      id: choiceId(index),
-      text,
-    })),
+    options: options.map((text, index) => ({ id: choiceId(index), text })),
   };
 }
 
@@ -90,30 +109,97 @@ export function correctOptionId(question: QuestionBankEntry, day: string): 'a' |
   return choiceId(correctIndex);
 }
 
-export function selectDailyQuestionIds(day: string, variant = 0): string[] {
-  const buckets = new Map<string, QuestionBankEntry[]>();
-  const selected = dailySlots.map(([difficulty, language]) => {
-    const bucketKey = `${difficulty}:${language}`;
-    let bucket = buckets.get(bucketKey);
-    if (!bucket) {
-      const candidates = entries.filter(
+export function selectDailyQuestionPair(day: string, variant = 0): [string[], string[]] {
+  const ids: [string[], string[]] = [[], []];
+  const topicCounts: [Map<QuestionTopic, number>, Map<QuestionTopic, number>] = [
+    new Map(),
+    new Map(),
+  ];
+  const selected = new Set<string>();
+
+  dailySlots.forEach(([difficulty, language], slotIndex) => {
+    for (const roundIndex of [0, 1] as const) {
+      const candidates = currentEntries.filter(
         (entry) => entry.difficulty === difficulty && entry.language === language,
       );
-      bucket = shuffle(candidates, createRandom(`${day}:${variant}:${bucketKey}`));
-      buckets.set(bucketKey, bucket);
+      const available = shuffle(
+        candidates.filter((entry) => !selected.has(entry.id)),
+        createRandom(`${day}:v4:${variant}:${difficulty}:${language}:${slotIndex}:${roundIndex}`),
+      );
+      const otherRound = (1 - roundIndex) as 0 | 1;
+      const otherRoundTopic = ids[otherRound][slotIndex]
+        ? questionById(ids[otherRound][slotIndex] ?? '')?.topic
+        : undefined;
+      const eligible = available.filter((entry) => {
+        const topic = entry.topic;
+        return topic !== undefined && (topicCounts[roundIndex].get(topic) ?? 0) < 2;
+      });
+      const distinctFromOtherRound = eligible.filter((entry) => entry.topic !== otherRoundTopic);
+      const candidatesForSlot =
+        distinctFromOtherRound.length > 0 ? distinctFromOtherRound : eligible;
+      if (candidatesForSlot.length === 0) {
+        throw new Error(`No disjoint question available for ${difficulty} ${language} round slot.`);
+      }
+
+      const fewestUses = Math.min(
+        ...candidatesForSlot.map(
+          (entry) => topicCounts[roundIndex].get(entry.topic as QuestionTopic) ?? 0,
+        ),
+      );
+      const chosen = candidatesForSlot.find(
+        (entry) => (topicCounts[roundIndex].get(entry.topic as QuestionTopic) ?? 0) === fewestUses,
+      );
+      if (!chosen?.topic) throw new Error('Question topic is required for new daily rounds.');
+      ids[roundIndex].push(chosen.id);
+      selected.add(chosen.id);
+      topicCounts[roundIndex].set(
+        chosen.topic,
+        (topicCounts[roundIndex].get(chosen.topic) ?? 0) + 1,
+      );
     }
-    const question = bucket.shift();
-    if (!question) throw new Error(`No question available for ${difficulty} ${language} slot.`);
-    return question.id;
   });
-  if (
-    selected.length !== QUIZ_QUESTION_COUNT ||
-    dailySlots.filter(([, language]) => language === 'en').length !== QUIZ_ENGLISH_QUESTION_COUNT ||
-    dailySlots.filter(([, language]) => language === 'sw').length !== QUIZ_SWAHILI_QUESTION_COUNT
-  ) {
-    throw new Error('The daily quiz does not match the required question schedule.');
+
+  validateDailyQuestionPair(ids);
+  return ids;
+}
+
+export function selectDailyQuestionIds(day: string, variant = 0): string[] {
+  return selectDailyQuestionPair(day, variant)[0];
+}
+
+export function validateDailyQuestionPair(pair: readonly [string[], string[]]): void {
+  for (const ids of pair) {
+    if (ids.length !== QUIZ_QUESTION_COUNT || ids.some((id) => !questionById(id))) {
+      throw new Error('INVALID_DAILY_QUIZ');
+    }
+    const questions = ids.map((id) => questionById(id));
+    const topics = new Set(
+      questions.flatMap((question) => (question?.topic ? [question.topic] : [])),
+    );
+    const topicCounts = questions.reduce((counts, question) => {
+      if (question?.topic) counts.set(question.topic, (counts.get(question.topic) ?? 0) + 1);
+      return counts;
+    }, new Map<QuestionTopic, number>());
+    const isTaggedRound = questions.every((question) => question?.topic !== undefined);
+    if (
+      isTaggedRound &&
+      (topics.size < 7 || [...topicCounts.values()].some((count) => count > 2))
+    ) {
+      throw new Error('The daily round does not have a balanced topic mix.');
+    }
+    if (
+      questions.filter((question) => question?.language === 'en').length !==
+        QUIZ_ENGLISH_QUESTION_COUNT ||
+      questions.filter((question) => question?.language === 'sw').length !==
+        QUIZ_SWAHILI_QUESTION_COUNT
+    ) {
+      throw new Error('The daily round does not match the required language schedule.');
+    }
   }
-  return selected;
+
+  if (new Set([...pair[0], ...pair[1]]).size !== QUIZ_QUESTION_COUNT * 2) {
+    throw new Error('Daily rounds must not reuse questions.');
+  }
 }
 
 function choiceId(index: number): 'a' | 'b' | 'c' | 'd' {
@@ -141,12 +227,8 @@ function createRandom(seedText: string): () => number {
 function shuffle<T>(values: readonly T[], random: () => number): T[] {
   const result = [...values];
   for (let index = result.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(random() * (index + 1));
-    const current = result[index];
-    const swap = result[swapIndex];
-    if (current === undefined || swap === undefined) throw new RangeError('Invalid shuffle index.');
-    result[index] = swap;
-    result[swapIndex] = current;
+    const target = Math.floor(random() * (index + 1));
+    [result[index], result[target]] = [result[target] as T, result[index] as T];
   }
   return result;
 }

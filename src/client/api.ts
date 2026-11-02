@@ -56,18 +56,19 @@ async function parseResponse<T>(
   return schema.parse(await response.json());
 }
 
-export async function getQuiz(): Promise<QuizState> {
-  const response = await client.api.quiz.$get();
+export async function getQuiz(round: 1 | 2 = 1): Promise<QuizState> {
+  const response = await client.api.quiz.$get({ query: { round: String(round) as '1' | '2' } });
   return parseResponse(response, QuizStateSchema);
 }
 
 export async function submitQuizAnswer(
+  round: 1 | 2,
   questionId: string,
   selectedOptionId: 'a' | 'b' | 'c' | 'd',
   idempotencyKey: string,
 ): Promise<QuizState> {
   const response = await client.api.quiz.answer.$post({
-    json: { questionId, selectedOptionId },
+    json: { round, questionId, selectedOptionId },
     header: { 'idempotency-key': idempotencyKey },
   });
   return parseResponse(response, QuizStateSchema);

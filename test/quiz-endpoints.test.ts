@@ -9,7 +9,7 @@ import { ensureDailyQuiz } from '../src/worker/lib/quiz/daily-quiz';
 import {
   correctOptionId,
   questionById,
-  selectDailyQuestionIds,
+  selectDailyQuestionPair,
 } from '../src/worker/lib/quiz/question-bank';
 
 const testEnv = Object.assign(env, {
@@ -48,8 +48,11 @@ function cookieFrom(response: Response): string {
   return value.split(';', 1)[0] ?? '';
 }
 
-async function getQuiz(cookie?: string): Promise<{ response: Response; state: QuizState }> {
-  const response = await request('/api/quiz', {
+async function getQuiz(
+  cookie?: string,
+  round: 1 | 2 = 1,
+): Promise<{ response: Response; state: QuizState }> {
+  const response = await request(`/api/quiz?round=${round}`, {
     ...(cookie ? { headers: { Cookie: cookie } } : {}),
   });
   return { response, state: QuizStateSchema.parse(await response.json()) };
@@ -60,6 +63,7 @@ async function submitAnswer(
   selectedOptionId: string,
   cookie: string,
   idempotencyKey = `answer-${crypto.randomUUID()}`,
+  round: 1 | 2 = 1,
 ): Promise<Response> {
   return request('/api/quiz/answer', {
     method: 'POST',
@@ -68,11 +72,27 @@ async function submitAnswer(
       'Idempotency-Key': idempotencyKey,
       Cookie: cookie,
     },
-    body: JSON.stringify({ questionId, selectedOptionId }),
+    body: JSON.stringify({ round, questionId, selectedOptionId }),
   });
 }
 
 async function resetDatabase(): Promise<void> {
+  await testEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS daily_quizzes (
+    day TEXT PRIMARY KEY NOT NULL, question_ids TEXT NOT NULL, question_set_key TEXT,
+    question_set_version TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+  )`).run();
+  const existingColumns = await testEnv.DB.prepare('PRAGMA table_info(daily_quizzes)').all<{
+    name: string;
+  }>();
+  const columns = new Set(existingColumns.results?.map((column) => column.name) ?? []);
+  for (const [name, type] of [
+    ['round_two_question_ids', 'TEXT'],
+    ['round_two_question_set_key', 'TEXT'],
+    ['round_two_question_set_version', 'TEXT'],
+  ] as const) {
+    if (!columns.has(name))
+      await testEnv.DB.prepare(`ALTER TABLE daily_quizzes ADD COLUMN ${name} ${type}`).run();
+  }
   await testEnv.DB.batch([
     testEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS daily_quizzes (
       day TEXT PRIMARY KEY NOT NULL,
@@ -84,6 +104,8 @@ async function resetDatabase(): Promise<void> {
     )`),
     testEnv.DB.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS daily_quizzes_question_set_key_unique
       ON daily_quizzes(question_set_key) WHERE question_set_key IS NOT NULL`),
+    testEnv.DB.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS daily_quizzes_round_two_question_set_key_unique
+      ON daily_quizzes(round_two_question_set_key) WHERE round_two_question_set_key IS NOT NULL`),
     testEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS players (
       id TEXT PRIMARY KEY NOT NULL,
       display_name TEXT NOT NULL,
@@ -135,6 +157,25 @@ async function resetDatabase(): Promise<void> {
       ON quiz_answers(day, player_id, idempotency_key)`),
     testEnv.DB.prepare(`CREATE INDEX IF NOT EXISTS quiz_answers_player_day_index
       ON quiz_answers(player_id, day)`),
+    testEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS quiz_round_sessions (
+      day TEXT NOT NULL, player_id TEXT NOT NULL, round_no INTEGER NOT NULL,
+      started_at TEXT NOT NULL, score INTEGER NOT NULL DEFAULT 0,
+      correct_count INTEGER NOT NULL DEFAULT 0, completed_at TEXT,
+      created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+      PRIMARY KEY(day, player_id, round_no)
+    )`),
+    testEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS quiz_round_answers (
+      day TEXT NOT NULL, player_id TEXT NOT NULL, round_no INTEGER NOT NULL,
+      question_index INTEGER NOT NULL, question_id TEXT NOT NULL,
+      selected_option_id TEXT NOT NULL, correct_option_id TEXT NOT NULL,
+      is_correct INTEGER NOT NULL, points INTEGER NOT NULL, response_ms INTEGER NOT NULL,
+      idempotency_key TEXT NOT NULL, submitted_at TEXT NOT NULL,
+      PRIMARY KEY(day, player_id, round_no, question_index)
+    )`),
+    testEnv.DB.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS quiz_round_answers_player_day_idempotency_unique
+      ON quiz_round_answers(day, player_id, round_no, idempotency_key)`),
+    testEnv.DB.prepare('DELETE FROM quiz_round_answers'),
+    testEnv.DB.prepare('DELETE FROM quiz_round_sessions'),
     testEnv.DB.prepare('DELETE FROM quiz_answers'),
     testEnv.DB.prepare('DELETE FROM quiz_sessions'),
     testEnv.DB.prepare('DELETE FROM daily_quizzes'),
@@ -253,11 +294,12 @@ describe('daily quiz routes', () => {
     const otherProfile = (await otherResponse.json()) as { playerId: string };
     const now = new Date().toISOString();
     await testEnv.DB.batch([
-      testEnv.DB.prepare(`INSERT INTO quiz_sessions
-        (day, player_id, started_at, score, correct_count, completed_at, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).bind(
+      testEnv.DB.prepare(`INSERT INTO quiz_round_sessions
+        (day, player_id, round_no, started_at, score, correct_count, completed_at, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(
         '2026-11-01',
         profile.playerId,
+        1,
         now,
         800,
         8,
@@ -265,11 +307,12 @@ describe('daily quiz routes', () => {
         now,
         now,
       ),
-      testEnv.DB.prepare(`INSERT INTO quiz_sessions
-        (day, player_id, started_at, score, correct_count, completed_at, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).bind(
+      testEnv.DB.prepare(`INSERT INTO quiz_round_sessions
+        (day, player_id, round_no, started_at, score, correct_count, completed_at, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(
         '2026-11-01',
         otherProfile.playerId,
+        1,
         now,
         1200,
         10,
@@ -289,7 +332,7 @@ describe('daily quiz routes', () => {
     });
     expect(response.status).toBe(200);
     expect(history.items).toEqual([
-      { day: '2026-11-01', score: 800, correctCount: 8, completedAt: now },
+      { day: '2026-11-01', roundsCompleted: 1, score: 800, correctCount: 8, completedAt: now },
     ]);
     expect(privateHistory.items).toEqual([]);
     expect(invalid.status).toBe(400);
@@ -301,12 +344,22 @@ describe('daily quiz routes', () => {
     const dayTwo = await ensureDailyQuiz(repository, '2027-01-02');
     expect([...dayOne].sort().join(',')).not.toBe([...dayTwo].sort().join(','));
 
-    const contestedSet = selectDailyQuestionIds('fixed-contested-set');
-    await repository.assignDailyQuiz('2027-01-03', contestedSet, 'test');
-    const rejectedReuse = await repository.assignDailyQuiz('2027-01-04', contestedSet, 'test');
+    const contestedPair = selectDailyQuestionPair('fixed-contested-set');
+    await repository.assignDailyQuestionPair(
+      '2027-01-03',
+      contestedPair[0],
+      contestedPair[1],
+      'v4',
+    );
+    const rejectedReuse = await repository.assignDailyQuestionPair(
+      '2027-01-04',
+      contestedPair[0],
+      contestedPair[1],
+      'v4',
+    );
     expect(rejectedReuse).toBeUndefined();
     const freshReplacement = await ensureDailyQuiz(repository, '2027-01-04');
-    expect([...freshReplacement].sort().join(',')).not.toBe([...contestedSet].sort().join(','));
+    expect([...freshReplacement].sort().join(',')).not.toBe([...contestedPair[0]].sort().join(','));
 
     const sameDay = await Promise.all([
       ensureDailyQuiz(repository, '2027-01-05'),
@@ -314,9 +367,9 @@ describe('daily quiz routes', () => {
     ]);
     expect(sameDay[0]).toEqual(sameDay[1]);
     const uniqueKeys = await testEnv.DB.prepare(
-      'SELECT COUNT(DISTINCT question_set_key) AS total FROM daily_quizzes',
+      `SELECT COUNT(DISTINCT question_set_key) + COUNT(DISTINCT round_two_question_set_key) AS total FROM daily_quizzes`,
     ).first<{ total: number }>();
-    expect(uniqueKeys?.total).toBe(5);
+    expect(uniqueKeys?.total).toBe(10);
   });
 
   it('allows the display-name PATCH method through the configured CORS policy', async () => {
@@ -475,7 +528,9 @@ describe('daily quiz routes', () => {
       headers: { 'Content-Type': 'application/json', Cookie: cookie },
       body: JSON.stringify({ questionId: 'en-red-planet', selectedOptionId: 'z', score: 500 }),
     });
-    const count = await testEnv.DB.prepare('SELECT COUNT(*) AS count FROM quiz_answers').first<{
+    const count = await testEnv.DB.prepare(
+      'SELECT COUNT(*) AS count FROM quiz_round_answers',
+    ).first<{
       count: number;
     }>();
     expect(response.status).toBe(400);
@@ -485,7 +540,9 @@ describe('daily quiz routes', () => {
   it('rejects an out-of-order question without consuming a turn', async () => {
     const cookie = cookieFrom((await getQuiz()).response);
     const response = await submitAnswer('not-today-question', 'a', cookie);
-    const count = await testEnv.DB.prepare('SELECT COUNT(*) AS count FROM quiz_answers').first<{
+    const count = await testEnv.DB.prepare(
+      'SELECT COUNT(*) AS count FROM quiz_round_answers',
+    ).first<{
       count: number;
     }>();
     expect(response.status).toBe(409);
@@ -519,7 +576,9 @@ describe('daily quiz routes', () => {
     const first = await submitAnswer(questionId, 'a', cookie, key);
     const replay = await submitAnswer(questionId, 'a', cookie, key);
     const changed = await submitAnswer(questionId, 'b', cookie, key);
-    const count = await testEnv.DB.prepare('SELECT COUNT(*) AS count FROM quiz_answers').first<{
+    const count = await testEnv.DB.prepare(
+      'SELECT COUNT(*) AS count FROM quiz_round_answers',
+    ).first<{
       count: number;
     }>();
     expect(first.status).toBe(200);
@@ -537,7 +596,9 @@ describe('daily quiz routes', () => {
       submitAnswer(questionId, 'a', cookie, 'concurrent-answer-001'),
       submitAnswer(questionId, 'a', cookie, 'concurrent-answer-002'),
     ]);
-    const count = await testEnv.DB.prepare('SELECT COUNT(*) AS count FROM quiz_answers').first<{
+    const count = await testEnv.DB.prepare(
+      'SELECT COUNT(*) AS count FROM quiz_round_answers',
+    ).first<{
       count: number;
     }>();
     expect(responses.map((response) => response.status)).toEqual([200, 200]);
@@ -561,6 +622,15 @@ describe('daily quiz routes', () => {
   it('finishes after ten questions and ranks only completed players', async () => {
     const initial = await getQuiz();
     const cookie = cookieFrom(initial.response);
+    const thirdRound = await request('/api/quiz?round=3', { headers: { Cookie: cookie } });
+    expect(thirdRound.status).toBe(400);
+    const lockedRound = await request('/api/quiz?round=2', { headers: { Cookie: cookie } });
+    expect(lockedRound.status).toBe(409);
+    expect(
+      await testEnv.DB.prepare(
+        'SELECT COUNT(*) AS count FROM quiz_round_sessions WHERE round_no = 2',
+      ).first<{ count: number }>(),
+    ).toMatchObject({ count: 0 });
     let state = initial.state;
     while (state.status !== 'finished') {
       const question = state.currentQuestion;
@@ -580,12 +650,74 @@ describe('daily quiz routes', () => {
     expect(state.correctCount).toBe(10);
     expect(state.rank).toBe(1);
     expect(state.completedPlayers).toBe(1);
+    const secondRoundStart = await getQuiz(cookie, 2);
+    expect(secondRoundStart.state.round).toBe(2);
+    const pair = await testEnv.DB.prepare(
+      'SELECT question_ids, round_two_question_ids FROM daily_quizzes WHERE day = ?',
+    )
+      .bind(state.day)
+      .first<{ question_ids: string; round_two_question_ids: string }>();
+    const firstIds = JSON.parse(pair?.question_ids ?? '[]') as string[];
+    const secondIds = JSON.parse(pair?.round_two_question_ids ?? '[]') as string[];
+    expect(secondIds).toHaveLength(10);
+    expect(firstIds.some((id) => secondIds.includes(id))).toBe(false);
+    let secondState = secondRoundStart.state;
+    while (secondState.status !== 'finished') {
+      const question = secondState.currentQuestion;
+      if (!question) throw new Error('Round two question missing before completion');
+      const entry = questionById(question.id);
+      if (!entry) throw new Error('Question bank entry is missing');
+      const response = await submitAnswer(
+        question.id,
+        correctOptionId(entry, secondState.day),
+        cookie,
+        `round-two-${secondState.currentIndex}`,
+        2,
+      );
+      expect(response.status).toBe(200);
+      secondState = QuizStateSchema.parse(await response.json());
+    }
     expect(leaderboard).not.toHaveProperty('playerId');
     expect(leaderboard).not.toHaveProperty('answers');
+    const finalLeaderboardResponse = await request('/api/quiz/leaderboard', {
+      headers: { Cookie: cookie },
+    });
+    const finalLeaderboard = await finalLeaderboardResponse.json();
+    expect(finalLeaderboard).toMatchObject({
+      rounds: [
+        { round: 1, totalPlayers: 1, playerRank: 1 },
+        { round: 2, totalPlayers: 1, playerRank: 1 },
+      ],
+      combined: {
+        totalPlayers: 1,
+        playerRank: 1,
+        playerScore: state.score + secondState.score,
+      },
+    });
+    const historyResponse = await request('/api/player/history?limit=1', {
+      headers: { Cookie: cookie },
+    });
+    const history = await historyResponse.json();
+    expect(history).toMatchObject({
+      items: [
+        {
+          day: state.day,
+          roundsCompleted: 2,
+          score: state.score + secondState.score,
+          correctCount: 20,
+        },
+      ],
+    });
 
     const anotherPlayer = await request('/api/quiz/leaderboard');
     const anotherBody: unknown = await anotherPlayer.json();
-    expect(anotherBody).toMatchObject({ playerRank: null, totalPlayers: 1 });
+    expect(anotherBody).toMatchObject({
+      rounds: [
+        { round: 1, playerRank: null, totalPlayers: 1 },
+        { round: 2, playerRank: null, totalPlayers: 1 },
+      ],
+      combined: { totalPlayers: 0, playerRank: null },
+    });
   });
 
   it('does not expose the retired Wordle endpoint', async () => {

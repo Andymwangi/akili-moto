@@ -18,6 +18,7 @@ import { persistTheme, resolveTheme } from '../theme';
 
 type ChoiceId = 'a' | 'b' | 'c' | 'd';
 type AnswerInput = Readonly<{
+  round: 1 | 2;
   questionId: string;
   selectedOptionId: ChoiceId;
   idempotencyKey: string;
@@ -67,6 +68,8 @@ function isValidPlayerName(name: string): boolean {
 export function GamePage() {
   const queryClient = useQueryClient();
   const [gameStarted, setGameStarted] = useState(false);
+  const [showPlayerSettings, setShowPlayerSettings] = useState(false);
+  const [activeRound, setActiveRound] = useState<1 | 2>(1);
   const [feedbackIndex, setFeedbackIndex] = useState<number | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [notice, setNotice] = useState('');
@@ -81,8 +84,8 @@ export function GamePage() {
   });
   const profileQuery = useQuery({ queryKey: ['player'], queryFn: getPlayerProfile, staleTime: 0 });
   const quizQuery = useQuery({
-    queryKey: ['quiz'],
-    queryFn: getQuiz,
+    queryKey: ['quiz', activeRound],
+    queryFn: () => getQuiz(activeRound),
     staleTime: 0,
     enabled: Boolean(profileQuery.data) && gameStarted,
   });
@@ -201,9 +204,13 @@ export function GamePage() {
   });
   const answerMutation = useMutation({
     mutationFn: (input: AnswerInput) =>
-      submitQuizAnswer(input.questionId, input.selectedOptionId, input.idempotencyKey),
+      submitQuizAnswer(input.round, input.questionId, input.selectedOptionId, input.idempotencyKey),
     onSuccess: (nextQuiz) => {
-      queryClient.setQueryData(['quiz'], nextQuiz);
+      queryClient.setQueryData(['quiz', activeRound], nextQuiz);
+      if (nextQuiz.status === 'finished') {
+        void queryClient.invalidateQueries({ queryKey: ['quiz', 'leaderboard'] });
+        void queryClient.invalidateQueries({ queryKey: ['player', 'history'] });
+      }
       setFeedbackIndex(nextQuiz.answers.at(-1)?.questionIndex ?? null);
       setNotice('');
     },
@@ -278,6 +285,7 @@ export function GamePage() {
     if (!question || isFinished || showingFeedback || answerMutation.isPending) return;
     setNotice('');
     answerMutation.mutate({
+      round: activeRound,
       questionId: question.id,
       selectedOptionId: optionId,
       idempotencyKey: crypto.randomUUID(),
@@ -292,7 +300,17 @@ export function GamePage() {
         </a>
         <div className="header-actions">
           <span className="day-label">{quiz?.day ?? 'Daily challenge'}</span>
-          <span className="daily-tag">10 questions</span>
+          <span className="daily-tag">2 rounds · 10 questions each</span>
+          {gameStarted && (
+            <button
+              className="theme-toggle"
+              type="button"
+              aria-expanded={showPlayerSettings}
+              onClick={() => setShowPlayerSettings((current) => !current)}
+            >
+              {showPlayerSettings ? 'Close player settings' : 'Player settings'}
+            </button>
+          )}
           <button
             className="theme-toggle"
             type="button"
@@ -310,8 +328,8 @@ export function GamePage() {
             <p className="eyebrow">YOUR DAILY CHALLENGE</p>
             <h1 id="start-title">Ready to play?</h1>
             <p className="intro-copy">
-              Choose the name you want on the leaderboard. Your ten-question challenge begins when
-              you press start.
+              Choose the name you want on the leaderboard. Your first round begins when you press
+              start, and round two opens after you finish it.
             </p>
           </div>
 
@@ -361,6 +379,32 @@ export function GamePage() {
             </form>
           )}
 
+          {profileQuery.data && (
+            <div className="recovery-panel start-recovery-panel">
+              <div>
+                <strong>Keep your player identity</strong>
+                <p>
+                  Save a recovery code privately to restore your name and game history on another
+                  device.
+                </p>
+                {profileQuery.data.recoveryCode && (
+                  <code className="recovery-code">{profileQuery.data.recoveryCode}</code>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => recoveryCodeMutation.mutate()}
+                disabled={recoveryCodeMutation.isPending}
+              >
+                {recoveryCodeMutation.isPending
+                  ? 'Creating code…'
+                  : profileQuery.data.recoveryCode
+                    ? 'Create a new code'
+                    : 'Create recovery code'}
+              </button>
+            </div>
+          )}
+
           {profileNotice && (
             <p className="profile-notice" role={startMutation.isError ? 'alert' : 'status'}>
               {profileNotice}
@@ -397,7 +441,11 @@ export function GamePage() {
         </section>
       )}
 
-      <section className="player-panel" aria-label="Player profile" hidden={!gameStarted}>
+      <section
+        className="player-panel"
+        aria-label="Player profile"
+        hidden={!gameStarted || !showPlayerSettings}
+      >
         {profileQuery.isPending && <p className="status-inline">Loading your player profile…</p>}
         {profileQuery.isError && (
           <div className="error-card" role="alert">
@@ -493,10 +541,12 @@ export function GamePage() {
         <div className="hero-copy">
           <p className="eyebrow">A DAILY TEST OF KNOWLEDGE</p>
           <h1 id="page-title">Akili Moto</h1>
-          <p className="intro-copy">Ten questions. One shared challenge. How high can you climb?</p>
+          <p className="intro-copy">
+            Two rounds. A fresh mix of questions in each. How high can you climb?
+          </p>
         </div>
         <div className="hero-note" aria-hidden="true">
-          <span>ONE SET</span>
+          <span>ROUND {activeRound}</span>
           <strong>10</strong>
           <span>QUESTIONS</span>
         </div>
@@ -558,13 +608,38 @@ export function GamePage() {
                 {quiz.correctCount} correct answers for {quiz.score.toLocaleString()} points among{' '}
                 {quiz.completedPlayers ?? 0} finished players.
               </p>
+              {activeRound === 1 && (
+                <button
+                  className="start-button"
+                  type="button"
+                  onClick={() => {
+                    setFeedbackIndex(null);
+                    setNotice('');
+                    setActiveRound(2);
+                  }}
+                >
+                  Start round two
+                </button>
+              )}
+              {activeRound === 2 && leaderboardQuery.data && (
+                <p>
+                  Combined total:{' '}
+                  {leaderboardQuery.data.combined.playerScore?.toLocaleString() ?? 0} points.{' '}
+                  {leaderboardQuery.data.combined.playerRank
+                    ? `You rank #${leaderboardQuery.data.combined.playerRank} across ${leaderboardQuery.data.combined.totalPlayers} players who finished both rounds.`
+                    : 'Finish both rounds to earn a combined rank.'}
+                </p>
+              )}
               <div className="leaderboard-heading">
                 <div>
                   <span className="eyebrow">TODAY’S FIELD</span>
                   <h3>Leaderboard</h3>
                 </div>
                 <span>
-                  {leaderboardQuery.data?.totalPlayers ?? quiz.completedPlayers ?? 0} players
+                  {leaderboardQuery.data?.rounds[activeRound - 1]?.totalPlayers ??
+                    quiz.completedPlayers ??
+                    0}{' '}
+                  players
                 </span>
               </div>
               {leaderboardQuery.isPending && <p className="status-inline">Loading rankings…</p>}
@@ -576,22 +651,53 @@ export function GamePage() {
                   </button>
                 </div>
               )}
-              {leaderboardQuery.data && leaderboardQuery.data.items.length === 0 && (
-                <p className="empty-state">
-                  You’re the first finisher today. Invite someone to chase your score.
-                </p>
-              )}
-              {leaderboardQuery.data && leaderboardQuery.data.items.length > 0 && (
-                <ol className="leaderboard-list" aria-label="Top quiz scores">
-                  {leaderboardQuery.data.items.map((item) => (
-                    <li className="leaderboard-row" key={item.position}>
-                      <span className="leaderboard-rank">{item.rank}</span>
-                      <span className="leaderboard-player">{item.displayName}</span>
-                      <span className="leaderboard-correct">{item.correctCount}/10 correct</span>
-                      <strong>{item.score.toLocaleString()}</strong>
-                    </li>
-                  ))}
-                </ol>
+              {leaderboardQuery.data &&
+                leaderboardQuery.data.rounds[activeRound - 1]?.items.length === 0 && (
+                  <p className="empty-state">
+                    You’re the first finisher today. Invite someone to chase your score.
+                  </p>
+                )}
+              {leaderboardQuery.data &&
+                (leaderboardQuery.data.rounds[activeRound - 1]?.items.length ?? 0) > 0 && (
+                  <ol className="leaderboard-list" aria-label="Top quiz scores">
+                    {leaderboardQuery.data.rounds[activeRound - 1]?.items.map((item) => (
+                      <li className="leaderboard-row" key={item.position}>
+                        <span className="leaderboard-rank">{item.rank}</span>
+                        <span className="leaderboard-player">{item.displayName}</span>
+                        <span className="leaderboard-correct">{item.correctCount}/10 correct</span>
+                        <strong>{item.score.toLocaleString()}</strong>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              {activeRound === 2 && leaderboardQuery.data && (
+                <>
+                  <div className="leaderboard-heading">
+                    <div>
+                      <span className="eyebrow">BOTH ROUNDS</span>
+                      <h3>Combined leaderboard</h3>
+                    </div>
+                    <span>{leaderboardQuery.data.combined.totalPlayers} players</span>
+                  </div>
+                  {leaderboardQuery.data.combined.items.length === 0 ? (
+                    <p className="empty-state">
+                      Finish both rounds to appear on the combined board.
+                    </p>
+                  ) : (
+                    <ol className="leaderboard-list" aria-label="Combined scores">
+                      {leaderboardQuery.data.combined.items.map((item) => (
+                        <li className="leaderboard-row" key={item.position}>
+                          <span className="leaderboard-rank">{item.rank}</span>
+                          <span className="leaderboard-player">{item.displayName}</span>
+                          <span className="leaderboard-correct">
+                            {item.correctCount}/20 correct
+                          </span>
+                          <strong>{item.score.toLocaleString()}</strong>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                </>
               )}
             </section>
           ) : (
@@ -741,7 +847,10 @@ export function GamePage() {
                 .map((game) => (
                   <li key={game.day}>
                     <time dateTime={game.day}>{game.day}</time>
-                    <span>{game.correctCount}/10 correct</span>
+                    <span>
+                      {game.correctCount}/{game.roundsCompleted * 10} correct ·{' '}
+                      {game.roundsCompleted}/2 rounds
+                    </span>
                     <strong>{game.score.toLocaleString()} pts</strong>
                   </li>
                 ))}
@@ -760,7 +869,8 @@ export function GamePage() {
         </section>
       )}
       <footer className="page-footer">
-        A shared challenge, set at midnight in Nairobi. The leaderboard ranks completed games.
+        Two shared rounds reset at midnight in Nairobi. Each round ranks completed players, and the
+        combined board ranks players who finish both.
       </footer>
     </main>
   );

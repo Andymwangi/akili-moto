@@ -9,21 +9,23 @@ import {
   correctOptionId,
   questionBank,
   selectDailyQuestionIds,
+  selectDailyQuestionPair,
   toPublicQuestion,
 } from '../src/worker/lib/quiz/question-bank';
 import { scoreQuizAnswer } from '../src/worker/lib/quiz/scoring';
 
 describe('question bank composition', () => {
-  it('keeps the 40-item, English-forward pool across the four levels', () => {
-    expect(questionBank).toHaveLength(40);
-    expect(questionBank.filter((question) => question.language === 'en')).toHaveLength(28);
-    expect(questionBank.filter((question) => question.language === 'sw')).toHaveLength(12);
-    expect(questionBank.filter((question) => question.difficulty === 'medium')).toHaveLength(10);
+  it('has enough tagged questions for two English-forward, progressively harder rounds', () => {
+    expect(questionBank).toHaveLength(56);
+    expect(questionBank.filter((question) => question.language === 'en')).toHaveLength(41);
+    expect(questionBank.filter((question) => question.language === 'sw')).toHaveLength(15);
+    expect(questionBank.filter((question) => question.difficulty === 'medium')).toHaveLength(12);
     expect(questionBank.filter((question) => question.difficulty === 'challenging')).toHaveLength(
-      10,
+      13,
     );
-    expect(questionBank.filter((question) => question.difficulty === 'hard')).toHaveLength(10);
-    expect(questionBank.filter((question) => question.difficulty === 'very_hard')).toHaveLength(10);
+    expect(questionBank.filter((question) => question.difficulty === 'hard')).toHaveLength(18);
+    expect(questionBank.filter((question) => question.difficulty === 'very_hard')).toHaveLength(13);
+    expect(questionBank.every((question) => question.topic)).toBe(true);
   });
 });
 
@@ -104,6 +106,17 @@ describe('daily quiz selection', () => {
     for (let day = 1; day <= 31; day += 1) {
       const ids = selectDailyQuestionIds(`2026-11-${String(day).padStart(2, '0')}`);
       expect(new Set(ids).size, `day ${day}`).toBe(QUIZ_QUESTION_COUNT);
+    }
+  });
+
+  it('gives both rounds unique questions and a broad topic mix', () => {
+    for (let day = 1; day <= 31; day += 1) {
+      const [first, second] = selectDailyQuestionPair(`2026-11-${String(day).padStart(2, '0')}`);
+      expect(new Set([...first, ...second]).size).toBe(20);
+      for (const ids of [first, second]) {
+        const topics = new Set(ids.map((id) => questionBank.find((q) => q.id === id)?.topic));
+        expect(topics.size).toBeGreaterThanOrEqual(7);
+      }
     }
   });
 
