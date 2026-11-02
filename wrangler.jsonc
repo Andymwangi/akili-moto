@@ -52,7 +52,7 @@
       ],
       "vars": {
         "APP_ENV": "production",
-        "ALLOWED_ORIGIN": "https://neno-word-game-production.andymwangi3.workers.dev"
+        "ALLOWED_ORIGIN": "https://akili-moto.vercel.app,https://neno-word-game-production.andymwangi3.workers.dev"
       },
       "triggers": {
         "crons": ["0 21 * * *"]
