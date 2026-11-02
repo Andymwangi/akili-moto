@@ -211,6 +211,7 @@ const routes = new Hono<AppEnvironment>()
         rank: rows.findIndex((candidate) => candidate.score === row.score) + 1,
         score: row.score,
         correctCount: row.correctCount,
+        displayName: row.displayName ?? 'Player',
       }));
       return context.json(
         QuizLeaderboardSchema.parse({

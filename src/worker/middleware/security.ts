@@ -31,11 +31,37 @@ export const apiCors: MiddlewareHandler<AppEnvironment> = async (context, next) 
   return cors({
     origin: context.env.ALLOWED_ORIGIN,
     credentials: true,
-    allowMethods: ['GET', 'POST', 'OPTIONS'],
+    allowMethods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Idempotency-Key'],
     exposeHeaders: ['X-Request-Id'],
     maxAge: 600,
   })(context, next);
+};
+
+export const apiOriginGuard: MiddlewareHandler<AppEnvironment> = async (context, next) => {
+  const mutatingMethod = ['POST', 'PATCH', 'PUT', 'DELETE'].includes(context.req.method);
+  if (!context.req.path.startsWith('/api/') || !mutatingMethod) {
+    await next();
+    return;
+  }
+  const origin = context.req.header('Origin');
+  const isConfiguredOrigin = origin === context.env.ALLOWED_ORIGIN;
+  const isSameOriginDevelopmentRequest =
+    context.env.APP_ENV === 'development' && origin === new URL(context.req.url).origin;
+  if (isConfiguredOrigin || isSameOriginDevelopmentRequest) {
+    await next();
+    return;
+  }
+  return context.json(
+    {
+      error: {
+        code: 'origin_not_allowed',
+        message: 'This request origin is not allowed.',
+        requestId: context.res.headers.get('X-Request-Id') ?? 'unavailable',
+      },
+    },
+    403,
+  );
 };
 
 export const requestBodyLimit: MiddlewareHandler<AppEnvironment> = bodyLimit({

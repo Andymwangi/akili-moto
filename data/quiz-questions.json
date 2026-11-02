@@ -1,182 +1,587 @@
 [
   {
-    "id": "en-red-planet",
+    "id": "en-season-tilt",
     "language": "en",
-    "prompt": "Which planet is often called the Red Planet?",
-    "options": ["Venus", "Mars", "Jupiter", "Mercury"],
-    "correctOptionIndex": 1,
-    "explanation": "Iron minerals in Martian soil oxidize, giving the surface its reddish appearance.",
-    "sourceUrl": "https://science.nasa.gov/mars/facts/"
-  },
-  {
-    "id": "en-water-formula",
-    "language": "en",
-    "prompt": "Which chemical formula represents water?",
-    "options": ["CO2", "O2", "H2O", "NaCl"],
-    "correctOptionIndex": 2,
-    "explanation": "A water molecule contains two hydrogen atoms and one oxygen atom.",
-    "sourceUrl": "https://water.usgs.gov/edu/watercycle-kids-adv.html"
-  },
-  {
-    "id": "en-earth-satellite",
-    "language": "en",
-    "prompt": "What is Earth's natural satellite?",
-    "options": ["Mars", "The Moon", "Venus", "The Sun"],
-    "correctOptionIndex": 1,
-    "explanation": "The Moon is Earth's natural satellite and orbits our planet.",
-    "sourceUrl": "https://science.nasa.gov/moon/top-moon-questions/"
-  },
-  {
-    "id": "en-largest-animal",
-    "language": "en",
-    "prompt": "What is the largest animal known to live on Earth?",
-    "options": ["African elephant", "Blue whale", "Whale shark", "Giraffe"],
-    "correctOptionIndex": 1,
-    "explanation": "The blue whale is the largest animal on Earth and feeds mainly on krill.",
-    "sourceUrl": "https://www.fisheries.noaa.gov/species/blue-whale"
-  },
-  {
-    "id": "en-heart-chambers",
-    "language": "en",
-    "prompt": "How many chambers does a human heart have?",
-    "options": ["Two", "Three", "Four", "Five"],
-    "correctOptionIndex": 2,
-    "explanation": "The heart has two upper chambers called atria and two lower chambers called ventricles.",
-    "sourceUrl": "https://www.nhlbi.nih.gov/health/heart/anatomy"
-  },
-  {
-    "id": "en-nearest-star",
-    "language": "en",
-    "prompt": "Which star is closest to Earth?",
-    "options": ["Sirius", "The Sun", "Proxima Centauri", "Vega"],
-    "correctOptionIndex": 1,
-    "explanation": "The Sun is the star at the center of our solar system and the closest star to Earth.",
-    "sourceUrl": "https://science.nasa.gov/sun/facts/"
-  },
-  {
-    "id": "en-african-un-members",
-    "language": "en",
-    "prompt": "How many African countries are members of the United Nations?",
-    "options": ["48", "50", "54", "60"],
-    "correctOptionIndex": 2,
-    "explanation": "The UN African Group has 54 member states, all of which are UN members.",
-    "sourceUrl": "https://ask.un.org/faq/22882"
-  },
-  {
-    "id": "en-plant-gas",
-    "language": "en",
-    "prompt": "Which gas do plants absorb during photosynthesis?",
-    "options": ["Oxygen", "Carbon dioxide", "Helium", "Nitrogen"],
-    "correctOptionIndex": 1,
-    "explanation": "Plants use carbon dioxide, water, and light energy to make sugars during photosynthesis.",
-    "sourceUrl": "https://science.nasa.gov/kids/earth/what-is-the-greenhouse-effect/"
-  },
-  {
-    "id": "en-jupiter-day",
-    "language": "en",
-    "prompt": "About how long is one day on Jupiter?",
-    "options": ["9.9 hours", "24 hours", "Seven Earth days", "12 Earth years"],
+    "difficulty": "medium",
+    "prompt": "Two places receive similar sunlight over a year, but one has much stronger seasons. Which difference best explains this?",
+    "options": [
+      "Its axis is tilted more relative to its orbit",
+      "It is closer to its star at noon",
+      "Its day is longer in every season",
+      "It has a larger moon"
+    ],
     "correctOptionIndex": 0,
-    "explanation": "Jupiter rotates quickly. One full spin takes about 9.9 Earth hours.",
+    "explanation": "A stronger axial tilt produces larger annual changes in sun angle and daylight length, which intensify seasons.",
+    "sourceUrl": "https://science.nasa.gov/earth/facts/"
+  },
+  {
+    "id": "en-sea-breeze",
+    "language": "en",
+    "difficulty": "medium",
+    "prompt": "On a sunny afternoon, a coastal town gets wind blowing from the sea toward land. What is the most likely cause?",
+    "options": [
+      "Land warmed faster, so rising air drew cooler sea air inland",
+      "The sea warmed faster and pushed air toward the land",
+      "Earth's rotation reverses wind direction near every coast",
+      "The tide pulled the air inland"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "During the day, land heats faster than water. Warm air rises over land and cooler air from the sea moves in to replace it.",
+    "sourceUrl": "https://www.noaa.gov/jetstream/ocean/sea-breeze"
+  },
+  {
+    "id": "en-river-outlet",
+    "language": "en",
+    "difficulty": "medium",
+    "prompt": "After heavy rain, water from several hillsides converges into one stream. Which feature most directly determines where that water eventually drains?",
+    "options": [
+      "The watershed boundary and its outlet",
+      "The highest hill's compass direction",
+      "The age of the nearest lake",
+      "The length of daylight"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A watershed collects runoff and channels it toward a common outlet, such as a stream, river, lake, or ocean.",
+    "sourceUrl": "https://www.usgs.gov/water-science-school/science/watersheds-and-drainage-basins"
+  },
+  {
+    "id": "en-lunar-shadow",
+    "language": "en",
+    "difficulty": "medium",
+    "prompt": "The Moon looks different over several weeks, although the same half is always lit by the Sun. What changes what we see from Earth?",
+    "options": [
+      "Our viewing angle changes as the Moon orbits Earth",
+      "Earth's shadow covers a new fraction each night",
+      "Clouds permanently hide different lunar regions",
+      "The Moon turns its lights on and off"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Moon phases are the changing portions of its sunlit half visible from Earth as it moves around our planet.",
+    "sourceUrl": "https://science.nasa.gov/moon/moon-phases/"
+  },
+  {
+    "id": "en-spring-tide",
+    "language": "en",
+    "difficulty": "medium",
+    "prompt": "Why are tides often especially high around a new or full Moon?",
+    "options": [
+      "The Sun, Moon, and Earth are roughly aligned, combining their tidal effects",
+      "The Moon is then always at its closest point to Earth",
+      "Earth stops rotating briefly",
+      "The Moon blocks ocean water from escaping"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Near new and full Moon, the Sun and Moon's gravitational effects align, producing larger tidal ranges called spring tides.",
+    "sourceUrl": "https://oceanservice.noaa.gov/facts/springtide.html"
+  },
+  {
+    "id": "en-jupiter-orbit-day",
+    "language": "en",
+    "difficulty": "medium",
+    "prompt": "Jupiter takes about 12 Earth years to orbit the Sun, yet one of its days lasts only about 10 hours. Which conclusion follows?",
+    "options": [
+      "Its rotation is much faster than its orbit",
+      "It does not rotate",
+      "Its year is shorter than its day",
+      "It orbits Earth once each day"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A planet's day measures rotation on its axis; its year measures one orbit. Jupiter rotates rapidly while taking much longer to orbit.",
     "sourceUrl": "https://science.nasa.gov/jupiter/jupiter-facts/"
   },
   {
-    "id": "en-saturn-rings",
+    "id": "en-watershed-divide",
     "language": "en",
-    "prompt": "Which planet is best known for its bright, broad ring system?",
-    "options": ["Mars", "Saturn", "Earth", "Mercury"],
-    "correctOptionIndex": 1,
-    "explanation": "Saturn's rings are the most extensive and prominent ring system in our solar system.",
-    "sourceUrl": "https://science.nasa.gov/saturn/facts/"
-  },
-  {
-    "id": "en-first-planet",
-    "language": "en",
-    "prompt": "Which planet is closest to the Sun?",
-    "options": ["Venus", "Earth", "Mercury", "Mars"],
-    "correctOptionIndex": 2,
-    "explanation": "Mercury is the innermost planet in the solar system.",
-    "sourceUrl": "https://science.nasa.gov/mercury/facts/"
-  },
-  {
-    "id": "en-planet-count",
-    "language": "en",
-    "prompt": "How many planets are in our solar system?",
-    "options": ["Seven", "Eight", "Nine", "Ten"],
-    "correctOptionIndex": 1,
-    "explanation": "The solar system has eight planets, from Mercury through Neptune.",
-    "sourceUrl": "https://science.nasa.gov/solar-system/planets/"
-  },
-  {
-    "id": "en-hot-desert",
-    "language": "en",
-    "prompt": "What is the world's largest hot desert?",
-    "options": ["Gobi", "Sahara", "Kalahari", "Atacama"],
-    "correctOptionIndex": 1,
-    "explanation": "The Sahara is the largest hot desert; Antarctica is larger overall but is a polar desert.",
-    "sourceUrl": "https://www.britannica.com/place/Sahara-desert-Africa"
-  },
-  {
-    "id": "en-ocean-coverage",
-    "language": "en",
-    "prompt": "About what share of Earth's surface is covered by ocean?",
-    "options": ["31%", "51%", "71%", "91%"],
-    "correctOptionIndex": 2,
-    "explanation": "The global ocean covers about 71 percent of Earth's surface.",
-    "sourceUrl": "https://oceanservice.noaa.gov/facts/oceanwater.html"
-  },
-  {
-    "id": "sw-asante",
-    "language": "sw",
-    "prompt": "Neno “asante” lina maana gani kwa Kiingereza?",
-    "options": ["Goodbye", "Thank you", "Welcome", "Please"],
-    "correctOptionIndex": 1,
-    "explanation": "“Asante” ni njia ya kawaida ya kusema “thank you” kwa Kiswahili.",
-    "sourceUrl": "https://olrc.ku.edu/swahili-glossary"
-  },
-  {
-    "id": "sw-jumatatu",
-    "language": "sw",
-    "prompt": "“Jumatatu” ni siku gani kwa Kiingereza?",
-    "options": ["Sunday", "Monday", "Tuesday", "Friday"],
-    "correctOptionIndex": 1,
-    "explanation": "“Jumatatu” ni jina la siku ya Monday kwa Kiswahili.",
-    "sourceUrl": "https://olrc.ku.edu/swahili-glossary"
-  },
-  {
-    "id": "sw-nane",
-    "language": "sw",
-    "prompt": "Namba “nane” ni namba gani kwa Kiingereza?",
-    "options": ["Six", "Seven", "Eight", "Nine"],
-    "correctOptionIndex": 2,
-    "explanation": "“Nane” humaanisha eight.",
-    "sourceUrl": "https://files.eric.ed.gov/fulltext/ED353205.pdf"
-  },
-  {
-    "id": "sw-kenya-capital",
-    "language": "sw",
-    "prompt": "Mji mkuu wa Kenya ni upi?",
-    "options": ["Nairobi", "Mombasa", "Kisumu", "Nakuru"],
+    "difficulty": "medium",
+    "prompt": "Rain falls on opposite sides of a ridge. One side drains to River A and the other to River B. What is the ridge acting as?",
+    "options": ["A watershed divide", "A river delta", "An aquifer outlet", "A floodplain"],
     "correctOptionIndex": 0,
-    "explanation": "Nairobi ndiyo mji mkuu wa Kenya.",
-    "sourceUrl": "https://www.britannica.com/place/Nairobi"
+    "explanation": "High ground can separate neighboring watersheds, directing runoff into different drainage systems.",
+    "sourceUrl": "https://www.usgs.gov/water-science-school/science/watersheds-and-drainage-basins"
   },
   {
-    "id": "sw-africa-mountain",
-    "language": "sw",
-    "prompt": "Mlima mrefu zaidi barani Afrika ni upi?",
-    "options": ["Mlima Kenya", "Kilimanjaro", "Mlima Elgon", "Mlima Meru"],
-    "correctOptionIndex": 1,
-    "explanation": "Kilimanjaro, nchini Tanzania, ndiyo kilele kirefu zaidi barani Afrika.",
-    "sourceUrl": "https://www.britannica.com/place/Mount-Kilimanjaro"
+    "id": "en-neap-tides",
+    "language": "en",
+    "difficulty": "medium",
+    "prompt": "If the Sun and Moon pull ocean tides from roughly perpendicular directions, what tide pattern is expected?",
+    "options": [
+      "A smaller tidal range, called a neap tide",
+      "The largest possible tidal range",
+      "No tides anywhere on Earth",
+      "A tide that occurs only in rivers"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Around first and third quarter Moon, the solar and lunar tidal effects partly offset, producing a smaller range called a neap tide.",
+    "sourceUrl": "https://oceanservice.noaa.gov/facts/springtide.html"
   },
   {
-    "id": "sw-largest-ocean",
+    "id": "en-noon-shadow",
+    "language": "en",
+    "difficulty": "medium",
+    "prompt": "At local noon, a vertical stick casts a shorter shadow in June than in December. What does this most directly indicate?",
+    "options": [
+      "The Sun is higher in the sky at noon in June",
+      "Earth is closer to the Sun at every June noon",
+      "The stick has shrunk",
+      "The day has exactly 12 hours in June"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A higher Sun angle makes a vertical object's noon shadow shorter. The seasonal change is driven mainly by Earth's axial tilt.",
+    "sourceUrl": "https://science.nasa.gov/earth/facts/"
+  },
+  {
+    "id": "sw-ngeli-agreement",
     "language": "sw",
-    "prompt": "Bahari kubwa zaidi duniani ni ipi?",
-    "options": ["Bahari ya Atlantiki", "Bahari ya Hindi", "Bahari ya Pasifiki", "Bahari ya Aktiki"],
-    "correctOptionIndex": 2,
-    "explanation": "Bahari ya Pasifiki ndiyo bonde kubwa na lenye kina kirefu zaidi duniani.",
-    "sourceUrl": "https://oceanexplorer.noaa.gov/ocean-fact/pacific-size/"
+    "difficulty": "medium",
+    "prompt": "Chagua sentensi yenye upatanisho sahihi wa ngeli: (Choose the sentence with correct noun-class agreement.)",
+    "options": [
+      "Kitabu hiki ni kizuri.",
+      "Kitabu huyu ni mzuri.",
+      "Kitabu hii ni nzuri.",
+      "Kitabu hawa ni wazuri."
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Katika ngeli ya ki-/vi-, nomino ya umoja kitabu huandamana na viashiria na vivumishi kama hiki na kizuri.",
+    "sourceUrl": "https://kiswahili.ku.edu/lessons"
+  },
+  {
+    "id": "en-moon-phase-shadow",
+    "language": "en",
+    "difficulty": "challenging",
+    "prompt": "A student says a crescent Moon is caused by Earth's shadow. Which observation best disproves that explanation?",
+    "options": [
+      "The crescent appears in many parts of the sky during a month, not only during eclipses",
+      "The Moon is visible at night",
+      "The Moon has craters",
+      "The Sun rises in the east"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Earth's shadow causes a lunar eclipse, which is occasional. Ordinary phases come from our changing view of the Moon's sunlit half.",
+    "sourceUrl": "https://science.nasa.gov/moon/moon-phases/"
+  },
+  {
+    "id": "en-wind-coast-night",
+    "language": "en",
+    "difficulty": "challenging",
+    "prompt": "A daytime sea breeze blows inland. After sunset, the land cools faster than the water. Which reversal is most likely?",
+    "options": [
+      "A land breeze flows from land toward sea",
+      "The sea breeze strengthens because land is colder",
+      "Wind stops because water no longer evaporates",
+      "A river breeze replaces all coastal winds"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "At night, relatively warmer air rises over the water and cooler air moves from land toward the sea, reversing the local circulation.",
+    "sourceUrl": "https://www.noaa.gov/jetstream/ocean/sea-breeze"
+  },
+  {
+    "id": "en-watershed-pollution",
+    "language": "en",
+    "difficulty": "challenging",
+    "prompt": "A factory spills a pollutant into a small tributary. Which downstream area is most at risk first?",
+    "options": [
+      "The connected river system below the tributary's confluence",
+      "Every watershed on the continent equally",
+      "Only groundwater uphill from the spill",
+      "The ocean floor directly beneath the factory"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Surface water in a watershed flows toward connected channels and a shared outlet, carrying contaminants downstream.",
+    "sourceUrl": "https://www.usgs.gov/water-science-school/science/watersheds-and-drainage-basins"
+  },
+  {
+    "id": "en-eclipse-alignment",
+    "language": "en",
+    "difficulty": "challenging",
+    "prompt": "Why is there not a solar eclipse at every new Moon?",
+    "options": [
+      "The Moon's orbit is tilted, so the three bodies usually do not line up precisely",
+      "The Moon produces its own light at new Moon",
+      "Earth is always between the Sun and Moon at new Moon",
+      "Solar eclipses require a full Moon"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The Moon's orbital plane is tilted relative to Earth's orbit, so most new Moons pass above or below the Sun from our viewpoint.",
+    "sourceUrl": "https://science.nasa.gov/eclipses/"
+  },
+  {
+    "id": "en-tide-range",
+    "language": "en",
+    "difficulty": "challenging",
+    "prompt": "A coastal station records a much larger difference between high and low water twice a month. Which explanation fits best?",
+    "options": [
+      "Sun and Moon are aligned near new or full Moon",
+      "Earth's rotation pauses twice monthly",
+      "The Moon is always closest to Earth at those times",
+      "Winds stop blowing over the ocean"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Spring tides occur around new and full Moon when solar and lunar tidal effects reinforce each other, increasing the tidal range.",
+    "sourceUrl": "https://oceanservice.noaa.gov/facts/springtide.html"
+  },
+  {
+    "id": "en-plant-transpiration",
+    "language": "en",
+    "difficulty": "challenging",
+    "prompt": "A watershed loses tree cover. Which paired change is most plausible during heavy rain?",
+    "options": [
+      "More rapid surface runoff and less water returned to air by transpiration",
+      "Less runoff and more shade-driven evaporation",
+      "No change in runoff because trees do not affect water",
+      "More groundwater recharge in every soil type"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Vegetation intercepts rainfall and takes up water that later returns to the atmosphere through transpiration. Removing it can increase runoff, though local outcomes vary.",
+    "sourceUrl": "https://www.usgs.gov/special-topics/water-science-school/science/evapotranspiration-and-water-cycle"
+  },
+  {
+    "id": "en-season-hemisphere",
+    "language": "en",
+    "difficulty": "challenging",
+    "prompt": "When the Northern Hemisphere is tilted toward the Sun, what season is generally occurring in the Southern Hemisphere?",
+    "options": [
+      "Winter, because it is tilted away from the Sun",
+      "Summer, because both hemispheres share the same tilt",
+      "Spring, because Earth is closest to the Sun",
+      "The same season, but with shorter days"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The hemispheres have opposite seasons because when one tilts toward the Sun, the other tilts away and receives less direct sunlight and shorter days.",
+    "sourceUrl": "https://science.nasa.gov/earth/facts/"
+  },
+  {
+    "id": "sw-wakati-kiisha",
+    "language": "sw",
+    "difficulty": "challenging",
+    "prompt": "Katika sentensi “Tukimaliza kazi, tutapumzika,” kitendo cha kupumzika kitatokea lini? (When will the resting happen?)",
+    "options": [
+      "Baada ya kumaliza kazi",
+      "Kabla ya kuanza kazi",
+      "Wakati kazi ilipomalizika jana",
+      "Hakitatokea"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Kiambishi -ki- kinaonyesha hali au sharti linalohusiana na wakati ujao hapa: tukimaliza, tutapumzika.",
+    "sourceUrl": "https://kiswahili.ku.edu/lessons"
+  },
+  {
+    "id": "sw-ngeli-viatu",
+    "language": "sw",
+    "difficulty": "challenging",
+    "prompt": "Ni sentensi ipi inayokubaliana na ngeli ya ki-/vi-? (Which sentence agrees with the ki-/vi- noun class?)",
+    "options": [
+      "Viatu hivi vipya vimekauka.",
+      "Viatu hii kipya kimekauka.",
+      "Viatu hawa wapya wamekauka.",
+      "Viatu hiki kipya kimekauka."
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Viatu ni wingi wa kiatu katika ngeli ya ki-/vi-. Viashiria na vitenzi vya wingi huchukua upatanisho wa vi-.",
+    "sourceUrl": "https://kiswahili.ku.edu/lessons"
+  },
+  {
+    "id": "sw-kauli-ikiwa",
+    "language": "sw",
+    "difficulty": "challenging",
+    "prompt": "“Ikiwa mvua itanyesha, tutabaki nyumbani.” Ni jambo gani ni sharti la kubaki nyumbani? (What is the condition?)",
+    "options": ["Mvua kunyesha", "Jua kuchomoza", "Kumaliza chakula", "Kufika kesho"],
+    "correctOptionIndex": 0,
+    "explanation": "Neno ikiwa linaanzisha sharti; mvua ikinyesha, hatua inayofuata ni kubaki nyumbani.",
+    "sourceUrl": "https://kiswahili.ku.edu/lessons"
+  },
+  {
+    "id": "en-tide-neap-calendar",
+    "language": "en",
+    "difficulty": "hard",
+    "prompt": "A tide chart shows smaller-than-usual high-to-low differences near first-quarter Moon. Which geometry best explains it?",
+    "options": [
+      "The Sun and Moon pull at roughly right angles, partly offsetting tidal effects",
+      "The Moon is between Earth and Sun, strengthening the combined pull",
+      "The Moon is at perigee and stops raising tides",
+      "Earth's axis points directly at the Moon"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Around quarter phases, solar and lunar tidal influences act in different directions and partly offset, creating neap tides.",
+    "sourceUrl": "https://oceanservice.noaa.gov/facts/springtide.html"
+  },
+  {
+    "id": "en-stream-order",
+    "language": "en",
+    "difficulty": "hard",
+    "prompt": "Two tributaries join, and the combined river carries more runoff downstream. Which watershed principle best accounts for this?",
+    "options": [
+      "Upstream drainage areas contribute water to a shared downstream channel",
+      "Water flows uphill after tributaries meet",
+      "The river creates new rainfall at the confluence",
+      "A watershed ends wherever two streams meet"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A drainage network gathers runoff from connected upstream areas and channels it toward a common outlet.",
+    "sourceUrl": "https://www.usgs.gov/water-science-school/science/watersheds-and-drainage-basins"
+  },
+  {
+    "id": "en-axial-seasons-distance",
+    "language": "en",
+    "difficulty": "hard",
+    "prompt": "Earth is slightly nearer the Sun during Northern Hemisphere winter than summer. Why does this not make January summer there?",
+    "options": [
+      "Axial tilt changes sunlight angle and day length far more for the seasons",
+      "The Sun gives less energy in January",
+      "Earth's orbit reverses direction in January",
+      "Distance from the Sun has no effect on any planet"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Earth's axial tilt is the primary cause of seasons. It changes directness of sunlight and daylight duration in each hemisphere.",
+    "sourceUrl": "https://science.nasa.gov/earth/facts/"
+  },
+  {
+    "id": "en-cloudburst-watershed",
+    "language": "en",
+    "difficulty": "hard",
+    "prompt": "Two towns get equal rainfall. Town A has steep slopes and paved surfaces; Town B has forest and permeable soil. Which is more likely to see a faster runoff peak?",
+    "options": [
+      "Town A, because water runs off quickly with less infiltration",
+      "Town B, because trees prevent infiltration",
+      "Both always peak at exactly the same time",
+      "Town A, because pavement absorbs more water"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Impervious surfaces and steep slopes tend to speed runoff and reduce infiltration, often producing a quicker flood peak. Local drainage also matters.",
+    "sourceUrl": "https://www.usgs.gov/water-science-school/science/watersheds-and-drainage-basins"
+  },
+  {
+    "id": "en-eclipse-shadow-path",
+    "language": "en",
+    "difficulty": "hard",
+    "prompt": "During a total solar eclipse, only a narrow path on Earth sees totality. What does that tell us about the Moon's shadow?",
+    "options": [
+      "Its darkest central part covers only a limited area on Earth's surface",
+      "It covers the whole night side of Earth",
+      "It is larger than Earth's shadow in every direction",
+      "It is caused by Earth's atmosphere"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The Moon's umbra reaches only a narrow path across Earth; observers outside it may see a partial eclipse or none.",
+    "sourceUrl": "https://science.nasa.gov/eclipses/"
+  },
+  {
+    "id": "en-soil-infiltration",
+    "language": "en",
+    "difficulty": "hard",
+    "prompt": "After a forest is replaced by compacted parking lots, a nearby stream floods sooner after storms. Which chain is most plausible?",
+    "options": [
+      "Less infiltration, more quick runoff, faster stream rise",
+      "More infiltration, less runoff, faster stream rise",
+      "Less evaporation, no change in runoff",
+      "More groundwater storage, immediate flooding"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Compacted, impervious surfaces reduce water soaking into soil and route more rain rapidly into streams.",
+    "sourceUrl": "https://www.usgs.gov/water-science-school/science/watersheds-and-drainage-basins"
+  },
+  {
+    "id": "sw-ngeli-miti",
+    "language": "sw",
+    "difficulty": "hard",
+    "prompt": "Chagua sentensi sahihi kuhusu ngeli ya m-/mi-: (Choose the correct m-/mi- agreement.)",
+    "options": [
+      "Miti mirefu imeanguka.",
+      "Miti mrefu umeanguka.",
+      "Miti hii mrefu limeanguka.",
+      "Miti hawa warefu wameanguka."
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Miti ni wingi wa mti katika ngeli ya m-/mi-. Vivumishi na vitenzi vya wingi huonyesha upatanisho wa mi-.",
+    "sourceUrl": "https://kiswahili.ku.edu/lessons"
+  },
+  {
+    "id": "sw-wakati-amekuwa",
+    "language": "sw",
+    "difficulty": "hard",
+    "prompt": "“Asha amekuwa akisoma tangu asubuhi.” Ni maelezo gani yanayofaa zaidi? (Which interpretation fits best?)",
+    "options": [
+      "Asha alianza kusoma asubuhi na anaendelea hadi sasa",
+      "Asha atasoma kesho tu",
+      "Asha hakusoma kabisa",
+      "Asha alimaliza kusoma kabla ya asubuhi"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Muundo amekuwa akisoma huonyesha kitendo kilichoanza awali na kuendelea au kuwa na uhusiano na wakati wa sasa.",
+    "sourceUrl": "https://kiswahili.ku.edu/lessons"
+  },
+  {
+    "id": "sw-kiambishi-ki",
+    "language": "sw",
+    "difficulty": "hard",
+    "prompt": "Katika “Walipofika, mkutano ulikuwa umeanza,” ni tukio gani lilitokea kwanza? (Which event happened first?)",
+    "options": ["Mkutano kuanza", "Wao kufika", "Mkutano kuisha", "Wao kuondoka"],
+    "correctOptionIndex": 0,
+    "explanation": "Ulikuwa umeanza huonyesha kuwa mkutano tayari ulikuwa umeanza kabla hawajafika.",
+    "sourceUrl": "https://kiswahili.ku.edu/lessons"
+  },
+  {
+    "id": "sw-kanusha-walikwenda",
+    "language": "sw",
+    "difficulty": "hard",
+    "prompt": "Sentensi “Wanafunzi walikwenda” ikikanushwa katika wakati uliopita huwa ipi? (How is it negated in the past tense?)",
+    "options": [
+      "Wanafunzi hawakwenda.",
+      "Wanafunzi si walikwenda.",
+      "Wanafunzi hawakwendi jana.",
+      "Wanafunzi hatakwenda."
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Katika ukanushi wa wakati uliopita, kiambishi cha nafsi wingi huungana na ha- na umbo la kitenzi lisilo na kiambishi -li-: hawakwenda.",
+    "sourceUrl": "https://kiswahili.ku.edu/lessons"
+  },
+  {
+    "id": "en-river-floodplain",
+    "language": "en",
+    "difficulty": "very_hard",
+    "prompt": "A river's peak flow arrives earlier after a watershed is urbanized, even though total rainfall is unchanged. Which mechanism best explains the timing?",
+    "options": [
+      "Paved surfaces and drains route water to channels faster than soil and vegetation do",
+      "Urban areas reduce the river's length",
+      "Concrete increases rainfall over the whole watershed",
+      "The river flows upstream during storms"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Impervious surfaces and storm drains reduce infiltration and shorten the travel time for runoff, bringing the hydrograph peak earlier.",
+    "sourceUrl": "https://www.usgs.gov/water-science-school/science/watersheds-and-drainage-basins"
+  },
+  {
+    "id": "en-tide-spring-name",
+    "language": "en",
+    "difficulty": "very_hard",
+    "prompt": "Spring tides can occur in any season. Why is “spring” in the name not a reference to the season?",
+    "options": [
+      "It refers to the tide's unusually large range, not the time of year",
+      "They occur only during spring months",
+      "They happen when rivers flow fastest",
+      "They are caused by spring rainfall"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Spring tide describes water that springs to a larger range around new and full Moon; it is unrelated to the spring season.",
+    "sourceUrl": "https://oceanservice.noaa.gov/facts/springtide.html"
+  },
+  {
+    "id": "en-axis-polar-day",
+    "language": "en",
+    "difficulty": "very_hard",
+    "prompt": "At a high latitude, a place has continuous daylight near one solstice and continuous darkness near the other. Which explanation accounts for both?",
+    "options": [
+      "Earth's tilted axis keeps that region facing toward or away from the Sun during its daily rotation",
+      "The Sun circles Earth once every 24 hours",
+      "The Moon blocks sunlight for half the year",
+      "Earth stops rotating at the poles"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Because Earth's axis is tilted, high-latitude regions can remain inside or outside the illuminated half of Earth for a full rotation near a solstice.",
+    "sourceUrl": "https://science.nasa.gov/earth/facts/"
+  },
+  {
+    "id": "en-eclipse-lunar-geometry",
+    "language": "en",
+    "difficulty": "very_hard",
+    "prompt": "A lunar eclipse can be seen from much of Earth's night side, while total solar eclipse is confined to a narrow track. What best explains the difference?",
+    "options": [
+      "Earth's shadow is much larger at the Moon than the Moon's shadow is on Earth",
+      "A lunar eclipse happens only in the daytime",
+      "The Moon is closer to Earth during every lunar eclipse",
+      "Solar eclipses do not involve shadows"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Earth is much larger than the Moon, so its shadow at the Moon is broad; the Moon's umbra projected onto Earth is comparatively narrow.",
+    "sourceUrl": "https://science.nasa.gov/eclipses/"
+  },
+  {
+    "id": "en-stream-gauge-inference",
+    "language": "en",
+    "difficulty": "very_hard",
+    "prompt": "A stream gauge rises hours after rain stops. The watershed has steep slopes but deep, permeable soil. Which explanation is strongest?",
+    "options": [
+      "Stored water may move through soil and tributaries before reaching the gauge",
+      "The gauge must be measuring tides",
+      "Rainfall cannot affect streams after it ends",
+      "Steep slopes prevent any delayed flow"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Runoff and subsurface flow take time to travel through a drainage basin, so stream response can lag behind rainfall.",
+    "sourceUrl": "https://www.usgs.gov/educational-resources/rollin-down-river"
+  },
+  {
+    "id": "en-seasons-two-hemispheres",
+    "language": "en",
+    "difficulty": "very_hard",
+    "prompt": "If Earth's axis were not tilted, which seasonal pattern would most likely disappear?",
+    "options": [
+      "The large annual shift in sun angle and daylight length that drives familiar seasons",
+      "Earth's daily rotation",
+      "The Moon's monthly phases",
+      "The cycle of day and night"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Without axial tilt, the annual changes in sun angle and daylight length would be greatly reduced, so familiar seasons would not occur as they do now.",
+    "sourceUrl": "https://science.nasa.gov/earth/facts/"
+  },
+  {
+    "id": "sw-ngeli-mikono",
+    "language": "sw",
+    "difficulty": "very_hard",
+    "prompt": "Chagua sentensi yenye upatanisho sahihi: (Choose the sentence with correct agreement.)",
+    "options": [
+      "Mikono yake imechoka.",
+      "Mikono yake amechoka.",
+      "Mikono yake zimechoka.",
+      "Mikono yake wamechoka."
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Mkono ni nomino ya ngeli ya m-/mi-. Wingi mikono huchukua upatanisho wa mi- katika kitenzi: imechoka.",
+    "sourceUrl": "https://kiswahili.ku.edu/lessons"
+  },
+  {
+    "id": "sw-ki-conditional",
+    "language": "sw",
+    "difficulty": "very_hard",
+    "prompt": "“Angalijua habari, angelifika mapema.” Ni hitimisho gani linafuata? (What follows from the sentence?)",
+    "options": [
+      "Hakujua habari, kwa hiyo hakufika mapema",
+      "Alijua habari na akafika mapema",
+      "Atajua habari kesho",
+      "Kufika mapema kulisababisha asijue habari"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Muundo angali-/ange- unaonyesha hali ya kudhaniwa ambayo haikutokea: kama angejua, angefika; maana yake hakujua na hakufika mapema.",
+    "sourceUrl": "https://kiswahili.ku.edu/lessons"
+  },
+  {
+    "id": "sw-ngeli-maji",
+    "language": "sw",
+    "difficulty": "very_hard",
+    "prompt": "Chagua sentensi inayotumia upatanisho unaofaa kwa “maji”: (Choose the sentence with appropriate agreement for “water”.)",
+    "options": [
+      "Maji haya yamechemka.",
+      "Maji huu umechemka.",
+      "Maji hii imechemka.",
+      "Maji hawa wamechemka."
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Maji hutumia upatanisho wa wingi wa ngeli ya ji-/ma- katika mfano huu: haya yamechemka.",
+    "sourceUrl": "https://kiswahili.ku.edu/lessons"
+  },
+  {
+    "id": "sw-kiambishi-ngelikuwa",
+    "language": "sw",
+    "difficulty": "very_hard",
+    "prompt": "“Ningekuwa na muda, ningekusaidia.” Msemaji anaashiria nini? (What does the speaker imply?)",
+    "options": [
+      "Hana muda kwa sasa, kwa hiyo hawezi kusaidia",
+      "Ana muda na tayari anasaidia",
+      "Atapata muda baada ya kusaidia",
+      "Msaada hauhitaji muda"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Muundo ningekuwa... ningekusaidia unaonyesha hali ya kudhaniwa; muktadha unaashiria kuwa sharti la kuwa na muda halijatimia.",
+    "sourceUrl": "https://kiswahili.ku.edu/lessons"
   }
 ]

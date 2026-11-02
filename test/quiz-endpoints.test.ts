@@ -3,15 +3,32 @@ import { env } from 'cloudflare:workers';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { type QuizState, QuizStateSchema } from '../src/shared/schemas/quiz';
 import worker from '../src/worker';
+import { QuizRepository } from '../src/worker/db/queries/quiz-repository';
 import { getNairobiDay } from '../src/worker/lib/game/day';
-import { correctOptionId, questionById } from '../src/worker/lib/quiz/question-bank';
+import { ensureDailyQuiz } from '../src/worker/lib/quiz/daily-quiz';
+import {
+  correctOptionId,
+  questionById,
+  selectDailyQuestionIds,
+} from '../src/worker/lib/quiz/question-bank';
 
 const testEnv = Object.assign(env, {
   COOKIE_SIGNING_SECRET: 'test-only-signing-secret-is-long-enough-for-zod',
 });
 
-async function request(path: string, init: RequestInit = {}): Promise<Response> {
+async function request(
+  path: string,
+  init: RequestInit = {},
+  includeBrowserOrigin = true,
+): Promise<Response> {
   const headers = new Headers(init.headers);
+  if (
+    includeBrowserOrigin &&
+    ['POST', 'PATCH', 'PUT', 'DELETE'].includes((init.method ?? 'GET').toUpperCase()) &&
+    !headers.has('Origin')
+  ) {
+    headers.set('Origin', 'http://localhost:5173');
+  }
   if (!headers.has('CF-Connecting-IP')) {
     headers.set('CF-Connecting-IP', `test-${crypto.randomUUID()}`);
   }
@@ -60,10 +77,33 @@ async function resetDatabase(): Promise<void> {
     testEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS daily_quizzes (
       day TEXT PRIMARY KEY NOT NULL,
       question_ids TEXT NOT NULL,
+      question_set_key TEXT,
       question_set_version TEXT NOT NULL,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )`),
+    testEnv.DB.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS daily_quizzes_question_set_key_unique
+      ON daily_quizzes(question_set_key) WHERE question_set_key IS NOT NULL`),
+    testEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS players (
+      id TEXT PRIMARY KEY NOT NULL,
+      display_name TEXT NOT NULL,
+      recovery_code_hash TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )`),
+    testEnv.DB.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS players_recovery_code_hash_unique
+      ON players(recovery_code_hash)`),
+    testEnv.DB.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS players_display_name_unique
+      ON players(lower(display_name))`),
+    testEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS player_recovery_rate_limits (
+      address_hash TEXT PRIMARY KEY NOT NULL,
+      window_started_at INTEGER NOT NULL,
+      hit_count INTEGER NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )`),
+    testEnv.DB.prepare(`CREATE INDEX IF NOT EXISTS player_recovery_rate_limits_window_index
+      ON player_recovery_rate_limits(window_started_at)`),
     testEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS quiz_sessions (
       day TEXT NOT NULL,
       player_id TEXT NOT NULL,
@@ -98,6 +138,8 @@ async function resetDatabase(): Promise<void> {
     testEnv.DB.prepare('DELETE FROM quiz_answers'),
     testEnv.DB.prepare('DELETE FROM quiz_sessions'),
     testEnv.DB.prepare('DELETE FROM daily_quizzes'),
+    testEnv.DB.prepare('DELETE FROM players'),
+    testEnv.DB.prepare('DELETE FROM player_recovery_rate_limits'),
   ]);
 }
 
@@ -106,6 +148,262 @@ beforeEach(async () => {
 });
 
 describe('daily quiz routes', () => {
+  it('creates a unique recoverable identity and restores it in another browser', async () => {
+    const firstResponse = await request('/api/player');
+    const firstProfile = (await firstResponse.json()) as {
+      playerId: string;
+      displayName: string;
+      recoveryCode: string;
+    };
+    const firstCookie = cookieFrom(firstResponse);
+    const secondResponse = await request('/api/player');
+    const secondProfile = (await secondResponse.json()) as { playerId: string };
+    expect(firstResponse.status).toBe(200);
+    expect(firstProfile.playerId).toMatch(/^[0-9a-f-]{36}$/i);
+    expect(firstProfile.recoveryCode).toMatch(/^(?:[A-F0-9]{5}-){7}[A-F0-9]{5}$/);
+    expect(secondProfile.playerId).not.toBe(firstProfile.playerId);
+
+    const recovered = await request('/api/player/recover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: cookieFrom(secondResponse) },
+      body: JSON.stringify({ recoveryCode: firstProfile.recoveryCode }),
+    });
+    const recoveredProfile = (await recovered.json()) as { playerId: string };
+    expect(recovered.status).toBe(200);
+    expect(recoveredProfile.playerId).toBe(firstProfile.playerId);
+    expect(cookieFrom(recovered).split('=')[1]?.split('.')[0]).toBe(
+      firstCookie.split('=')[1]?.split('.')[0],
+    );
+    const stored = await testEnv.DB.prepare('SELECT recovery_code_hash FROM players WHERE id = ?')
+      .bind(firstProfile.playerId)
+      .first<{ recovery_code_hash: string }>();
+    expect(stored?.recovery_code_hash).not.toBe(firstProfile.recoveryCode);
+  });
+
+  it('returns recovery codes only on creation or rotation and invalidates the previous code', async () => {
+    const initial = await request('/api/player');
+    const cookie = cookieFrom(initial);
+    const original = (await initial.json()) as { recoveryCode: string };
+    const nextProfile = await request('/api/player', { headers: { Cookie: cookie } });
+    expect(nextProfile.status).toBe(200);
+    expect(nextProfile.headers.get('Set-Cookie')).toBeNull();
+    expect(((await nextProfile.json()) as { recoveryCode?: string }).recoveryCode).toBeUndefined();
+
+    const rotated = await request('/api/player/recovery-code', {
+      method: 'POST',
+      headers: { Cookie: cookie },
+    });
+    const next = (await rotated.json()) as { recoveryCode: string };
+    const rejected = await request('/api/player/recover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recoveryCode: original.recoveryCode }),
+    });
+    const accepted = await request('/api/player/recover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recoveryCode: next.recoveryCode }),
+    });
+    expect(rotated.status).toBe(200);
+    expect(rejected.status).toBe(404);
+    expect(accepted.status).toBe(200);
+  });
+
+  it('validates and updates unique display names', async () => {
+    const firstCookie = cookieFrom(await request('/api/player'));
+    const secondCookie = cookieFrom(await request('/api/player'));
+    const first = await request('/api/player/name', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Cookie: firstCookie },
+      body: JSON.stringify({ displayName: 'Ada Lovelace' }),
+    });
+    const conflict = await request('/api/player/name', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Cookie: secondCookie },
+      body: JSON.stringify({ displayName: 'ada lovelace' }),
+    });
+    const invalid = await request('/api/player/name', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Cookie: firstCookie },
+      body: JSON.stringify({ displayName: 'x'.repeat(40) }),
+    });
+    expect(first.status).toBe(200);
+    expect(conflict.status).toBe(409);
+    expect(invalid.status).toBe(400);
+
+    const thirdCookie = cookieFrom(await request('/api/player'));
+    const fourthCookie = cookieFrom(await request('/api/player'));
+    const concurrent = await Promise.all(
+      [thirdCookie, fourthCookie].map((cookie) =>
+        request('/api/player/name', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Cookie: cookie },
+          body: JSON.stringify({ displayName: 'Concurrent Name' }),
+        }),
+      ),
+    );
+    expect(concurrent.map((response) => response.status).sort()).toEqual([200, 409]);
+  });
+
+  it('returns only the signed-in player completed history', async () => {
+    const profileResponse = await request('/api/player');
+    const profile = (await profileResponse.json()) as { playerId: string };
+    const cookie = cookieFrom(profileResponse);
+    const otherResponse = await request('/api/player');
+    const otherProfile = (await otherResponse.json()) as { playerId: string };
+    const now = new Date().toISOString();
+    await testEnv.DB.batch([
+      testEnv.DB.prepare(`INSERT INTO quiz_sessions
+        (day, player_id, started_at, score, correct_count, completed_at, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).bind(
+        '2026-11-01',
+        profile.playerId,
+        now,
+        800,
+        8,
+        now,
+        now,
+        now,
+      ),
+      testEnv.DB.prepare(`INSERT INTO quiz_sessions
+        (day, player_id, started_at, score, correct_count, completed_at, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).bind(
+        '2026-11-01',
+        otherProfile.playerId,
+        now,
+        1200,
+        10,
+        now,
+        now,
+        now,
+      ),
+    ]);
+    const response = await request('/api/player/history?limit=10', { headers: { Cookie: cookie } });
+    const history = (await response.json()) as { items: { day: string; score: number }[] };
+    const tampered = await request('/api/player/history', {
+      headers: { Cookie: `${cookie.slice(0, -1)}x` },
+    });
+    const privateHistory = (await tampered.json()) as { items: unknown[] };
+    const invalid = await request('/api/player/history?limit=1000', {
+      headers: { Cookie: cookie },
+    });
+    expect(response.status).toBe(200);
+    expect(history.items).toEqual([
+      { day: '2026-11-01', score: 800, correctCount: 8, completedAt: now },
+    ]);
+    expect(privateHistory.items).toEqual([]);
+    expect(invalid.status).toBe(400);
+  });
+
+  it('assigns different shared question sets to each day and one set under concurrent requests', async () => {
+    const repository = new QuizRepository(testEnv.DB);
+    const dayOne = await ensureDailyQuiz(repository, '2027-01-01');
+    const dayTwo = await ensureDailyQuiz(repository, '2027-01-02');
+    expect([...dayOne].sort().join(',')).not.toBe([...dayTwo].sort().join(','));
+
+    const contestedSet = selectDailyQuestionIds('fixed-contested-set');
+    await repository.assignDailyQuiz('2027-01-03', contestedSet, 'test');
+    const rejectedReuse = await repository.assignDailyQuiz('2027-01-04', contestedSet, 'test');
+    expect(rejectedReuse).toBeUndefined();
+    const freshReplacement = await ensureDailyQuiz(repository, '2027-01-04');
+    expect([...freshReplacement].sort().join(',')).not.toBe([...contestedSet].sort().join(','));
+
+    const sameDay = await Promise.all([
+      ensureDailyQuiz(repository, '2027-01-05'),
+      ensureDailyQuiz(repository, '2027-01-05'),
+    ]);
+    expect(sameDay[0]).toEqual(sameDay[1]);
+    const uniqueKeys = await testEnv.DB.prepare(
+      'SELECT COUNT(DISTINCT question_set_key) AS total FROM daily_quizzes',
+    ).first<{ total: number }>();
+    expect(uniqueKeys?.total).toBe(5);
+  });
+
+  it('allows the display-name PATCH method through the configured CORS policy', async () => {
+    const response = await request('/api/player/name', {
+      method: 'OPTIONS',
+      headers: {
+        Origin: 'http://localhost:5173',
+        'Access-Control-Request-Method': 'PATCH',
+        'Access-Control-Request-Headers': 'content-type',
+      },
+    });
+    expect(response.headers.get('Access-Control-Allow-Methods')).toContain('PATCH');
+  });
+
+  it('rejects mutating requests without the allowed browser origin', async () => {
+    const missing = await request(
+      '/api/player/recover',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recoveryCode: 'A'.repeat(40) }),
+      },
+      false,
+    );
+    const foreign = await request('/api/player/recover', {
+      method: 'POST',
+      headers: {
+        Origin: 'https://attacker.invalid',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ recoveryCode: 'A'.repeat(40) }),
+    });
+    expect(missing.status).toBe(403);
+    expect(foreign.status).toBe(403);
+  });
+
+  it('limits repeated recovery attempts by client address', async () => {
+    const responses = await Promise.all(
+      Array.from({ length: 6 }, (_, index) =>
+        request('/api/player/recover', {
+          method: 'POST',
+          headers: {
+            'CF-Connecting-IP': '192.0.2.19',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            recoveryCode: `${String(index).padStart(5, '0')}${'A'.repeat(35)}`,
+          }),
+        }),
+      ),
+    );
+    expect(responses.map((response) => response.status).sort()).toEqual([
+      404, 404, 404, 404, 404, 429,
+    ]);
+    expect(responses.find((response) => response.status === 429)?.headers.get('Retry-After')).toBe(
+      '900',
+    );
+    await testEnv.DB.prepare(
+      'UPDATE player_recovery_rate_limits SET window_started_at = ? WHERE hit_count > 0',
+    )
+      .bind(Math.floor(Date.now() / 1000) - 901)
+      .run();
+    const afterWindow = await request('/api/player/recover', {
+      method: 'POST',
+      headers: {
+        'CF-Connecting-IP': '192.0.2.19',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ recoveryCode: `${'B'.repeat(40)}` }),
+    });
+    expect(afterWindow.status).toBe(404);
+  });
+
+  it('allows same-origin development writes when Vite selects a fallback port', async () => {
+    const profileResponse = await request('/api/player');
+    const response = await request('/api/player/name', {
+      method: 'PATCH',
+      headers: {
+        Origin: 'http://localhost',
+        Cookie: cookieFrom(profileResponse),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ displayName: 'Local Player' }),
+    });
+    expect(response.status).toBe(200);
+  });
+
   it('creates an anonymous player and sends only the current question', async () => {
     const { response, state } = await getQuiz();
     expect(response.status).toBe(200);
@@ -113,6 +411,7 @@ describe('daily quiz routes', () => {
     expect(response.headers.get('Set-Cookie')).toContain('Secure');
     expect(response.headers.get('Set-Cookie')).toContain('SameSite=Lax');
     expect(state.currentQuestion).toBeDefined();
+    expect(state.currentQuestion?.difficulty).toBe('medium');
     expect(state.currentQuestion).not.toHaveProperty('correctOptionId');
     expect(state.currentQuestion).not.toHaveProperty('explanation');
     expect(state.currentQuestion).not.toHaveProperty('sourceUrl');
@@ -134,6 +433,39 @@ describe('daily quiz routes', () => {
     expect(first.state.currentQuestion?.id).toBe(second.state.currentQuestion?.id);
     expect(assignment).toBeDefined();
     expect(JSON.parse(assignment?.question_ids ?? '[]')).toHaveLength(10);
+  });
+
+  it('resumes a persisted v1 assignment using the compatibility question bank', async () => {
+    const day = getNairobiDay(new Date());
+    const legacyIds = [
+      'en-red-planet',
+      'en-water-formula',
+      'en-earth-satellite',
+      'en-largest-animal',
+      'en-heart-chambers',
+      'en-nearest-star',
+      'en-african-un-members',
+      'en-plant-gas',
+      'en-jupiter-day',
+      'en-saturn-rings',
+    ];
+    await testEnv.DB.prepare(
+      'INSERT INTO daily_quizzes (day, question_ids, question_set_version, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+    )
+      .bind(
+        day,
+        JSON.stringify(legacyIds),
+        'v1',
+        new Date().toISOString(),
+        new Date().toISOString(),
+      )
+      .run();
+
+    const { response, state } = await getQuiz();
+    expect(response.status).toBe(200);
+    expect(state.currentQuestion?.id).toBe('en-red-planet');
+    expect(state.currentQuestion?.difficulty).toBe('medium');
+    expect(state.currentQuestion).not.toHaveProperty('correctOptionIndex');
   });
 
   it('rejects invalid payloads before recording an answer', async () => {

@@ -9,6 +9,33 @@ import {
   uniqueIndex,
 } from 'drizzle-orm/sqlite-core';
 
+export const players = sqliteTable(
+  'players',
+  {
+    id: text('id').primaryKey(),
+    displayName: text('display_name').notNull(),
+    recoveryCodeHash: text('recovery_code_hash').notNull(),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (table) => [
+    uniqueIndex('players_recovery_code_hash_unique').on(table.recoveryCodeHash),
+    uniqueIndex('players_display_name_unique').on(sql`lower(${table.displayName})`),
+  ],
+);
+
+export const playerRecoveryRateLimits = sqliteTable(
+  'player_recovery_rate_limits',
+  {
+    addressHash: text('address_hash').primaryKey(),
+    windowStartedAt: integer('window_started_at').notNull(),
+    hitCount: integer('hit_count').notNull(),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (table) => [index('player_recovery_rate_limits_window_index').on(table.windowStartedAt)],
+);
+
 export const answerPool = sqliteTable('answer_pool', {
   word: text('word').primaryKey(),
 });
@@ -51,13 +78,22 @@ export const guesses = sqliteTable(
   ],
 );
 
-export const dailyQuizzes = sqliteTable('daily_quizzes', {
-  day: text('day').primaryKey(),
-  questionIds: text('question_ids').notNull(),
-  questionSetVersion: text('question_set_version').notNull(),
-  createdAt: text('created_at').notNull(),
-  updatedAt: text('updated_at').notNull(),
-});
+export const dailyQuizzes = sqliteTable(
+  'daily_quizzes',
+  {
+    day: text('day').primaryKey(),
+    questionIds: text('question_ids').notNull(),
+    questionSetKey: text('question_set_key'),
+    questionSetVersion: text('question_set_version').notNull(),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (table) => [
+    uniqueIndex('daily_quizzes_question_set_key_unique')
+      .on(table.questionSetKey)
+      .where(sql`${table.questionSetKey} IS NOT NULL`),
+  ],
+);
 
 export const quizSessions = sqliteTable(
   'quiz_sessions',

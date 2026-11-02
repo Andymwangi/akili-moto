@@ -1,0 +1,202 @@
+[
+  {
+    "id": "en-red-planet",
+    "language": "en",
+    "prompt": "Which planet is often called the Red Planet?",
+    "options": ["Venus", "Mars", "Jupiter", "Mercury"],
+    "correctOptionIndex": 1,
+    "explanation": "Iron minerals in Martian soil oxidize, giving the surface its reddish appearance.",
+    "sourceUrl": "https://science.nasa.gov/mars/facts/",
+    "difficulty": "medium"
+  },
+  {
+    "id": "en-water-formula",
+    "language": "en",
+    "prompt": "Which chemical formula represents water?",
+    "options": ["CO2", "O2", "H2O", "NaCl"],
+    "correctOptionIndex": 2,
+    "explanation": "A water molecule contains two hydrogen atoms and one oxygen atom.",
+    "sourceUrl": "https://water.usgs.gov/edu/watercycle-kids-adv.html",
+    "difficulty": "medium"
+  },
+  {
+    "id": "en-earth-satellite",
+    "language": "en",
+    "prompt": "What is Earth\u0027s natural satellite?",
+    "options": ["Mars", "The Moon", "Venus", "The Sun"],
+    "correctOptionIndex": 1,
+    "explanation": "The Moon is Earth\u0027s natural satellite and orbits our planet.",
+    "sourceUrl": "https://science.nasa.gov/moon/top-moon-questions/",
+    "difficulty": "medium"
+  },
+  {
+    "id": "en-largest-animal",
+    "language": "en",
+    "prompt": "What is the largest animal known to live on Earth?",
+    "options": ["African elephant", "Blue whale", "Whale shark", "Giraffe"],
+    "correctOptionIndex": 1,
+    "explanation": "The blue whale is the largest animal on Earth and feeds mainly on krill.",
+    "sourceUrl": "https://www.fisheries.noaa.gov/species/blue-whale",
+    "difficulty": "medium"
+  },
+  {
+    "id": "en-heart-chambers",
+    "language": "en",
+    "prompt": "How many chambers does a human heart have?",
+    "options": ["Two", "Three", "Four", "Five"],
+    "correctOptionIndex": 2,
+    "explanation": "The heart has two upper chambers called atria and two lower chambers called ventricles.",
+    "sourceUrl": "https://www.nhlbi.nih.gov/health/heart/anatomy",
+    "difficulty": "medium"
+  },
+  {
+    "id": "en-nearest-star",
+    "language": "en",
+    "prompt": "Which star is closest to Earth?",
+    "options": ["Sirius", "The Sun", "Proxima Centauri", "Vega"],
+    "correctOptionIndex": 1,
+    "explanation": "The Sun is the star at the center of our solar system and the closest star to Earth.",
+    "sourceUrl": "https://science.nasa.gov/sun/facts/",
+    "difficulty": "medium"
+  },
+  {
+    "id": "en-african-un-members",
+    "language": "en",
+    "prompt": "How many African countries are members of the United Nations?",
+    "options": ["48", "50", "54", "60"],
+    "correctOptionIndex": 2,
+    "explanation": "The UN African Group has 54 member states, all of which are UN members.",
+    "sourceUrl": "https://ask.un.org/faq/22882",
+    "difficulty": "medium"
+  },
+  {
+    "id": "en-plant-gas",
+    "language": "en",
+    "prompt": "Which gas do plants absorb during photosynthesis?",
+    "options": ["Oxygen", "Carbon dioxide", "Helium", "Nitrogen"],
+    "correctOptionIndex": 1,
+    "explanation": "Plants use carbon dioxide, water, and light energy to make sugars during photosynthesis.",
+    "sourceUrl": "https://science.nasa.gov/kids/earth/what-is-the-greenhouse-effect/",
+    "difficulty": "medium"
+  },
+  {
+    "id": "en-jupiter-day",
+    "language": "en",
+    "prompt": "About how long is one day on Jupiter?",
+    "options": ["9.9 hours", "24 hours", "Seven Earth days", "12 Earth years"],
+    "correctOptionIndex": 0,
+    "explanation": "Jupiter rotates quickly. One full spin takes about 9.9 Earth hours.",
+    "sourceUrl": "https://science.nasa.gov/jupiter/jupiter-facts/",
+    "difficulty": "medium"
+  },
+  {
+    "id": "en-saturn-rings",
+    "language": "en",
+    "prompt": "Which planet is best known for its bright, broad ring system?",
+    "options": ["Mars", "Saturn", "Earth", "Mercury"],
+    "correctOptionIndex": 1,
+    "explanation": "Saturn\u0027s rings are the most extensive and prominent ring system in our solar system.",
+    "sourceUrl": "https://science.nasa.gov/saturn/facts/",
+    "difficulty": "medium"
+  },
+  {
+    "id": "en-first-planet",
+    "language": "en",
+    "prompt": "Which planet is closest to the Sun?",
+    "options": ["Venus", "Earth", "Mercury", "Mars"],
+    "correctOptionIndex": 2,
+    "explanation": "Mercury is the innermost planet in the solar system.",
+    "sourceUrl": "https://science.nasa.gov/mercury/facts/",
+    "difficulty": "medium"
+  },
+  {
+    "id": "en-planet-count",
+    "language": "en",
+    "prompt": "How many planets are in our solar system?",
+    "options": ["Seven", "Eight", "Nine", "Ten"],
+    "correctOptionIndex": 1,
+    "explanation": "The solar system has eight planets, from Mercury through Neptune.",
+    "sourceUrl": "https://science.nasa.gov/solar-system/planets/",
+    "difficulty": "medium"
+  },
+  {
+    "id": "en-hot-desert",
+    "language": "en",
+    "prompt": "What is the world\u0027s largest hot desert?",
+    "options": ["Gobi", "Sahara", "Kalahari", "Atacama"],
+    "correctOptionIndex": 1,
+    "explanation": "The Sahara is the largest hot desert; Antarctica is larger overall but is a polar desert.",
+    "sourceUrl": "https://www.britannica.com/place/Sahara-desert-Africa",
+    "difficulty": "medium"
+  },
+  {
+    "id": "en-ocean-coverage",
+    "language": "en",
+    "prompt": "About what share of Earth\u0027s surface is covered by ocean?",
+    "options": ["31%", "51%", "71%", "91%"],
+    "correctOptionIndex": 2,
+    "explanation": "The global ocean covers about 71 percent of Earth\u0027s surface.",
+    "sourceUrl": "https://oceanservice.noaa.gov/facts/oceanwater.html",
+    "difficulty": "medium"
+  },
+  {
+    "id": "sw-asante",
+    "language": "sw",
+    "prompt": "Neno “asante” lina maana gani kwa Kiingereza?",
+    "options": ["Goodbye", "Thank you", "Welcome", "Please"],
+    "correctOptionIndex": 1,
+    "explanation": "“Asante” ni njia ya kawaida ya kusema “thank you” kwa Kiswahili.",
+    "sourceUrl": "https://olrc.ku.edu/swahili-glossary",
+    "difficulty": "medium"
+  },
+  {
+    "id": "sw-jumatatu",
+    "language": "sw",
+    "prompt": "“Jumatatu” ni siku gani kwa Kiingereza?",
+    "options": ["Sunday", "Monday", "Tuesday", "Friday"],
+    "correctOptionIndex": 1,
+    "explanation": "“Jumatatu” ni jina la siku ya Monday kwa Kiswahili.",
+    "sourceUrl": "https://olrc.ku.edu/swahili-glossary",
+    "difficulty": "medium"
+  },
+  {
+    "id": "sw-nane",
+    "language": "sw",
+    "prompt": "Namba “nane” ni namba gani kwa Kiingereza?",
+    "options": ["Six", "Seven", "Eight", "Nine"],
+    "correctOptionIndex": 2,
+    "explanation": "“Nane” humaanisha eight.",
+    "sourceUrl": "https://files.eric.ed.gov/fulltext/ED353205.pdf",
+    "difficulty": "medium"
+  },
+  {
+    "id": "sw-kenya-capital",
+    "language": "sw",
+    "prompt": "Mji mkuu wa Kenya ni upi?",
+    "options": ["Nairobi", "Mombasa", "Kisumu", "Nakuru"],
+    "correctOptionIndex": 0,
+    "explanation": "Nairobi ndiyo mji mkuu wa Kenya.",
+    "sourceUrl": "https://www.britannica.com/place/Nairobi",
+    "difficulty": "medium"
+  },
+  {
+    "id": "sw-africa-mountain",
+    "language": "sw",
+    "prompt": "Mlima mrefu zaidi barani Afrika ni upi?",
+    "options": ["Mlima Kenya", "Kilimanjaro", "Mlima Elgon", "Mlima Meru"],
+    "correctOptionIndex": 1,
+    "explanation": "Kilimanjaro, nchini Tanzania, ndiyo kilele kirefu zaidi barani Afrika.",
+    "sourceUrl": "https://www.britannica.com/place/Mount-Kilimanjaro",
+    "difficulty": "medium"
+  },
+  {
+    "id": "sw-largest-ocean",
+    "language": "sw",
+    "prompt": "Bahari kubwa zaidi duniani ni ipi?",
+    "options": ["Bahari ya Atlantiki", "Bahari ya Hindi", "Bahari ya Pasifiki", "Bahari ya Aktiki"],
+    "correctOptionIndex": 2,
+    "explanation": "Bahari ya Pasifiki ndiyo bonde kubwa na lenye kina kirefu zaidi duniani.",
+    "sourceUrl": "https://oceanexplorer.noaa.gov/ocean-fact/pacific-size/",
+    "difficulty": "medium"
+  }
+]

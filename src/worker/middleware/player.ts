@@ -1,4 +1,4 @@
-import type { MiddlewareHandler } from 'hono';
+import type { Context, MiddlewareHandler } from 'hono';
 import { PLAYER_COOKIE_MAX_AGE, PLAYER_COOKIE_NAME } from '../../shared/constants';
 import { type AppEnvironment, readRuntimeConfig } from '../env';
 
@@ -35,6 +35,18 @@ async function signPlayerId(playerId: string, secret: string): Promise<string> {
   const key = await signingKey(secret);
   const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(playerId));
   return `${playerId}.${encodeBase64Url(new Uint8Array(signature))}`;
+}
+
+export async function setPlayerCookie(
+  context: Context<AppEnvironment>,
+  playerId: string,
+): Promise<void> {
+  const config = readRuntimeConfig(context.env);
+  const signed = await signPlayerId(playerId, config.cookieSigningSecret);
+  context.header(
+    'Set-Cookie',
+    `${PLAYER_COOKIE_NAME}=${signed}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${PLAYER_COOKIE_MAX_AGE}`,
+  );
 }
 
 async function verifyPlayerId(value: string, secret: string): Promise<string | undefined> {

@@ -51,10 +51,10 @@
     {
       "id": "D2",
       "question": "Player identity",
-      "default": "Anonymous player id in a signed HttpOnly cookie, optional public handle, no email or password in v1",
+      "default": "Anonymous UUID in a signed HttpOnly cookie, editable unique display name, high-entropy recovery code hashed at rest, no email or password in v1",
       "alternatives": ["Better Auth accounts", "magic link login"],
-      "status": "proposed",
-      "resolveIn": "P0-01"
+      "status": "confirmed",
+      "resolveIn": "P2-01"
     },
     {
       "id": "D3",
@@ -196,6 +196,141 @@
           "notes": "Implemented the daily trivia MVP on task/quiz-daily-challenge. Local D1 migration applied. Verification: typecheck passed; lint passed with five non-blocking style warnings; all 27 tests passed; production build and client leak check passed; Cloudflare deploy dry run passed. Question bank remains a sourced draft pending owner and fluent Swahili review. No remote migration or deployment was run."
         }
       ]
+    },
+    {
+      "id": "Q2",
+      "name": "Progressive trivia and polished interface",
+      "goal": "Make each daily quiz more thoughtful and progressively harder, with an elegant interface and light/dark themes.",
+      "tasks": [
+        {
+          "id": "Q2-01",
+          "title": "Add progressive medium-to-hard trivia and premium light/dark interface",
+          "description": "Expand the sourced question pool to 40 draft questions (28 English, 12 Swahili), tag four medium-to-hard levels, and select a stable daily sequence with difficulty increasing across ten positions while preserving the 7:3 language ratio. Keep existing scoring. Redesign the interface in an editorial visual style, add a persistent light/dark theme that follows system preference by default, update contracts and accessible states, and preserve local-only review docs as untracked files.",
+          "dependsOn": ["Q1-01"],
+          "skills": [
+            "api-design",
+            "hono-workers-api",
+            "zod-validation",
+            "testing-strategy",
+            "react-data-fetching",
+            "security-review",
+            "agent-honesty-and-verification"
+          ],
+          "files": [
+            "README.md",
+            "agent-plan.json",
+            "docs/QUESTIONS.md",
+            "docs/DECISIONS.md",
+            "data/quiz-questions.json",
+            "data/legacy-quiz-questions-v1.json",
+            "src/shared/schemas/quiz.ts",
+            "src/worker/lib/quiz/question-bank.ts",
+            "src/worker/lib/quiz/daily-quiz.ts",
+            "src/worker/routes/quiz.ts",
+            "docs/openapi.yaml",
+            "src/client/main.tsx",
+            "src/client/pages/GamePage.tsx",
+            "src/client/theme.ts",
+            "src/client/styles.css",
+            "index.html",
+            "test/quiz-logic.test.ts",
+            "test/quiz-endpoints.test.ts",
+            "test/bundle-leaks.test.ts",
+            "scripts/check-bundle-leaks.ts"
+          ],
+          "acceptance": [
+            "Daily order increases through four explicit levels: medium, challenging, hard, very hard.",
+            "Every daily set has exactly 7 English and 3 Swahili questions, the same order for all players, and deterministic selection.",
+            "The bank has 40 sourced questions with plausible distractors and reasoning or interpretation; source and explanation are retained.",
+            "Existing base points and speed bonus remain unchanged.",
+            "Light and dark themes both have accessible contrast, persist a user choice, and default to system preference.",
+            "The mobile layout, keyboard operation, reduced motion, live feedback, and language metadata remain accessible.",
+            "Question answer keys and future questions remain absent from client assets and API responses.",
+            "Local-only docs remain untracked and no D1 migration is required."
+          ],
+          "verify": [
+            "corepack pnpm typecheck",
+            "corepack pnpm lint",
+            "corepack pnpm test",
+            "corepack pnpm build"
+          ],
+          "humanReview": true,
+          "status": "needs_review",
+          "notes": "Implemented the 40-item draft bank, deterministic four-level 7:3 daily schedule without repeats, public difficulty metadata, v1 assignment compatibility bank, theme toggle and editorial light/dark design. Existing 100-point score and speed bonus are unchanged; no database migration was needed. Verification passed: typecheck, lint, 32 tests, production build, and client leak scan covering both banks. Owner and fluent Swahili review are still required for the question text, translations, distractors, and sources. Work is on task/Q2-01-progressive-quiz."
+        }
+      ]
+    },
+    {
+      "id": "P2",
+      "name": "Player identity and game history",
+      "goal": "Give players a recoverable unique identity, editable public name, private game history, and a fresh shared question set for each daily game.",
+      "tasks": [
+        {
+          "id": "P2-01",
+          "title": "Add player profiles, recovery, history, and no-repeat daily sets",
+          "description": "Persist unique player profiles with an editable unique display name and hashed recovery code, expose player-scoped history, show names on the leaderboard, and never assign a daily question set more than once. Preserve one shared challenge per Nairobi day and fail closed if the bounded selector cannot find a fresh set.",
+          "dependsOn": ["Q2-01"],
+          "skills": [
+            "auth-patterns",
+            "hono-workers-api",
+            "drizzle-orm",
+            "safe-migrations",
+            "zod-validation",
+            "react-data-fetching",
+            "testing-strategy",
+            "security-review",
+            "agent-honesty-and-verification"
+          ],
+          "files": [
+            "agent-plan.json",
+            "README.md",
+            "docs/DECISIONS.md",
+            "docs/THREAT-MODEL.md",
+            "docs/openapi.yaml",
+            "docs/postman_collection.json",
+            "src/shared/schemas/quiz.ts",
+            "src/worker/db/schema.ts",
+            "src/worker/db/queries/player-repository.ts",
+            "src/worker/db/queries/quiz-repository.ts",
+            "src/worker/lib/identity/recovery-code.ts",
+            "src/worker/lib/quiz/daily-quiz.ts",
+            "src/worker/lib/quiz/question-bank.ts",
+            "src/worker/middleware/player.ts",
+            "src/worker/middleware/security.ts",
+            "src/worker/middleware/rate-limit.ts",
+            "src/worker/public-routes.ts",
+            "src/worker/routes/player.ts",
+            "src/worker/routes/quiz.ts",
+            "src/worker/index.ts",
+            "src/client/api.ts",
+            "src/client/pages/GamePage.tsx",
+            "src/client/styles.css",
+            "migrations/",
+            "test/quiz-endpoints.test.ts",
+            "test/quiz-logic.test.ts"
+          ],
+          "acceptance": [
+            "Every active profile has a database-enforced unique UUID and an editable case-insensitively unique display name.",
+            "A hashed recovery code restores the same identity and previous records on another browser; raw codes are returned only at creation or rotation.",
+            "Players can view their own completed-game history, and requests cannot expose another player's history.",
+            "Leaderboard entries show display names without exposing player IDs.",
+            "Everyone receives the same daily question set, and a previously assigned set is never reused; the bounded selector fails closed if it cannot find a fresh candidate. D1 enforces uniqueness under concurrent assignment.",
+            "The profile, recovery, name, history, and assignment flows have Workers integration tests, including invalid input, cross-player isolation, and concurrency.",
+            "Cookie-authenticated writes reject missing or untrusted Origin headers, while the configured browser origin can submit them.",
+            "Recovery throttling remains effective for concurrent requests and expired hashed-IP counters are pruned.",
+            "The D1 change is additive and local-only; no remote migration or deployment is run."
+          ],
+          "verify": [
+            "corepack pnpm typecheck",
+            "corepack pnpm lint",
+            "corepack pnpm test",
+            "corepack pnpm build"
+          ],
+          "humanReview": true,
+          "status": "needs_review",
+          "notes": "Implemented UUID-backed profiles, unique editable names, recovery-code restoration/rotation, paginated private history, leaderboard names, and database-enforced no-repeat daily set assignment. Recovery uses 160-bit codes stored as SHA-256 hashes; cookie-authenticated writes enforce allowed Origin. Recovery attempts use an atomic D1 counter keyed by hashed client IP. Verification passed: corepack pnpm typecheck, lint, 41 tests, production build and question leak scan. Migrations 0002-0004 were applied locally and the 0003 backfill was verified. No remote migration or deploy was run. Bounded selector (4,096 candidates) fails closed rather than reusing a set. Needs owner review, including recovery-code handling and production migration against existing remote assignments."
+        }
+      ]
     }
   ],
   "backlog": [
@@ -234,6 +369,12 @@
       "title": "Hard mode and word-length variants",
       "status": "todo",
       "notes": ""
+    },
+    {
+      "id": "B-007",
+      "title": "Player data export, deletion, and retention policy",
+      "status": "todo",
+      "notes": "Complete and review before public production because player names and linked game history are retained."
     }
   ],
   "supersededWordlePhases": [

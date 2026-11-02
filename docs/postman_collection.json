@@ -1,13 +1,15 @@
 {
   "info": {
     "name": "Akili Moto API",
-    "description": "Daily quiz API. The neno_player cookie is set by the local Worker. Answer one current question at a time.",
+    "description": "Daily quiz API. The neno_player cookie is set by the local Worker. Save the player recovery code privately.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:5173/api" },
     { "key": "questionId", "value": "" },
-    { "key": "choiceId", "value": "a" }
+    { "key": "choiceId", "value": "a" },
+    { "key": "displayName", "value": "Player One" },
+    { "key": "recoveryCode", "value": "" }
   ],
   "item": [
     {
@@ -32,7 +34,8 @@
         "method": "POST",
         "header": [
           { "key": "Content-Type", "value": "application/json" },
-          { "key": "Idempotency-Key", "value": "{{$guid}}" }
+          { "key": "Idempotency-Key", "value": "{{$guid}}" },
+          { "key": "Origin", "value": "http://localhost:5173" }
         ],
         "body": {
           "mode": "raw",
@@ -48,6 +51,62 @@
         "method": "GET",
         "header": [],
         "url": "{{baseUrl}}/quiz/leaderboard"
+      }
+    },
+    {
+      "name": "Get player profile and initial recovery code",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/player"
+      }
+    },
+    {
+      "name": "Update player name",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Origin", "value": "http://localhost:5173" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"displayName\": \"{{displayName}}\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/player/name"
+      }
+    },
+    {
+      "name": "Rotate recovery code",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Origin", "value": "http://localhost:5173" }],
+        "url": "{{baseUrl}}/player/recovery-code"
+      }
+    },
+    {
+      "name": "Restore player identity",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Origin", "value": "http://localhost:5173" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"recoveryCode\": \"{{recoveryCode}}\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/player/recover"
+      }
+    },
+    {
+      "name": "Player game history",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/player/history?limit=20"
       }
     }
   ]
