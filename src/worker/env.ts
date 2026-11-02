@@ -1,8 +1,13 @@
 import { z } from 'zod';
 
+const AllowedOriginsSchema = z
+  .string()
+  .transform((value) => value.split(',').map((origin) => origin.trim()))
+  .pipe(z.array(z.string().url()).min(1));
+
 const RuntimeConfigSchema = z.object({
   APP_ENV: z.enum(['development', 'production']),
-  ALLOWED_ORIGIN: z.string().url(),
+  ALLOWED_ORIGIN: AllowedOriginsSchema,
   COOKIE_SIGNING_SECRET: z.string().min(32).optional(),
 });
 
@@ -22,9 +27,13 @@ export type AppEnvironment = {
 
 export type RuntimeConfig = Readonly<{
   appEnv: 'development' | 'production';
-  allowedOrigin: string;
+  allowedOrigins: readonly string[];
   cookieSigningSecret: string;
 }>;
+
+export function readAllowedOrigins(value: string): readonly string[] {
+  return AllowedOriginsSchema.parse(value);
+}
 
 export function readRuntimeConfig(bindings: Bindings): RuntimeConfig {
   const result = RuntimeConfigSchema.safeParse(bindings);
@@ -40,7 +49,7 @@ export function readRuntimeConfig(bindings: Bindings): RuntimeConfig {
 
   return {
     appEnv: values.APP_ENV,
-    allowedOrigin: values.ALLOWED_ORIGIN,
+    allowedOrigins: values.ALLOWED_ORIGIN,
     cookieSigningSecret:
       values.COOKIE_SIGNING_SECRET ?? 'local-only-cookie-signing-secret-change-before-release',
   };
