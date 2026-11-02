@@ -4,7 +4,7 @@
   "project": {
     "name": "Akili Moto",
     "workingTitle": true,
-    "summary": "Daily shared trivia challenge with ten multiple-choice questions, seven in English and three in Swahili, server-scored points, and a daily leaderboard.",
+    "summary": "Daily shared trivia challenge with two rounds of ten questions, seven in English and three in Swahili per round, server-scored points, separate round leaderboards, and a combined leaderboard.",
     "owner": "Anderson Mwangi",
     "created": "2026-10-30",
     "stack": [
@@ -107,7 +107,7 @@
     {
       "id": "D9",
       "question": "Daily quiz format",
-      "default": "Ten four-option questions per Nairobi day, seven English and three Swahili, shared in the same order",
+      "default": "Two rounds of ten four-option questions per Nairobi day, seven English and three Swahili per round; both sets are shared and disjoint",
       "alternatives": ["Different questions per player", "Other language ratio"],
       "status": "confirmed",
       "resolveIn": "Q1-01"
@@ -138,6 +138,116 @@
     }
   ],
   "phases": [
+    {
+      "id": "V1",
+      "name": "Shareable Vercel hosting",
+      "goal": "Host the browser client on Vercel while keeping the API and D1 on Cloudflare Workers.",
+      "tasks": [
+        {
+          "id": "V1-01",
+          "title": "Configure Vercel frontend hosting and same-origin API proxy",
+          "description": "Publish only the built client on Vercel, proxy /api to the configured production Worker, support exact comma-separated origins in Worker CORS and mutation protection, disable API caching, and document project setup.",
+          "dependsOn": ["Q3-01"],
+          "skills": [
+            "cloudflare-platform",
+            "config-and-secrets",
+            "security-review",
+            "agent-honesty-and-verification"
+          ],
+          "files": [
+            "vercel.json",
+            ".gitignore",
+            "src/worker/env.ts",
+            "src/worker/middleware/security.ts",
+            "README.md",
+            "docs/CLOUDFLARE-SETUP.md",
+            "docs/VERCEL-SETUP.md",
+            "agent-plan.json"
+          ],
+          "acceptance": [
+            "Vercel publishes only dist/client, so the Worker bundle and server-only question bank are not exposed.",
+            "The browser uses a same-origin /api proxy to the configured Cloudflare Worker.",
+            "Worker CORS and mutation origin checks accept exact origins from a comma-separated ALLOWED_ORIGIN setting.",
+            "API responses are explicitly non-cacheable.",
+            "Setup steps explain how to add the Vercel production origin in Cloudflare without wildcard origins."
+          ],
+          "verify": [
+            "corepack pnpm typecheck",
+            "corepack pnpm lint",
+            "corepack pnpm test",
+            "corepack pnpm build"
+          ],
+          "humanReview": true,
+          "status": "needs_review",
+          "notes": "Configured locally. Vercel project creation and Cloudflare production variable changes remain owner steps; no deployment or remote mutation was performed. Automated checks were not run in this task."
+        }
+      ]
+    },
+    {
+      "id": "Q3",
+      "name": "Two-round daily challenge and topic balance",
+      "goal": "Let each player complete up to two distinct shared rounds per Nairobi day, with fair round and combined rankings and a broad, challenging question mix.",
+      "tasks": [
+        {
+          "id": "Q3-01",
+          "title": "Add two daily rounds, round rankings, and broad question coverage",
+          "description": "Hide player management during play. Add a second shared round that unlocks after round one is complete, enforce a maximum of two rounds per player per Nairobi day, use disjoint question IDs across the two rounds, show separate round leaderboards and a combined leaderboard for players who completed both, preserve existing round-one history, and diversify sourced question topics with plausible distractors.",
+          "dependsOn": ["Q2-01", "P2-01"],
+          "skills": [
+            "hono-workers-api",
+            "api-design",
+            "drizzle-orm",
+            "safe-migrations",
+            "react-data-fetching",
+            "testing-strategy",
+            "security-review",
+            "agent-honesty-and-verification"
+          ],
+          "files": [
+            "agent-plan.json",
+            "README.md",
+            "docs/QUESTIONS.md",
+            "docs/DECISIONS.md",
+            "docs/openapi.yaml",
+            "docs/postman_collection.json",
+            "data/quiz-questions-v4.json",
+            "src/shared/constants.ts",
+            "src/shared/schemas/quiz.ts",
+            "src/worker/db/schema.ts",
+            "src/worker/db/queries/quiz-repository.ts",
+            "src/worker/lib/quiz/daily-quiz.ts",
+            "src/worker/lib/quiz/question-bank.ts",
+            "src/worker/lib/quiz/state.ts",
+            "src/worker/routes/quiz.ts",
+            "src/client/api.ts",
+            "src/client/pages/GamePage.tsx",
+            "src/client/styles.css",
+            "migrations/",
+            "test/quiz-logic.test.ts",
+            "test/quiz-endpoints.test.ts"
+          ],
+          "acceptance": [
+            "A player can complete round one and then round two, but cannot start round two early or create a third round.",
+            "Both round sets are deterministic for a Nairobi day, shared across players, and have no question IDs in common.",
+            "Round one and round two have separate completed-player leaderboards; the combined leaderboard includes only players who completed both rounds and ranks their summed scores.",
+            "Existing completed round-one data is preserved through an additive, locally applied migration.",
+            "Player name and recovery controls are absent while playing, while setup and recovery remain available before a round starts.",
+            "The current question bank has broad topic tags and balanced topics, retains the seven-English/three-Swahili ratio and increasing difficulty, and uses plausible answer choices.",
+            "Question bank content includes institutional sources and remains marked for human review before production use."
+          ],
+          "verify": [
+            "corepack pnpm typecheck",
+            "corepack pnpm lint",
+            "corepack pnpm test",
+            "corepack pnpm build",
+            "corepack pnpm db:migrate:local"
+          ],
+          "humanReview": true,
+          "status": "needs_review",
+          "notes": "Implemented two shared rounds per Nairobi day, separate round leaderboards, and a combined ranking for players who complete both. Local migration and automated checks passed. Question content is still draft material requiring owner and fluent Swahili review. No production migration or deployment was run."
+        }
+      ]
+    },
     {
       "id": "Q1",
       "name": "Daily quiz MVP",
@@ -318,7 +428,7 @@
             "The profile, recovery, name, history, and assignment flows have Workers integration tests, including invalid input, cross-player isolation, and concurrency.",
             "Cookie-authenticated writes reject missing or untrusted Origin headers, while the configured browser origin can submit them.",
             "Recovery throttling remains effective for concurrent requests and expired hashed-IP counters are pruned.",
-            "The D1 change is additive and local-only; no remote migration or deployment is run."
+            "The additive D1 migrations apply successfully in production, and the production Worker runs with COOKIE_SIGNING_SECRET configured."
           ],
           "verify": [
             "corepack pnpm typecheck",
@@ -328,7 +438,40 @@
           ],
           "humanReview": true,
           "status": "needs_review",
-          "notes": "Implemented UUID-backed profiles, unique editable names, recovery-code restoration/rotation, paginated private history, leaderboard names, and database-enforced no-repeat daily set assignment. Recovery uses 160-bit codes stored as SHA-256 hashes; cookie-authenticated writes enforce allowed Origin. Recovery attempts use an atomic D1 counter keyed by hashed client IP. Verification passed: corepack pnpm typecheck, lint, 41 tests, production build and question leak scan. Migrations 0002-0004 were applied locally and the 0003 backfill was verified. No remote migration or deploy was run. Bounded selector (4,096 candidates) fails closed rather than reusing a set. Needs owner review, including recovery-code handling and production migration against existing remote assignments."
+          "notes": "Implemented UUID-backed profiles, unique editable names, recovery-code restoration/rotation, paginated private history, leaderboard names, and database-enforced no-repeat daily set assignment. Recovery uses 160-bit codes stored as SHA-256 hashes; cookie-authenticated writes enforce allowed Origin. Recovery attempts use an atomic D1 counter keyed by hashed client IP. Verification passed: corepack pnpm typecheck, lint, 41 tests, production build and question leak scan. Migrations 0002-0004 were applied locally and in production; the production Worker was deployed with COOKIE_SIGNING_SECRET configured. The 0003 backfill was verified. Bounded selector (4,096 candidates) fails closed rather than reusing a set. Needs owner review, including recovery-code handling and production migration against existing remote assignments."
+        },
+        {
+          "id": "P2-02",
+          "title": "Require player name choice before starting a daily game",
+          "description": "Make name selection the initial view. Do not request a quiz session or player history until the player starts; persist a changed name before starting and keep the player on the setup view if saving fails.",
+          "dependsOn": ["P2-01"],
+          "skills": ["react-data-fetching", "testing-strategy", "agent-honesty-and-verification"],
+          "files": [
+            "agent-plan.json",
+            "src/client/pages/GamePage.tsx",
+            "src/client/player-cache.ts",
+            "src/client/styles.css"
+          ],
+          "acceptance": [
+            "The initial view asks for a player name and offers an explicit Start action.",
+            "New players must replace the generated Player- name before they can start.",
+            "Saved player names are prefilled; returning players can start without changing them.",
+            "A changed name is persisted before the first quiz request; save failures leave the setup view visible with a clear retry path.",
+            "Quiz-session and history queries remain disabled until Start is clicked.",
+            "A recovered identity returns to the setup view and must explicitly start before loading its game.",
+            "The public UI does not display the internal player UUID; the browser cache stores only the display name and resume preference.",
+            "The chosen player name is cached in the same browser and a matching server profile resumes the current daily game.",
+            "The name label appears immediately above the input and the setup card uses compact spacing."
+          ],
+          "verify": [
+            "corepack pnpm typecheck",
+            "corepack pnpm lint",
+            "corepack pnpm test",
+            "corepack pnpm build"
+          ],
+          "humanReview": true,
+          "status": "needs_review",
+          "notes": "Implemented compact name-first setup, explicit Start, and same-browser resume using a local display name plus resume preference. The server profile must match the cached name before resuming; the player UUID is not stored in the browser cache. Existing named profiles without a cache are treated as returning players; new and recovered profiles remain at setup until Start. Verification passed: corepack pnpm typecheck, corepack pnpm lint, corepack pnpm build including the client leak scan, and git diff --check. Tests were not run."
         }
       ]
     }

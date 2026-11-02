@@ -5,13 +5,14 @@ import {
   type QuizQuestion,
   type QuizState,
 } from '../../../shared/schemas/quiz';
-import type { StoredQuizAnswer } from '../../db/queries/quiz-repository';
+import type { QuizRoundNumber, StoredQuizAnswer } from '../../db/queries/quiz-repository';
 import { correctOptionId, questionById, toPublicQuestion } from './question-bank';
 
 type QuizSession = Readonly<{ startedAt: string }>;
 
 export function buildQuizState(input: {
   day: string;
+  round: QuizRoundNumber;
   questionIds: string[];
   session: QuizSession;
   answers: StoredQuizAnswer[];
@@ -28,6 +29,7 @@ export function buildQuizState(input: {
 
   return {
     day: input.day,
+    round: input.round,
     status: currentIndex === QUIZ_QUESTION_COUNT ? 'finished' : 'in_progress',
     currentIndex,
     totalQuestions: QUIZ_QUESTION_COUNT,

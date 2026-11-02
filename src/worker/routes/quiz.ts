@@ -6,12 +6,13 @@ import {
   IdempotencyHeaderSchema,
   QuizAnswerBodySchema,
   QuizLeaderboardSchema,
+  QuizRoundQuerySchema,
   QuizStateSchema,
 } from '../../shared/schemas/quiz';
-import { QuizRepository } from '../db/queries/quiz-repository';
+import { QuizRepository, type QuizRoundNumber } from '../db/queries/quiz-repository';
 import type { AppEnvironment } from '../env';
 import { getNairobiDay } from '../lib/game/day';
-import { ensureDailyQuiz } from '../lib/quiz/daily-quiz';
+import { ensureDailyQuizPair } from '../lib/quiz/daily-quiz';
 import { correctOptionId, questionById } from '../lib/quiz/question-bank';
 import { scoreQuizAnswer } from '../lib/quiz/scoring';
 import { buildQuizState } from '../lib/quiz/state';
@@ -20,34 +21,77 @@ function safeError(requestId: string, code: string, message: string, status: 400
   return Response.json(ApiErrorSchema.parse({ error: { code, message, requestId } }), { status });
 }
 
+function isRoundUnlocked(
+  repository: QuizRepository,
+  day: string,
+  playerId: string,
+  round: QuizRoundNumber,
+): Promise<boolean> {
+  if (round === 1) return Promise.resolve(true);
+  return repository
+    .getRoundSession(day, playerId, 1)
+    .then((session) => Boolean(session?.completedAt));
+}
+
 const routes = new Hono<AppEnvironment>()
-  .get('/quiz', async (context) => {
-    try {
-      const now = new Date();
-      const day = getNairobiDay(now);
-      const repository = new QuizRepository(context.env.DB);
-      const questionIds = await ensureDailyQuiz(repository, day);
-      const session = await repository.getOrCreateSession(day, context.get('playerId'));
-      await repository.reconcileSessionTotals(day, context.get('playerId'));
-      const answers = await repository.getPlayerAnswers(day, context.get('playerId'));
-      const rank =
-        answers.length === QUIZ_QUESTION_COUNT
-          ? await repository.getCompletedPlayerRank(day, context.get('playerId'))
-          : undefined;
-      return context.json(
-        QuizStateSchema.parse(
-          buildQuizState({ day, questionIds, session, answers, ...(rank ? { rank } : {}) }),
-        ),
-      );
-    } catch {
-      return safeError(
-        context.res.headers.get('X-Request-Id') ?? 'unavailable',
-        'quiz_unavailable',
-        'The daily challenge is temporarily unavailable.',
-        503,
-      );
-    }
-  })
+  .get(
+    '/quiz',
+    zValidator('query', QuizRoundQuerySchema, (result, context) => {
+      if (!result.success) {
+        return safeError(
+          context.res.headers.get('X-Request-Id') ?? 'unavailable',
+          'validation_failed',
+          'The requested round is invalid.',
+          400,
+        );
+      }
+    }),
+    async (context) => {
+      try {
+        const now = new Date();
+        const day = getNairobiDay(now);
+        const { round } = context.req.valid('query');
+        const playerId = context.get('playerId');
+        const repository = new QuizRepository(context.env.DB);
+        if (!(await isRoundUnlocked(repository, day, playerId, round))) {
+          return safeError(
+            context.res.headers.get('X-Request-Id') ?? 'unavailable',
+            'round_locked',
+            'Complete round one before starting round two.',
+            409,
+          );
+        }
+        const [roundOneIds, roundTwoIds] = await ensureDailyQuizPair(repository, day);
+        const questionIds = round === 1 ? roundOneIds : roundTwoIds;
+        const session = await repository.getOrCreateRoundSession(day, playerId, round);
+        await repository.reconcileRoundTotals(day, playerId, round);
+        const answers = await repository.getRoundAnswers(day, playerId, round);
+        const rank =
+          answers.length === QUIZ_QUESTION_COUNT
+            ? await repository.getCompletedRoundRank(day, playerId, round)
+            : undefined;
+        return context.json(
+          QuizStateSchema.parse(
+            buildQuizState({
+              day,
+              round,
+              questionIds,
+              session,
+              answers,
+              ...(rank ? { rank } : {}),
+            }),
+          ),
+        );
+      } catch {
+        return safeError(
+          context.res.headers.get('X-Request-Id') ?? 'unavailable',
+          'quiz_unavailable',
+          'The daily challenge is temporarily unavailable.',
+          503,
+        );
+      }
+    },
+  )
   .post(
     '/quiz/answer',
     zValidator('header', IdempotencyHeaderSchema, (result, context) => {
@@ -75,12 +119,25 @@ const routes = new Hono<AppEnvironment>()
       const submittedAt = now.toISOString();
       const day = getNairobiDay(now);
       const playerId = context.get('playerId');
-      const { questionId, selectedOptionId } = context.req.valid('json');
+      const { round, questionId, selectedOptionId } = context.req.valid('json');
       const idempotencyKey = context.req.valid('header')['idempotency-key'];
       const repository = new QuizRepository(context.env.DB);
 
       try {
-        const previous = await repository.getIdempotentAnswer(day, playerId, idempotencyKey);
+        if (!(await isRoundUnlocked(repository, day, playerId, round))) {
+          return safeError(
+            context.res.headers.get('X-Request-Id') ?? 'unavailable',
+            'round_locked',
+            'Complete round one before starting round two.',
+            409,
+          );
+        }
+        const previous = await repository.getIdempotentRoundAnswer(
+          day,
+          playerId,
+          round,
+          idempotencyKey,
+        );
         if (previous) {
           if (
             previous.questionId !== questionId ||
@@ -93,30 +150,39 @@ const routes = new Hono<AppEnvironment>()
               409,
             );
           }
-          const questionIds = await ensureDailyQuiz(repository, day);
-          const session = await repository.getOrCreateSession(day, playerId);
-          await repository.reconcileSessionTotals(day, playerId);
-          const answers = await repository.getPlayerAnswers(day, playerId);
+          const [roundOneIds, roundTwoIds] = await ensureDailyQuizPair(repository, day);
+          const questionIds = round === 1 ? roundOneIds : roundTwoIds;
+          const session = await repository.getOrCreateRoundSession(day, playerId, round);
+          await repository.reconcileRoundTotals(day, playerId, round);
+          const answers = await repository.getRoundAnswers(day, playerId, round);
           const rank =
             answers.length === QUIZ_QUESTION_COUNT
-              ? await repository.getCompletedPlayerRank(day, playerId)
+              ? await repository.getCompletedRoundRank(day, playerId, round)
               : undefined;
           return context.json(
             QuizStateSchema.parse(
-              buildQuizState({ day, questionIds, session, answers, ...(rank ? { rank } : {}) }),
+              buildQuizState({
+                day,
+                round,
+                questionIds,
+                session,
+                answers,
+                ...(rank ? { rank } : {}),
+              }),
             ),
           );
         }
 
-        const questionIds = await ensureDailyQuiz(repository, day);
-        const session = await repository.getOrCreateSession(day, playerId);
-        await repository.reconcileSessionTotals(day, playerId);
-        const answers = await repository.getPlayerAnswers(day, playerId);
+        const [roundOneIds, roundTwoIds] = await ensureDailyQuizPair(repository, day);
+        const questionIds = round === 1 ? roundOneIds : roundTwoIds;
+        const session = await repository.getOrCreateRoundSession(day, playerId, round);
+        await repository.reconcileRoundTotals(day, playerId, round);
+        const answers = await repository.getRoundAnswers(day, playerId, round);
         if (answers.length >= QUIZ_QUESTION_COUNT) {
           return safeError(
             context.res.headers.get('X-Request-Id') ?? 'unavailable',
             'quiz_finished',
-            "You have completed today's challenge.",
+            'You have completed this round.',
             409,
           );
         }
@@ -144,10 +210,10 @@ const routes = new Hono<AppEnvironment>()
           isCorrect,
           Math.min(elapsedMs, QUIZ_SPEED_BONUS_WINDOW_SECONDS * 1000),
         );
-
-        const inserted = await repository.saveAnswer({
+        const inserted = await repository.saveRoundAnswer({
           day,
           playerId,
+          round,
           questionIndex: answers.length,
           questionId,
           selectedOptionId,
@@ -159,7 +225,7 @@ const routes = new Hono<AppEnvironment>()
           submittedAt,
         });
         if (!inserted) {
-          const current = await repository.getPlayerAnswers(day, playerId);
+          const current = await repository.getRoundAnswers(day, playerId, round);
           const conflicting = current.find((answer) => answer.questionIndex === answers.length);
           if (conflicting?.selectedOptionId !== selectedOptionId) {
             return safeError(
@@ -171,15 +237,16 @@ const routes = new Hono<AppEnvironment>()
           }
         }
 
-        const updatedAnswers = await repository.getPlayerAnswers(day, playerId);
+        const updatedAnswers = await repository.getRoundAnswers(day, playerId, round);
         const rank =
           updatedAnswers.length === QUIZ_QUESTION_COUNT
-            ? await repository.getCompletedPlayerRank(day, playerId)
+            ? await repository.getCompletedRoundRank(day, playerId, round)
             : undefined;
         return context.json(
           QuizStateSchema.parse(
             buildQuizState({
               day,
+              round,
               questionIds,
               session,
               answers: updatedAnswers,
@@ -200,32 +267,59 @@ const routes = new Hono<AppEnvironment>()
   .get('/quiz/leaderboard', async (context) => {
     try {
       const day = getNairobiDay(new Date());
+      const playerId = context.get('playerId');
       const repository = new QuizRepository(context.env.DB);
-      const [rows, totalPlayers, playerRank] = await Promise.all([
-        repository.getLeaderboard(day),
-        repository.countCompletedPlayers(day),
-        repository.getCompletedPlayerRank(day, context.get('playerId')),
+      const boards = await Promise.all(
+        ([1, 2] as const).map(async (round) => {
+          const [rows, totalPlayers, playerRank, playerSession] = await Promise.all([
+            repository.getRoundLeaderboard(day, round),
+            repository.countCompletedPlayers(day, round),
+            repository.getCompletedRoundRank(day, playerId, round),
+            repository.getRoundSession(day, playerId, round),
+          ]);
+          return {
+            round,
+            totalPlayers,
+            playerRank: playerRank?.rank ?? null,
+            playerScore: playerSession?.completedAt ? playerSession.score : null,
+            items: rows.map((row, index) => ({
+              position: index + 1,
+              rank: rows.findIndex((candidate) => candidate.score === row.score) + 1,
+              score: row.score,
+              correctCount: row.correctCount,
+              displayName: row.displayName ?? 'Player',
+            })),
+          };
+        }),
+      );
+      const [combinedRows, combinedPlayer, combinedRank] = await Promise.all([
+        repository.getCombinedLeaderboard(day),
+        repository.getCombinedPlayerScore(day, playerId),
+        repository.getCombinedPlayerRank(day, playerId),
       ]);
-      const items = rows.map((row, index) => ({
-        position: index + 1,
-        rank: rows.findIndex((candidate) => candidate.score === row.score) + 1,
-        score: row.score,
-        correctCount: row.correctCount,
-        displayName: row.displayName ?? 'Player',
-      }));
       return context.json(
         QuizLeaderboardSchema.parse({
           day,
-          totalPlayers,
-          playerRank: playerRank?.rank ?? null,
-          items,
+          rounds: boards,
+          combined: {
+            totalPlayers: combinedRank?.completedPlayers ?? 0,
+            playerRank: combinedRank?.rank ?? null,
+            playerScore: combinedPlayer?.score ?? null,
+            items: combinedRows.map((row, index) => ({
+              position: index + 1,
+              rank: combinedRows.findIndex((candidate) => candidate.score === row.score) + 1,
+              score: row.score,
+              correctCount: row.correctCount,
+              displayName: row.displayName ?? 'Player',
+            })),
+          },
         }),
       );
     } catch {
       return safeError(
         context.res.headers.get('X-Request-Id') ?? 'unavailable',
         'leaderboard_unavailable',
-        'Today’s leaderboard is temporarily unavailable.',
+        'Today’s leaderboards are temporarily unavailable.',
         503,
       );
     }

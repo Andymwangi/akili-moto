@@ -1,0 +1,863 @@
+[
+  {
+    "id": "v4-en-medium-earth-seasons",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "science",
+    "prompt": "Earth is nearest the Sun in January. Why is it still winter then in the Northern Hemisphere?",
+    "options": [
+      "Axial tilt changes sun angle and daylight more than the small distance change",
+      "The Northern Hemisphere is tilted away from the Sun, shortening its days",
+      "Earth's atmosphere is farther from the Sun during January",
+      "Ocean currents prevent the north from retaining summer heat"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Earth's axial tilt is the main cause of the seasons; it changes daylight length and the angle of incoming sunlight.",
+    "sourceUrl": "https://science.nasa.gov/earth/facts/"
+  },
+  {
+    "id": "v4-en-medium-moon-lock",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "science",
+    "prompt": "The Moon rotates once in about the same time it orbits Earth. What does this explain?",
+    "options": [
+      "Nearly the same lunar hemisphere faces Earth throughout the month",
+      "The Moon's far side never receives sunlight",
+      "The Moon remains above the same point on Earth's surface",
+      "The Moon's phases are caused by its rotation"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Synchronous rotation keeps the Moon's rotation period equal to its orbital period, so the same side faces Earth.",
+    "sourceUrl": "https://science.nasa.gov/moon/facts/"
+  },
+  {
+    "id": "v4-en-medium-lamu",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "geography",
+    "prompt": "Lamu Old Town is especially known as a well-preserved example of which settlement tradition?",
+    "options": [
+      "Swahili coastal settlement",
+      "Great Lakes fishing village",
+      "Southern African mining town",
+      "Nile Valley farming settlement"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "UNESCO describes Lamu as the oldest and best-preserved example of a Swahili settlement in East Africa.",
+    "sourceUrl": "https://whc.unesco.org/en/list/1055/"
+  },
+  {
+    "id": "v4-en-medium-folio-year",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "literature",
+    "prompt": "In which year was the First Folio, the first collected edition of Shakespeare's plays, published?",
+    "options": ["1623", "1603", "1642", "1660"],
+    "correctOptionIndex": 0,
+    "explanation": "The First Folio was published in 1623, seven years after Shakespeare's death.",
+    "sourceUrl": "https://www.folger.edu/explore/shakespeare-in-print/first-folio/"
+  },
+  {
+    "id": "v4-en-medium-impression-name",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "art",
+    "prompt": "Which painting's title helped give Impressionism its name?",
+    "options": [
+      "Claude Monet's Impression, Sunrise",
+      "Edgar Degas's The Dance Class",
+      "Camille Pissarro's Boulevard Montmartre",
+      "Pierre-Auguste Renoir's The Swing"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A critic used the word impression after seeing Monet's Impression, Sunrise at the 1874 exhibition.",
+    "sourceUrl": "https://www.metmuseum.org/essays/impressionism-art-and-modernity"
+  },
+  {
+    "id": "v4-en-medium-pointillism",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "art",
+    "prompt": "What does a pointillist painter rely on viewers to do when looking at many small dots of color?",
+    "options": [
+      "Visually blend the separate marks at a distance",
+      "Interpret each color as a fixed symbol in a visual code",
+      "Trace a continuous outline hidden between the marks",
+      "See the pigments chemically merge after the paint dries"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Pointillist artists placed small marks of color so that they combine perceptually when viewed from a distance.",
+    "sourceUrl": "https://www.metmuseum.org/de/essays/georges-seurat-1859-1891-and-neo-impressionism"
+  },
+  {
+    "id": "v4-en-medium-crescendo",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "music",
+    "prompt": "A score marks a passage crescendo. What change should a performer make?",
+    "options": [
+      "Increase the volume gradually",
+      "Increase the tempo gradually",
+      "Gradually move the melody into a higher register",
+      "Make each note shorter and more detached"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Crescendo is a gradual increase in loudness, or musical dynamics.",
+    "sourceUrl": "https://www.britannica.com/art/dynamics-music"
+  },
+  {
+    "id": "v4-en-medium-great-zimbabwe",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "history",
+    "prompt": "Great Zimbabwe is most recognized for which kind of historic remains?",
+    "options": [
+      "Large dry-stone enclosures and walls",
+      "A coral-stone port with carved Swahili doorways",
+      "A terraced city built from fired-brick stupas",
+      "A royal complex of stepped mud-brick pyramids"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The Great Zimbabwe ruins include monumental walls built from carefully fitted stone without mortar.",
+    "sourceUrl": "https://whc.unesco.org/en/list/364/"
+  },
+  {
+    "id": "v4-en-medium-mangroves",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "environment",
+    "prompt": "Why can a healthy mangrove belt reduce damage to a tropical shoreline during storms?",
+    "options": [
+      "Its roots slow waves and help hold sediment in place",
+      "Its canopy absorbs most of the energy in storm winds",
+      "Its roots draw seawater away from the shore at high tide",
+      "Its trunks prevent storm surges from entering tidal channels"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Mangrove roots reduce wave energy and trap sediment, helping stabilize some shorelines.",
+    "sourceUrl": "https://oceanservice.noaa.gov/facts/mangroves.html"
+  },
+  {
+    "id": "v4-en-medium-probability",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "mathematics",
+    "prompt": "A fair six-sided die is rolled twice. What is the chance of getting a six on both rolls?",
+    "options": ["1 in 36", "1 in 12", "1 in 6", "2 in 6"],
+    "correctOptionIndex": 0,
+    "explanation": "The independent probabilities multiply: one-sixth times one-sixth equals one-thirty-sixth.",
+    "sourceUrl": "https://www.khanacademy.org/math/statistics-probability/probability-library/basic-theoretical-probability"
+  },
+  {
+    "id": "v4-en-medium-sound-frequency",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "science",
+    "prompt": "Two notes have the same loudness but different pitch. Which property of their sound waves differs most directly?",
+    "options": ["Frequency", "Amplitude", "Travel distance", "Duration"],
+    "correctOptionIndex": 0,
+    "explanation": "For a periodic sound, frequency is perceived primarily as pitch; amplitude relates more directly to loudness.",
+    "sourceUrl": "https://www.nidcd.nih.gov/health/how-do-we-hear"
+  },
+  {
+    "id": "v4-en-medium-prime-meridian",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "geography",
+    "prompt": "The internationally agreed zero-degree longitude line passes through which historic observatory?",
+    "options": [
+      "The Royal Observatory at Greenwich",
+      "The Paris Observatory at Meudon",
+      "The Cape of Good Hope Observatory",
+      "The Berlin Observatory at Potsdam"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The Prime Meridian is defined at zero longitude through the historic Airy Transit Circle at Greenwich.",
+    "sourceUrl": "https://www.rmg.co.uk/stories/time/prime-meridian-greenwich"
+  },
+  {
+    "id": "v4-en-challenging-rift",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "geography",
+    "prompt": "The East African Rift is widening in places. Which tectonic process best accounts for this?",
+    "options": [
+      "The African Plate is being pulled into diverging plate systems",
+      "The African Plate is sliding beneath the Eurasian Plate",
+      "The Somali coast is moving toward the Earth's axis",
+      "Oceanic crust is being pushed west beneath the Congo Basin"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The East African Rift is an active continental rift where the Nubian and Somali parts of the African Plate are diverging.",
+    "sourceUrl": "https://pubs.usgs.gov/gip/dynamic/East_Africa.html"
+  },
+  {
+    "id": "v4-en-challenging-el-nino",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "science",
+    "prompt": "During El Niño, which change helps warm surface water spread eastward across the equatorial Pacific?",
+    "options": [
+      "The usual east-to-west trade winds weaken",
+      "The usual east-to-west trade winds strengthen",
+      "The trade winds shift south while keeping their strength",
+      "The equatorial Pacific westerlies weaken and cool the east"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Weakened Pacific trade winds allow warm surface water to shift back toward the Americas and reduce upwelling.",
+    "sourceUrl": "https://oceanservice.noaa.gov/facts/ninonina.html"
+  },
+  {
+    "id": "v4-sw-challenging-el-nino",
+    "language": "sw",
+    "difficulty": "challenging",
+    "topic": "science",
+    "prompt": "Wakati wa El Niño, mabadiliko gani ya upepo wa pasati husaidia maji ya joto kusogea mashariki mwa Pasifiki? (Which trade-wind change helps warm water move east?)",
+    "options": [
+      "Upepo wa kawaida wa mashariki kwenda magharibi hudhoofika",
+      "Upepo wa magharibi kwenda mashariki huimarika juu ya Atlantiki",
+      "Upepo wa nchi kavu husimama katika dunia yote",
+      "Upepo wa kaskazini hugeuka kuwa upepo wa kusini"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "El Niño huhusishwa na kudhoofika kwa upepo wa pasati wa Pasifiki, jambo linaloruhusu maji ya joto kusogea mashariki.",
+    "sourceUrl": "https://oceanservice.noaa.gov/facts/ninonina.html"
+  },
+  {
+    "id": "v4-en-challenging-first-folio-preservation",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "literature",
+    "prompt": "Why is the First Folio considered especially important to the survival of Shakespeare's plays?",
+    "options": [
+      "It printed eighteen plays that had not appeared in print before",
+      "It was the only book Shakespeare published while alive",
+      "It included the original manuscripts in Shakespeare's handwriting",
+      "It was the first English book printed with movable type"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Eighteen plays were first printed in the 1623 First Folio and might otherwise have been lost.",
+    "sourceUrl": "https://www.folger.edu/explore/shakespeare-in-print/first-folio/"
+  },
+  {
+    "id": "v4-en-challenging-impressionist-light",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "art",
+    "prompt": "Which technique helped Impressionist painters suggest changing light without outlining every object sharply?",
+    "options": [
+      "Short, broken brushstrokes and colored shadows",
+      "Smooth tonal modeling with softened edges",
+      "Strong contour lines filled with unmixed local colors",
+      "Layered glazes that blend colors on the canvas"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The Met describes short broken strokes, bright color, and colored shadows as features of Impressionist practice.",
+    "sourceUrl": "https://www.metmuseum.org/essays/impressionism-art-and-modernity"
+  },
+  {
+    "id": "v4-sw-challenging-lamu-trade",
+    "language": "sw",
+    "difficulty": "challenging",
+    "topic": "history",
+    "prompt": "Historia ya Lamu inaonyesha mwingiliano wa jamii zipi katika pwani ya Afrika Mashariki? (Which communities interacted in Lamu's coastal history?)",
+    "options": [
+      "Jamii za Kibantu, Waarabu, Waajemi, Wahindi na Wazungu",
+      "Wavikingi, Wamongolia, Wamaya na Wainka",
+      "Wagiriki, Wavikingi, Wajapani na Waazteki",
+      "Waberberu, Wacelt, Wamaya na Wainka"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "UNESCO inaeleza Lamu kama mahali ambapo mwingiliano wa jamii za Kiafrika, Kiarabu, Kiajemi, Kihindi na Ulaya ulijenga utamaduni wa Waswahili.",
+    "sourceUrl": "https://whc.unesco.org/en/list/1055/"
+  },
+  {
+    "id": "v4-en-challenging-neap-tide",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "science",
+    "prompt": "A coastal gauge shows a smaller tidal range near first-quarter Moon. What is the best explanation?",
+    "options": [
+      "Solar and lunar tidal effects act at roughly right angles and partly offset",
+      "The Moon's gravity temporarily disappears at quarter phase",
+      "The Sun and Moon are aligned on opposite sides of Earth",
+      "Earth's rotation slows enough to reduce ocean levels"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Around quarter phases, the Sun and Moon pull in different directions, producing neap tides with a smaller range.",
+    "sourceUrl": "https://oceanservice.noaa.gov/education/tutorial_tides/tides06_variations.html"
+  },
+  {
+    "id": "v4-en-challenging-ostinato",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "music",
+    "prompt": "A bass line repeats the same short pattern under changing melodies. What musical role is it most likely serving?",
+    "options": ["An ostinato", "A cadenza", "A recitative", "A fermata"],
+    "correctOptionIndex": 0,
+    "explanation": "An ostinato is a persistently repeated musical pattern, often supporting changing material above it.",
+    "sourceUrl": "https://www.britannica.com/art/ostinato"
+  },
+  {
+    "id": "v4-sw-challenging-moon-lock",
+    "language": "sw",
+    "difficulty": "challenging",
+    "topic": "science",
+    "prompt": "Kwa nini tunaona karibu upande uleule wa Mwezi kila wakati? (Why do we see nearly the same side of the Moon?)",
+    "options": [
+      "Mwezi huzunguka kwenye mhimili wake kwa muda unaolingana na mzunguko wake kuizunguka Dunia",
+      "Mwezi hausogei kwenye mhimili wake",
+      "Dunia huzunguka mara moja tu kila mwezi",
+      "Mwangaza wa Jua huficha upande wa mbali wa Mwezi"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Mzunguko wa Mwezi kwenye mhimili wake na muda wa kuizunguka Dunia ni karibu sawa, hivyo upande mmoja hutuelekea.",
+    "sourceUrl": "https://science.nasa.gov/moon/facts/"
+  },
+  {
+    "id": "v4-en-challenging-runoff",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "environment",
+    "prompt": "Two equal storms hit similar catchments. One has steep slopes and paved surfaces; the other has permeable soil and vegetation. Which is more likely to peak sooner?",
+    "options": [
+      "The paved catchment, because more water reaches channels quickly",
+      "The vegetated catchment, because infiltration returns water to streams faster",
+      "Both catchments, because equal rainfall fixes the time to peak",
+      "A paved catchment, because sealed ground routes runoff to channels faster"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Impervious surfaces and steep slopes tend to speed runoff and shorten travel time to streams.",
+    "sourceUrl": "https://www.usgs.gov/water-science-school/science/watersheds-and-drainage-basins"
+  },
+  {
+    "id": "v4-en-challenging-cultural-blend",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "culture",
+    "prompt": "UNESCO describes Lamu's built environment as a fusion of outside influences with which local tradition?",
+    "options": [
+      "Traditional Swahili building techniques",
+      "Inca stone-cutting methods",
+      "Mughal garden planning",
+      "Nordic timber construction"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Lamu's architecture shows influences from Europe, Arabia, and India combined with traditional Swahili techniques.",
+    "sourceUrl": "https://whc.unesco.org/en/list/1055/"
+  },
+  {
+    "id": "v4-en-challenging-ratio",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "mathematics",
+    "prompt": "A map scale says 1 cm represents 8 km. Two towns are 5.5 cm apart on the map. What is their straight-line distance?",
+    "options": ["44 km", "13.5 km", "40 km", "55 km"],
+    "correctOptionIndex": 0,
+    "explanation": "Multiply the map distance by the scale: 5.5 times 8 equals 44 kilometres.",
+    "sourceUrl": "https://www.nationalgeographic.org/encyclopedia/map/"
+  },
+  {
+    "id": "v4-en-challenging-folio-categories",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "literature",
+    "prompt": "The First Folio grouped Shakespeare's plays under which three headings?",
+    "options": [
+      "Comedies, histories, and tragedies",
+      "Poems, novels, and essays",
+      "Pastorals, satires, and epics",
+      "Myths, fables, and chronicles"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The First Folio's title and organization divide the plays into comedies, histories, and tragedies.",
+    "sourceUrl": "https://www.folger.edu/explore/shakespeare-in-print/first-folio/"
+  },
+  {
+    "id": "v4-en-hard-sidereal-synodic",
+    "language": "en",
+    "difficulty": "hard",
+    "topic": "science",
+    "prompt": "The Moon orbits Earth in about 27.3 days, but its phase cycle takes about 29.5 days. Why are the periods different?",
+    "options": [
+      "Earth moves along its orbit while the Moon completes one orbit, so it needs extra time to realign with the Sun",
+      "The Moon changes orbital direction halfway through each cycle",
+      "Earth's rotation adds two full days to every lunar orbit",
+      "The Moon's orbit expands by a fixed amount every month"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "After one sidereal orbit, Earth has moved around the Sun, so the Moon needs additional time to return to the same Sun-Earth geometry.",
+    "sourceUrl": "https://science.nasa.gov/moon/facts/"
+  },
+  {
+    "id": "v4-en-hard-upwelling",
+    "language": "en",
+    "difficulty": "hard",
+    "topic": "environment",
+    "prompt": "Why can reduced upwelling off western South America affect fish populations during El Niño?",
+    "options": [
+      "Less nutrient-rich deep water reaches the surface, reducing food for plankton",
+      "The deep water becomes more oxygen-rich and drives all fish offshore",
+      "Warmer water prevents sunlight from entering the ocean",
+      "Trade winds carry adult fish eastward into rivers"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "El Niño weakens upwelling that normally brings cold, nutrient-rich water to the surface, reducing plankton productivity.",
+    "sourceUrl": "https://oceanservice.noaa.gov/facts/ninonina.html"
+  },
+  {
+    "id": "v4-sw-hard-rift",
+    "language": "sw",
+    "difficulty": "hard",
+    "topic": "geography",
+    "prompt": "Bonde la Ufa la Afrika Mashariki linapanuka kwa sababu gani ya kitektoniki? (What tectonic process is widening the East African Rift?)",
+    "options": [
+      "Sehemu za Bamba la Afrika zinatengana",
+      "Bamba la Afrika linazama chini ya Bamba la Eurasia",
+      "Bamba la Arabia linasukuma Afrika kuelekea kusini",
+      "Ukoko wote wa Afrika unazunguka kuelekea mashariki kwa kasi sawa"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Bonde la Ufa linahusishwa na sehemu za Bamba la Afrika zinazovutana na kutengana.",
+    "sourceUrl": "https://pubs.usgs.gov/gip/dynamic/East_Africa.html"
+  },
+  {
+    "id": "v4-en-hard-impression-shadows",
+    "language": "en",
+    "difficulty": "hard",
+    "topic": "art",
+    "prompt": "An Impressionist paints a shadow with blue and violet rather than black. What idea does this reflect?",
+    "options": [
+      "Shadows can contain reflected and ambient color, not simply black",
+      "The artist is using the traditional monochrome underpainting as the final layer",
+      "Blue pigment makes a shadow physically darker in every lighting condition",
+      "Impressionists avoided observing objects outdoors"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Impressionists often used color in shadows and highlights to represent changing light and atmosphere.",
+    "sourceUrl": "https://www.metmuseum.org/essays/impressionism-art-and-modernity"
+  },
+  {
+    "id": "v4-en-hard-syncopation",
+    "language": "en",
+    "difficulty": "hard",
+    "topic": "music",
+    "prompt": "A melody repeatedly accents weak beats or offbeats. Which rhythmic effect is being used?",
+    "options": ["Syncopation", "Rubato", "Ostinato", "Counterpoint"],
+    "correctOptionIndex": 0,
+    "explanation": "Syncopation places emphasis where a listener may not expect it, such as weak beats or offbeats.",
+    "sourceUrl": "https://www.britannica.com/art/syncopation-music"
+  },
+  {
+    "id": "v4-en-hard-river-response",
+    "language": "en",
+    "difficulty": "hard",
+    "topic": "environment",
+    "prompt": "Rain stops, yet a stream continues to rise for several hours. Which watershed explanation is strongest?",
+    "options": [
+      "Runoff and subsurface water are still travelling through the basin toward the gauge",
+      "The stream creates new rainfall after the storm ends",
+      "The gauge must be recording the Moon's gravitational pull",
+      "Water cannot enter a stream after rainfall stops"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Water takes time to move across land and through soil and tributaries, so stream response can lag behind rainfall.",
+    "sourceUrl": "https://www.usgs.gov/educational-resources/rollin-down-river"
+  },
+  {
+    "id": "v4-en-hard-folio-format",
+    "language": "en",
+    "difficulty": "hard",
+    "topic": "literature",
+    "prompt": "Why was a folio-format book generally more expensive to produce than a small quarto in Shakespeare's period?",
+    "options": [
+      "It used larger sheets folded fewer times, producing larger pages",
+      "It required a separate handwritten copy for each buyer",
+      "It was printed only on imported parchment",
+      "It contained twice as many plays by definition"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A folio sheet was folded once to create four pages; the larger format was more prestigious and costly than a quarto.",
+    "sourceUrl": "https://www.folger.edu/explore/shakespeare-in-print/first-folio/"
+  },
+  {
+    "id": "v4-sw-hard-folio",
+    "language": "sw",
+    "difficulty": "hard",
+    "topic": "literature",
+    "prompt": "Kitabu cha First Folio ni muhimu kwa kazi za Shakespeare kwa sababu gani? (Why is the First Folio important to Shakespeare's works?)",
+    "options": [
+      "Kiliweka pamoja tamthilia ambazo baadhi hazikuwa zimechapishwa awali",
+      "Kilikuwa daftari pekee aliloandika Shakespeare mwenyewe",
+      "Kiliandikwa kabla ya Shakespeare kufika London",
+      "Kilikuwa tafsiri ya kwanza ya tamthilia zake kutoka Kilatini"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "First Folio ya 1623 ilichapisha tamthilia 18 ambazo hazikuwa zimeonekana katika chapa hapo awali.",
+    "sourceUrl": "https://www.folger.edu/explore/shakespeare-in-print/first-folio/"
+  },
+  {
+    "id": "v4-en-hard-probability-complement",
+    "language": "en",
+    "difficulty": "hard",
+    "topic": "mathematics",
+    "prompt": "A fair coin is tossed three times. What is the probability of getting at least one head?",
+    "options": ["7/8", "1/8", "3/8", "1/2"],
+    "correctOptionIndex": 0,
+    "explanation": "The complement is three tails, with probability 1/8; therefore at least one head has probability 1 minus 1/8, or 7/8.",
+    "sourceUrl": "https://www.khanacademy.org/math/statistics-probability/probability-library/basic-theoretical-probability"
+  },
+  {
+    "id": "v4-sw-hard-impressionism",
+    "language": "sw",
+    "difficulty": "hard",
+    "topic": "art",
+    "prompt": "Wasanii wa Impressionism walitumia nini kuonyesha mabadiliko ya mwanga? (What did Impressionists use to show changing light?)",
+    "options": [
+      "Mikwaruzo mifupi ya rangi na vivuli vyenye rangi tofauti",
+      "Mistari myeusi iliyofungwa kuzunguka kila kitu",
+      "Rangi moja tambarare kwa picha nzima",
+      "Michoro ya kijiometri isiyobadilika kwa kila kazi"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Michoro ya Impressionism mara nyingi hutumia mikwaruzo huru na rangi kuonyesha athari ya mwanga.",
+    "sourceUrl": "https://www.metmuseum.org/essays/impressionism-art-and-modernity"
+  },
+  {
+    "id": "v4-en-hard-opportunity-cost",
+    "language": "en",
+    "difficulty": "hard",
+    "topic": "economics",
+    "prompt": "A student spends Saturday studying instead of taking a paid shift. In economic terms, what is the opportunity cost of studying?",
+    "options": [
+      "The value of the best alternative given up, such as the shift's pay",
+      "The total price of every activity available that day",
+      "Only the money already spent on textbooks",
+      "The amount of time the student spends sleeping"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Opportunity cost is the value of the next-best alternative that is forgone when making a choice.",
+    "sourceUrl": "https://www.econlib.org/library/Topics/College/opportunitycost.html"
+  },
+  {
+    "id": "v4-sw-hard-mangrove",
+    "language": "sw",
+    "difficulty": "hard",
+    "topic": "environment",
+    "prompt": "Mizizi ya mikoko inaweza kusaidiaje pwani wakati wa mawimbi makubwa? (How can mangrove roots help a coast during large waves?)",
+    "options": [
+      "Hupunguza nguvu ya mawimbi na kushikilia mashapo",
+      "Huzuia mawimbi yote kuingia baharini",
+      "Hubadilisha maji ya chumvi kuwa maji safi",
+      "Husimamisha upepo juu ya bahari"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Mizizi ya mikoko inaweza kupunguza nguvu ya mawimbi na kunasa mashapo, ingawa kinga hutegemea hali ya eneo.",
+    "sourceUrl": "https://oceanservice.noaa.gov/facts/mangroves.html"
+  },
+  {
+    "id": "v4-en-hard-pointillist-view",
+    "language": "en",
+    "difficulty": "hard",
+    "topic": "art",
+    "prompt": "A pointillist canvas looks fragmented up close but unified from across the room. What accounts for the change?",
+    "options": [
+      "The viewer's eye optically combines nearby marks into larger color areas",
+      "The paint chemically changes color as the viewer moves away",
+      "A hidden varnish fills the gaps between the dots",
+      "The artist paints a second image on the back of the canvas"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Pointillism uses small separate marks whose colors visually blend at normal viewing distance.",
+    "sourceUrl": "https://www.metmuseum.org/essays/seurat-and-the-science-of-painting"
+  },
+  {
+    "id": "v4-en-hard-la-nina",
+    "language": "en",
+    "difficulty": "hard",
+    "topic": "science",
+    "prompt": "Compared with normal Pacific conditions, what tends to happen to trade winds and upwelling during La Niña?",
+    "options": [
+      "Trade winds strengthen and upwelling increases off South America",
+      "Trade winds weaken and upwelling stops throughout the Pacific",
+      "Winds reverse permanently and upwelling shifts to the Indian Ocean",
+      "Trade winds stop while deep water warms the eastern Pacific"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "La Niña strengthens the normal trade winds, pushing warm surface water west and enhancing cold-water upwelling in the east.",
+    "sourceUrl": "https://oceanservice.noaa.gov/facts/ninonina.html"
+  },
+  {
+    "id": "v4-sw-hard-el-nino-impact",
+    "language": "sw",
+    "difficulty": "hard",
+    "topic": "environment",
+    "prompt": "El Niño ikipunguza maji baridi yenye virutubisho yanayopanda juu ya bahari, nini kinaweza kutokea kwa planktoni? (What may happen to plankton?)",
+    "options": [
+      "Virutubisho vinapungua na uzalishaji wa planktoni unaweza kushuka",
+      "Planktoni zote hugeuka kuwa samaki wakubwa",
+      "Maji ya kina hujaa oksijeni na kuongeza chakula moja kwa moja",
+      "Planktoni huhamia kwenye mito kwa sababu ya upepo"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Upwelling inapopungua, virutubisho vichache hufika juu na planktoni zinaweza kupungua.",
+    "sourceUrl": "https://oceanservice.noaa.gov/facts/ninonina.html"
+  },
+  {
+    "id": "v4-en-hard-swing-rhythm",
+    "language": "en",
+    "difficulty": "hard",
+    "topic": "music",
+    "prompt": "In a swung rhythm, paired eighth notes are commonly performed how?",
+    "options": [
+      "With an uneven long-short feel rather than as equal halves",
+      "As two notes that must always be simultaneous",
+      "At twice the written tempo with no accent",
+      "As a sustained note followed by a full bar of silence"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Swing commonly gives paired subdivisions an uneven long-short feel, though the exact ratio varies by style and tempo.",
+    "sourceUrl": "https://www.loc.gov/item/ihas.200038837/"
+  },
+  {
+    "id": "v4-en-hard-lamu-materials",
+    "language": "en",
+    "difficulty": "hard",
+    "topic": "culture",
+    "prompt": "Which materials are characteristic of many traditional buildings in Lamu Old Town?",
+    "options": [
+      "Coral stone and mangrove timber",
+      "Granite blocks and cedar shingles",
+      "Adobe bricks and bamboo thatch",
+      "Marble columns and fired clay tiles"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "UNESCO notes Lamu's coral-stone buildings and mangrove timber construction.",
+    "sourceUrl": "https://whc.unesco.org/en/list/1055/"
+  },
+  {
+    "id": "v4-sw-hard-great-zimbabwe",
+    "language": "sw",
+    "difficulty": "hard",
+    "topic": "history",
+    "prompt": "Ni sifa gani ya usanifu inayotambulisha magofu ya Great Zimbabwe? (Which architectural feature identifies Great Zimbabwe?)",
+    "options": [
+      "Kuta kubwa za mawe zilizojengwa bila chokaa",
+      "Madaraja ya chuma yaliyotengenezwa na Warumi",
+      "Minara ya mbao iliyopakwa porcelaini",
+      "Mapiramidi ya matofali ya udongo yaliyofunikwa kwa marumaru"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Great Zimbabwe inajulikana kwa kuta za mawe makavu zilizowekwa kwa ustadi bila chokaa.",
+    "sourceUrl": "https://whc.unesco.org/en/list/364/"
+  },
+  {
+    "id": "v4-en-very-hard-eclipse-shadow",
+    "language": "en",
+    "difficulty": "very_hard",
+    "topic": "science",
+    "prompt": "Why is totality during a total solar eclipse limited to a narrow path across Earth?",
+    "options": [
+      "The Moon's darkest central shadow covers only a small area at Earth's distance",
+      "Earth's atmosphere absorbs the Moon's shadow outside the path",
+      "The Moon blocks sunlight only for observers near the equator",
+      "Earth's rotation stretches the Moon's shadow into a narrow line"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The Moon's umbra reaches a relatively small region of Earth's surface, while nearby areas see a partial eclipse.",
+    "sourceUrl": "https://science.nasa.gov/eclipses/"
+  },
+  {
+    "id": "v4-en-very-hard-folio-loss",
+    "language": "en",
+    "difficulty": "very_hard",
+    "topic": "literature",
+    "prompt": "If the First Folio had not been compiled, what is the most defensible concern about Shakespeare's surviving works?",
+    "options": [
+      "Eighteen plays might have been lost because they had not been printed earlier",
+      "All of his sonnets would have vanished from manuscript collections",
+      "His plays would never have been performed in public",
+      "No English plays could have been printed before 1700"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The Folger notes that eighteen plays first appeared in print in the First Folio and might otherwise have been lost.",
+    "sourceUrl": "https://www.folger.edu/explore/shakespeare-in-print/first-folio/"
+  },
+  {
+    "id": "v4-en-very-hard-impressionism",
+    "language": "en",
+    "difficulty": "very_hard",
+    "topic": "art",
+    "prompt": "What did Monet's Impression, Sunrise contribute to the later name of the Impressionist movement?",
+    "options": [
+      "A critic used its title to describe the works as impressions rather than finished pictures",
+      "Monet titled it after the first official Impressionist salon",
+      "The painting introduced the first use of oil paint outdoors",
+      "Its sunrise subject became a required theme for movement members"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Critic Louis Leroy used Monet's title in a review of the 1874 independent exhibition, helping establish the movement's label.",
+    "sourceUrl": "https://www.metmuseum.org/essays/impressionism-art-and-modernity"
+  },
+  {
+    "id": "v4-en-very-hard-lunar-phase",
+    "language": "en",
+    "difficulty": "very_hard",
+    "topic": "science",
+    "prompt": "Why is a lunar phase cycle longer than the Moon's orbit measured against distant stars?",
+    "options": [
+      "Earth has moved around the Sun, so the Moon must travel farther to repeat the same alignment",
+      "The Moon slows its orbital speed at every full Moon",
+      "The Sun's gravity pauses the Moon for two days each month",
+      "Earth's rotation adds a complete orbit to the lunar month"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The Moon must move beyond one sidereal orbit to regain the same Sun-Earth-Moon geometry because Earth also moves around the Sun.",
+    "sourceUrl": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html"
+  },
+  {
+    "id": "v4-en-very-hard-coral-lamu",
+    "language": "en",
+    "difficulty": "very_hard",
+    "topic": "geography",
+    "prompt": "Which combination best explains why Lamu's historic architecture reflects both its coastal setting and Indian Ocean connections?",
+    "options": [
+      "Local Swahili building methods combined with influences from Arabia, India, and Europe",
+      "Inland stone traditions combined only with Central African trade",
+      "Colonial railway planning combined with Arctic timber construction",
+      "A single imported style replaced all local building practices"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "UNESCO describes Lamu's architecture as a distinctive Swahili tradition shaped by European, Arabian, and Indian influences.",
+    "sourceUrl": "https://whc.unesco.org/en/list/1055/"
+  },
+  {
+    "id": "v4-en-very-hard-borrowed-chord",
+    "language": "en",
+    "difficulty": "very_hard",
+    "topic": "music",
+    "prompt": "A song in a major key briefly uses a chord borrowed from its parallel minor. What is the listener most likely to hear?",
+    "options": [
+      "A color change that briefly darkens the harmony without changing the tonic",
+      "A permanent change of tempo with no change in harmony",
+      "A modulation that must end in a different key",
+      "A shift from instrumental music to spoken recitation"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Modal mixture borrows a chord from the parallel mode, adding a contrasting harmonic color while the home key can remain major.",
+    "sourceUrl": "https://www.musictheory.net/lessons/57"
+  },
+  {
+    "id": "v4-en-very-hard-mangrove-sediment",
+    "language": "en",
+    "difficulty": "very_hard",
+    "topic": "environment",
+    "prompt": "A mangrove restoration project stabilizes a muddy shore. Which mechanism best links roots to that result?",
+    "options": [
+      "Roots slow water and trap suspended sediment that can build the shoreline",
+      "Roots dissolve salt and make the seabed denser",
+      "Roots force tides to occur less often",
+      "Roots transfer offshore sand directly into inland rivers"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Mangrove root systems reduce flow energy and trap sediment, helping stabilize coastal areas.",
+    "sourceUrl": "https://oceanservice.noaa.gov/facts/mangroves.html"
+  },
+  {
+    "id": "v4-sw-very-hard-lamu-influences",
+    "language": "sw",
+    "difficulty": "very_hard",
+    "topic": "culture",
+    "prompt": "Ni maelezo gani yanayofaa zaidi kuhusu usanifu wa Lamu Old Town? (Which description best fits Lamu Old Town's architecture?)",
+    "options": [
+      "Mbinu za Waswahili zimechanganyika na athari za Arabia, India na Ulaya",
+      "Majengo yote yanafuata mtindo mmoja ulioletwa kutoka Ulaya",
+      "Mji ulijengwa bila kuathiriwa na biashara ya baharini",
+      "Usanifu wake ulitokana hasa na hekalu za milimani za Asia ya Kati"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "UNESCO inaeleza usanifu wa Lamu kama utamaduni wa Waswahili ulioundwa na mwingiliano wa maeneo kadhaa ya biashara.",
+    "sourceUrl": "https://whc.unesco.org/en/list/1055/"
+  },
+  {
+    "id": "v4-sw-very-hard-moon-cycle",
+    "language": "sw",
+    "difficulty": "very_hard",
+    "topic": "science",
+    "prompt": "Kwa nini mzunguko wa awamu za Mwezi huchukua muda mrefu kuliko mzunguko wake kuizunguka Dunia mara moja? (Why is a phase cycle longer than one lunar orbit?)",
+    "options": [
+      "Dunia husogea kuzunguka Jua, hivyo Mwezi lazima usafiri zaidi ili kurudia mpangilio uleule",
+      "Mwezi husimama kwa siku mbili kila baada ya mwezi mmoja",
+      "Mzunguko wa Mwezi hugeuka upande wa pili baada ya Mwezi mpevu",
+      "Jua huzuia Mwezi kukamilisha mzunguko wake kwa wiki moja"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Dunia nayo husogea katika obiti yake, hivyo Mwezi huhitaji muda wa ziada ili kurudia mpangilio uleule wa Jua na Dunia.",
+    "sourceUrl": "https://science.nasa.gov/moon/facts/"
+  },
+  {
+    "id": "v4-sw-very-hard-impression",
+    "language": "sw",
+    "difficulty": "very_hard",
+    "topic": "art",
+    "prompt": "Kwa nini jina la Impression, Sunrise lilihusishwa na Impressionism? (Why was Impression, Sunrise linked to Impressionism?)",
+    "options": [
+      "Mkosoaji alitumia jina la mchoro kueleza kazi hizo kama 'taswira' badala ya picha zilizokamilika",
+      "Mchoro huo ulikuwa na sheria rasmi za shule ya sanaa ya Paris",
+      "Monet alitumia jina hilo kwa kila mchoro wa alfajiri",
+      "Jina hilo lilitokana na rangi maalumu iliyotengenezwa na Monet"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Mkosoaji Louis Leroy alitumia jina la mchoro wa Monet katika maoni yake kuhusu maonyesho ya 1874.",
+    "sourceUrl": "https://www.metmuseum.org/essays/impressionism-art-and-modernity"
+  },
+  {
+    "id": "v4-sw-very-hard-mangrove",
+    "language": "sw",
+    "difficulty": "very_hard",
+    "topic": "environment",
+    "prompt": "Mikoko inaweza kusaidia kujenga ukingo wa matope kwa njia gani? (How can mangroves help build a muddy shoreline?)",
+    "options": [
+      "Mizizi hupunguza kasi ya maji na kunasa mashapo yanayosafirishwa",
+      "Majani yake hubadilisha maji yote ya bahari kuwa mvua",
+      "Mizizi huzuia mawimbi na kuondoa mikondo ya bahari kabisa",
+      "Mikoko huhamisha mchanga kutoka mito hadi vilima"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Mizizi ya mikoko hupunguza nguvu ya mtiririko na kunasa mashapo, ingawa matokeo hutegemea mazingira ya eneo.",
+    "sourceUrl": "https://oceanservice.noaa.gov/facts/mangroves.html"
+  },
+  {
+    "id": "v4-sw-very-hard-folio",
+    "language": "sw",
+    "difficulty": "very_hard",
+    "topic": "literature",
+    "prompt": "First Folio ilichapishwa miaka saba baada ya kifo cha Shakespeare. Kwa nini hilo ni muhimu kwa historia ya tamthilia zake? (Why does this timing matter?)",
+    "options": [
+      "Marafiki na wafanyakazi wenzake walikusanya tamthilia ambazo nyingi hazikuwa zimechapishwa pamoja",
+      "Shakespeare aliandika tamthilia zote akiwa hai ndani ya kitabu hicho",
+      "Kitabu hicho kilichapishwa kabla ya tamthilia zake kuigizwa",
+      "Wachapishaji walitafsiri tamthilia zake kutoka lugha ya Kigiriki"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "John Heminge na Henry Condell, waliokuwa wafanyakazi wenzake Shakespeare, walikusanya tamthilia katika toleo la 1623.",
+    "sourceUrl": "https://www.folger.edu/explore/shakespeare-in-print/publishing-shakespeare/"
+  },
+  {
+    "id": "v4-sw-very-hard-upwelling",
+    "language": "sw",
+    "difficulty": "very_hard",
+    "topic": "science",
+    "prompt": "Upepo wa pasati unapodhoofika wakati wa El Niño, kwa nini samaki fulani wa pwani ya Amerika Kusini huathirika? (Why can some South American coastal fish be affected?)",
+    "options": [
+      "Upwelling hupungua na kuleta virutubisho vichache vya kina juu ya bahari",
+      "Maji yote ya bahari hugeuka kuwa safi na kukosa chumvi",
+      "Mwezi huvuta samaki kutoka pwani hadi katikati ya Pasifiki",
+      "Mawimbi ya sauti huzuia samaki kula planktoni"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Upwelling huleta maji baridi yenye virutubisho juu; inapopungua, planktoni na viumbe wanaotegemea chakula hicho huathirika.",
+    "sourceUrl": "https://oceanservice.noaa.gov/facts/ninonina.html"
+  }
+]

@@ -4,6 +4,14 @@ import { QUIZ_QUESTION_COUNT } from '../constants';
 export const ChoiceIdSchema = z.enum(['a', 'b', 'c', 'd']);
 export const QuestionLanguageSchema = z.enum(['en', 'sw']);
 export const QuestionDifficultySchema = z.enum(['medium', 'challenging', 'hard', 'very_hard']);
+export const QuizRoundNumberSchema = z.union([z.literal(1), z.literal(2)]);
+
+export const QuizRoundQuerySchema = z.strictObject({
+  round: z
+    .enum(['1', '2'])
+    .default('1')
+    .transform((value) => Number(value) as 1 | 2),
+});
 
 export const QuizQuestionSchema = z.strictObject({
   id: z.string().min(1).max(64),
@@ -21,6 +29,7 @@ export const QuizQuestionSchema = z.strictObject({
 });
 
 export const QuizAnswerBodySchema = z.strictObject({
+  round: QuizRoundNumberSchema,
   questionId: z.string().min(1).max(64),
   selectedOptionId: ChoiceIdSchema,
 });
@@ -50,6 +59,7 @@ export const QuizAnswerSchema = z.strictObject({
 
 export const QuizStateSchema = z.strictObject({
   day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  round: QuizRoundNumberSchema,
   status: z.enum(['in_progress', 'finished']),
   currentIndex: z.number().int().min(0).max(QUIZ_QUESTION_COUNT),
   totalQuestions: z.literal(QUIZ_QUESTION_COUNT),
@@ -67,25 +77,41 @@ export const QuizStateSchema = z.strictObject({
   completedPlayers: z.number().int().nonnegative().optional(),
 });
 
-export const QuizLeaderboardSchema = z.strictObject({
-  day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+const LeaderboardItemSchema = z.strictObject({
+  position: z.number().int().positive(),
+  rank: z.number().int().positive(),
+  displayName: z.string().min(1).max(24),
+  score: z.number().int().nonnegative(),
+  correctCount: z.number().int().nonnegative(),
+});
+
+const RoundLeaderboardSchema = z.strictObject({
+  round: QuizRoundNumberSchema,
   totalPlayers: z.number().int().nonnegative(),
   playerRank: z.number().int().positive().nullable(),
-  items: z
-    .array(
-      z.strictObject({
-        position: z.number().int().positive(),
-        rank: z.number().int().positive(),
-        displayName: z.string().min(1).max(24),
-        score: z
-          .number()
-          .int()
-          .min(0)
-          .max(QUIZ_QUESTION_COUNT * 120),
-        correctCount: z.number().int().min(0).max(QUIZ_QUESTION_COUNT),
-      }),
-    )
-    .max(20),
+  playerScore: z
+    .number()
+    .int()
+    .min(0)
+    .max(QUIZ_QUESTION_COUNT * 120)
+    .nullable(),
+  items: z.array(LeaderboardItemSchema).max(20),
+});
+
+export const QuizLeaderboardSchema = z.strictObject({
+  day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  rounds: z.array(RoundLeaderboardSchema).length(2),
+  combined: z.strictObject({
+    totalPlayers: z.number().int().nonnegative(),
+    playerRank: z.number().int().positive().nullable(),
+    playerScore: z
+      .number()
+      .int()
+      .min(0)
+      .max(QUIZ_QUESTION_COUNT * 240)
+      .nullable(),
+    items: z.array(LeaderboardItemSchema).max(20),
+  }),
 });
 
 export const PlayerProfileSchema = z.strictObject({
@@ -126,12 +152,17 @@ export const PlayerHistorySchema = z.strictObject({
     .array(
       z.strictObject({
         day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        roundsCompleted: z.number().int().min(1).max(2),
         score: z
           .number()
           .int()
           .min(0)
-          .max(QUIZ_QUESTION_COUNT * 120),
-        correctCount: z.number().int().min(0).max(QUIZ_QUESTION_COUNT),
+          .max(QUIZ_QUESTION_COUNT * 240),
+        correctCount: z
+          .number()
+          .int()
+          .min(0)
+          .max(QUIZ_QUESTION_COUNT * 2),
         completedAt: z.string().datetime(),
       }),
     )

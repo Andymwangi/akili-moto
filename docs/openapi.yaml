@@ -28,7 +28,12 @@ paths:
   /quiz:
     get:
       summary: Get or resume today's quiz
-      description: The server determines the date and returns only the current unanswered question. It never returns future questions or answer keys.
+      description: The server determines the date and returns only the current unanswered question for the requested round. Round two unlocks after round one is complete.
+      parameters:
+        - in: query
+          name: round
+          required: false
+          schema: { type: string, enum: ["1", "2"], default: "1" }
       responses:
         "200":
           description: Quiz state
@@ -236,8 +241,9 @@ components:
     QuizAnswerRequest:
       type: object
       additionalProperties: false
-      required: [questionId, selectedOptionId]
+      required: [round, questionId, selectedOptionId]
       properties:
+        round: { type: integer, enum: [1, 2] }
         questionId: { type: string, minLength: 1, maxLength: 64 }
         selectedOptionId: { type: string, enum: [a, b, c, d] }
     QuizQuestion:
@@ -283,9 +289,11 @@ components:
             sourceUrl: { type: string, format: uri }
     QuizState:
       type: object
-      required: [day, status, currentIndex, totalQuestions, score, correctCount, startedAt, answers]
+      required:
+        [day, round, status, currentIndex, totalQuestions, score, correctCount, startedAt, answers]
       properties:
         day: { type: string, format: date }
+        round: { type: integer, enum: [1, 2] }
         status: { type: string, enum: [in_progress, finished] }
         currentIndex: { type: integer, minimum: 0, maximum: 10 }
         totalQuestions: { const: 10 }
@@ -302,23 +310,43 @@ components:
         completedPlayers: { type: integer, minimum: 0 }
     QuizLeaderboard:
       type: object
-      required: [day, totalPlayers, playerRank, items]
+      required: [day, rounds, combined]
       properties:
         day: { type: string, format: date }
+        rounds:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items: { $ref: "#/components/schemas/RoundLeaderboard" }
+        combined: { $ref: "#/components/schemas/CombinedLeaderboard" }
+    RoundLeaderboard:
+      type: object
+      required: [round, totalPlayers, playerRank, playerScore, items]
+      properties:
+        round: { type: integer, enum: [1, 2] }
         totalPlayers: { type: integer, minimum: 0 }
         playerRank: { type: [integer, "null"], minimum: 1 }
+        playerScore: { type: [integer, "null"], minimum: 0, maximum: 1200 }
         items:
-          type: array
-          maxItems: 20
-          items:
-            type: object
-            required: [position, rank, score, correctCount, displayName]
-            properties:
-              position: { type: integer, minimum: 1 }
-              rank: { type: integer, minimum: 1 }
-              displayName: { type: string, minLength: 1, maxLength: 24 }
-              score: { type: integer, minimum: 0, maximum: 1200 }
-              correctCount: { type: integer, minimum: 0, maximum: 10 }
+          { type: array, maxItems: 20, items: { $ref: "#/components/schemas/LeaderboardItem" } }
+    CombinedLeaderboard:
+      type: object
+      required: [totalPlayers, playerRank, playerScore, items]
+      properties:
+        totalPlayers: { type: integer, minimum: 0 }
+        playerRank: { type: [integer, "null"], minimum: 1 }
+        playerScore: { type: [integer, "null"], minimum: 0, maximum: 2400 }
+        items:
+          { type: array, maxItems: 20, items: { $ref: "#/components/schemas/LeaderboardItem" } }
+    LeaderboardItem:
+      type: object
+      required: [position, rank, score, correctCount, displayName]
+      properties:
+        position: { type: integer, minimum: 1 }
+        rank: { type: integer, minimum: 1 }
+        displayName: { type: string, minLength: 1, maxLength: 24 }
+        score: { type: integer, minimum: 0, maximum: 2400 }
+        correctCount: { type: integer, minimum: 0, maximum: 20 }
     PlayerProfile:
       type: object
       additionalProperties: false
@@ -337,11 +365,12 @@ components:
           maxItems: 50
           items:
             type: object
-            required: [day, score, correctCount, completedAt]
+            required: [day, roundsCompleted, score, correctCount, completedAt]
             properties:
               day: { type: string, format: date }
-              score: { type: integer, minimum: 0, maximum: 1200 }
-              correctCount: { type: integer, minimum: 0, maximum: 10 }
+              roundsCompleted: { type: integer, minimum: 1, maximum: 2 }
+              score: { type: integer, minimum: 0, maximum: 2400 }
+              correctCount: { type: integer, minimum: 0, maximum: 20 }
               completedAt: { type: string, format: date-time }
         nextBefore: { type: [string, "null"], format: date }
   responses:
