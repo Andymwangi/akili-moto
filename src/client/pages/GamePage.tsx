@@ -13,6 +13,7 @@ import {
   submitQuizAnswer,
   updatePlayerName,
 } from '../api';
+import { cachePlayerName, getCachedPlayerName, getCachedPlayerState } from '../player-cache';
 import { persistTheme, resolveTheme } from '../theme';
 
 type ChoiceId = 'a' | 'b' | 'c' | 'd';
@@ -52,12 +53,24 @@ function feedbackText(answer: QuizAnswer): string {
     : 'Not quite. Lock in for the next one.';
 }
 
+function isDefaultPlayerName(
+  profile: Readonly<{ playerId: string; displayName: string }>,
+): boolean {
+  const generatedName = `Player-${profile.playerId.replaceAll('-', '').slice(0, 17).toUpperCase()}`;
+  return profile.displayName === generatedName;
+}
+
+function isValidPlayerName(name: string): boolean {
+  return name.length >= 2 && name.length <= 24 && /^[A-Za-z0-9][A-Za-z0-9 _-]*$/.test(name);
+}
+
 export function GamePage() {
   const queryClient = useQueryClient();
+  const [gameStarted, setGameStarted] = useState(false);
   const [feedbackIndex, setFeedbackIndex] = useState<number | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [notice, setNotice] = useState('');
-  const [nameInput, setNameInput] = useState('');
+  const [nameInput, setNameInput] = useState(() => getCachedPlayerName() ?? '');
   const [recoveryInput, setRecoveryInput] = useState('');
   const [profileNotice, setProfileNotice] = useState('');
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -71,10 +84,17 @@ export function GamePage() {
     queryKey: ['quiz'],
     queryFn: getQuiz,
     staleTime: 0,
-    enabled: Boolean(profileQuery.data),
+    enabled: Boolean(profileQuery.data) && gameStarted,
   });
   const quiz = quizQuery.data;
+  const profilePlayerId = profileQuery.data?.playerId;
   const profileDisplayName = profileQuery.data?.displayName;
+  const normalizedName = nameInput.trim();
+  const canStart = Boolean(
+    profileQuery.data &&
+      isValidPlayerName(normalizedName) &&
+      !(isDefaultPlayerName(profileQuery.data) && normalizedName === profileQuery.data.displayName),
+  );
   const currentAnswer = latestAnswer(quiz);
   const isFinished = quiz?.status === 'finished';
   const showingFeedback = Boolean(
@@ -100,12 +120,13 @@ export function GamePage() {
       getPlayerHistory({ limit: 20, ...(pageParam ? { before: pageParam } : {}) }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextBefore ?? undefined,
-    enabled: Boolean(profileQuery.data),
+    enabled: Boolean(profileQuery.data) && gameStarted,
     staleTime: 30_000,
   });
   const nameMutation = useMutation({
-    mutationFn: () => updatePlayerName(nameInput),
+    mutationFn: () => updatePlayerName(nameInput.trim()),
     onSuccess: (profile) => {
+      cachePlayerName(profile.displayName);
       const current = queryClient.getQueryData<typeof profile>(['player']);
       queryClient.setQueryData(['player'], {
         ...profile,
@@ -117,6 +138,39 @@ export function GamePage() {
     onError: (error) => {
       setProfileNotice(
         error instanceof ApiClientError ? error.message : 'The name could not be saved.',
+      );
+    },
+  });
+  const startMutation = useMutation({
+    mutationFn: async () => {
+      const profile = profileQuery.data;
+      const displayName = nameInput.trim();
+      if (!profile || !isValidPlayerName(displayName)) {
+        throw new Error('Choose a valid player name before starting.');
+      }
+      if (isDefaultPlayerName(profile) && displayName === profile.displayName) {
+        throw new Error('Choose your player name before starting.');
+      }
+      return displayName === profile.displayName ? profile : updatePlayerName(displayName);
+    },
+    onSuccess: (profile) => {
+      cachePlayerName(profile.displayName);
+      const current = queryClient.getQueryData<typeof profile>(['player']);
+      queryClient.setQueryData(['player'], {
+        ...profile,
+        ...(current?.recoveryCode ? { recoveryCode: current.recoveryCode } : {}),
+      });
+      if (current?.displayName !== profile.displayName) {
+        void queryClient.invalidateQueries({ queryKey: ['quiz', 'leaderboard'] });
+      }
+      setProfileNotice('');
+      setGameStarted(true);
+    },
+    onError: (error) => {
+      setProfileNotice(
+        error instanceof ApiClientError
+          ? error.message
+          : 'Your name could not be saved. Try again.',
       );
     },
   });
@@ -134,10 +188,10 @@ export function GamePage() {
       queryClient.removeQueries({ queryKey: ['quiz'] });
       queryClient.removeQueries({ queryKey: ['player', 'history'] });
       queryClient.setQueryData(['player'], profile);
+      setGameStarted(false);
+      cachePlayerName(profile.displayName, false);
       setRecoveryInput('');
       setProfileNotice('Your saved player identity has been restored on this device.');
-      void queryClient.invalidateQueries({ queryKey: ['quiz'] });
-      void queryClient.invalidateQueries({ queryKey: ['player', 'history'] });
     },
     onError: (error) => {
       setProfileNotice(
@@ -173,8 +227,31 @@ export function GamePage() {
   }, [quiz?.currentQuestionOpenedAt, quiz?.status, showingFeedback, quiz]);
 
   useEffect(() => {
-    if (profileDisplayName) setNameInput(profileDisplayName);
-  }, [profileDisplayName]);
+    if (profilePlayerId && profileDisplayName) {
+      const profile = { playerId: profilePlayerId, displayName: profileDisplayName };
+      setNameInput(isDefaultPlayerName(profile) ? '' : profile.displayName);
+    }
+  }, [profilePlayerId, profileDisplayName]);
+
+  useEffect(() => {
+    if (!profilePlayerId || !profileDisplayName) return;
+    const profile = { playerId: profilePlayerId, displayName: profileDisplayName };
+    const cachedPlayer = getCachedPlayerState();
+    if (profileQuery.data?.recoveryCode) {
+      cachePlayerName(profileDisplayName, false);
+      return;
+    }
+    if (cachedPlayer?.displayName === profileDisplayName && cachedPlayer.resume) {
+      setGameStarted(true);
+      return;
+    }
+    if (!cachedPlayer && !isDefaultPlayerName(profile)) {
+      // Existing server identities predate the browser cache; their signed cookie
+      // confirms this browser has already played.
+      cachePlayerName(profileDisplayName, true);
+      setGameStarted(true);
+    }
+  }, [profilePlayerId, profileDisplayName, profileQuery.data]);
 
   useEffect(() => {
     if (!quiz || quiz.status === 'finished' || quiz.answers.length === 0) return;
@@ -227,7 +304,100 @@ export function GamePage() {
         </div>
       </header>
 
-      <section className="player-panel" aria-label="Player profile">
+      {!gameStarted && (
+        <section className="start-panel" aria-labelledby="start-title">
+          <div className="start-panel-heading">
+            <p className="eyebrow">YOUR DAILY CHALLENGE</p>
+            <h1 id="start-title">Ready to play?</h1>
+            <p className="intro-copy">
+              Choose the name you want on the leaderboard. Your ten-question challenge begins when
+              you press start.
+            </p>
+          </div>
+
+          {profileQuery.isPending && (
+            <p className="status-inline">Preparing your player profile…</p>
+          )}
+          {profileQuery.isError && (
+            <div className="error-card" role="alert">
+              Your player profile could not load.
+              <button type="button" onClick={() => void profileQuery.refetch()}>
+                Retry
+              </button>
+            </div>
+          )}
+          {profileQuery.data && (
+            <form
+              className="start-form"
+              onSubmit={(event: FormEvent<HTMLFormElement>) => {
+                event.preventDefault();
+                startMutation.mutate();
+              }}
+            >
+              <label htmlFor="start-player-name">Your player name</label>
+              <input
+                id="start-player-name"
+                value={nameInput}
+                maxLength={24}
+                onChange={(event) => {
+                  setNameInput(event.target.value);
+                  setProfileNotice('');
+                }}
+                autoComplete="nickname"
+                aria-describedby="start-name-hint"
+                placeholder="Choose a name"
+              />
+              <p className="start-name-hint" id="start-name-hint">
+                2–24 letters, numbers, spaces, hyphens, or underscores. This name appears on the
+                leaderboard.
+              </p>
+              <button
+                className="start-button"
+                type="submit"
+                disabled={!canStart || profileQuery.isFetching || startMutation.isPending}
+              >
+                {startMutation.isPending ? 'Saving your name…' : "Start today's game"}
+              </button>
+            </form>
+          )}
+
+          {profileNotice && (
+            <p className="profile-notice" role={startMutation.isError ? 'alert' : 'status'}>
+              {profileNotice}
+            </p>
+          )}
+
+          <details className="recover-form start-recovery">
+            <summary>Already have a player name? Restore your identity</summary>
+            <p>
+              Use your recovery code to bring back your saved name and game history before you
+              start.
+            </p>
+            <form
+              onSubmit={(event: FormEvent<HTMLFormElement>) => {
+                event.preventDefault();
+                recoverMutation.mutate();
+              }}
+            >
+              <label htmlFor="start-recovery-code">Recovery code</label>
+              <div className="name-form-controls">
+                <input
+                  id="start-recovery-code"
+                  value={recoveryInput}
+                  onChange={(event) => setRecoveryInput(event.target.value)}
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                <button type="submit" disabled={recoverMutation.isPending || !recoveryInput.trim()}>
+                  {recoverMutation.isPending ? 'Restoring…' : 'Restore player'}
+                </button>
+              </div>
+            </form>
+          </details>
+        </section>
+      )}
+
+      <section className="player-panel" aria-label="Player profile" hidden={!gameStarted}>
         {profileQuery.isPending && <p className="status-inline">Loading your player profile…</p>}
         {profileQuery.isError && (
           <div className="error-card" role="alert">
@@ -240,10 +410,6 @@ export function GamePage() {
         {profileQuery.data && (
           <>
             <div className="player-profile-heading">
-              <div>
-                <span className="eyebrow">YOUR PLAYER ID</span>
-                <strong className="player-id">{profileQuery.data.playerId}</strong>
-              </div>
               <form
                 className="name-form"
                 onSubmit={(event: FormEvent<HTMLFormElement>) => {
@@ -323,7 +489,7 @@ export function GamePage() {
         )}
       </section>
 
-      <section className="hero" aria-labelledby="page-title">
+      <section className="hero" aria-labelledby="page-title" hidden={!gameStarted}>
         <div className="hero-copy">
           <p className="eyebrow">A DAILY TEST OF KNOWLEDGE</p>
           <h1 id="page-title">Akili Moto</h1>
@@ -336,12 +502,12 @@ export function GamePage() {
         </div>
       </section>
 
-      {quizQuery.isPending && (
+      {gameStarted && quizQuery.isPending && (
         <p className="status-card" role="status">
           Loading today’s challenge…
         </p>
       )}
-      {quizQuery.isError && (
+      {gameStarted && quizQuery.isError && (
         <div className="status-card error-card" role="alert">
           The quiz could not load. Check your connection and try again.
           <button type="button" onClick={() => void quizQuery.refetch()}>
@@ -350,7 +516,7 @@ export function GamePage() {
         </div>
       )}
 
-      {quiz && (
+      {gameStarted && quiz && (
         <>
           <section className="score-strip" aria-label="Your challenge score">
             <div className="score-card score-card-primary">
@@ -547,7 +713,7 @@ export function GamePage() {
         </>
       )}
 
-      {profileQuery.data && (
+      {gameStarted && profileQuery.data && (
         <section className="history-panel" aria-labelledby="history-title">
           <div className="leaderboard-heading">
             <div>
@@ -593,7 +759,6 @@ export function GamePage() {
           )}
         </section>
       )}
-
       <footer className="page-footer">
         A shared challenge, set at midnight in Nairobi. The leaderboard ranks completed games.
       </footer>

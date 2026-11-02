@@ -318,7 +318,7 @@
             "The profile, recovery, name, history, and assignment flows have Workers integration tests, including invalid input, cross-player isolation, and concurrency.",
             "Cookie-authenticated writes reject missing or untrusted Origin headers, while the configured browser origin can submit them.",
             "Recovery throttling remains effective for concurrent requests and expired hashed-IP counters are pruned.",
-            "The D1 change is additive and local-only; no remote migration or deployment is run."
+            "The additive D1 migrations apply successfully in production, and the production Worker runs with COOKIE_SIGNING_SECRET configured."
           ],
           "verify": [
             "corepack pnpm typecheck",
@@ -328,7 +328,40 @@
           ],
           "humanReview": true,
           "status": "needs_review",
-          "notes": "Implemented UUID-backed profiles, unique editable names, recovery-code restoration/rotation, paginated private history, leaderboard names, and database-enforced no-repeat daily set assignment. Recovery uses 160-bit codes stored as SHA-256 hashes; cookie-authenticated writes enforce allowed Origin. Recovery attempts use an atomic D1 counter keyed by hashed client IP. Verification passed: corepack pnpm typecheck, lint, 41 tests, production build and question leak scan. Migrations 0002-0004 were applied locally and the 0003 backfill was verified. No remote migration or deploy was run. Bounded selector (4,096 candidates) fails closed rather than reusing a set. Needs owner review, including recovery-code handling and production migration against existing remote assignments."
+          "notes": "Implemented UUID-backed profiles, unique editable names, recovery-code restoration/rotation, paginated private history, leaderboard names, and database-enforced no-repeat daily set assignment. Recovery uses 160-bit codes stored as SHA-256 hashes; cookie-authenticated writes enforce allowed Origin. Recovery attempts use an atomic D1 counter keyed by hashed client IP. Verification passed: corepack pnpm typecheck, lint, 41 tests, production build and question leak scan. Migrations 0002-0004 were applied locally and in production; the production Worker was deployed with COOKIE_SIGNING_SECRET configured. The 0003 backfill was verified. Bounded selector (4,096 candidates) fails closed rather than reusing a set. Needs owner review, including recovery-code handling and production migration against existing remote assignments."
+        },
+        {
+          "id": "P2-02",
+          "title": "Require player name choice before starting a daily game",
+          "description": "Make name selection the initial view. Do not request a quiz session or player history until the player starts; persist a changed name before starting and keep the player on the setup view if saving fails.",
+          "dependsOn": ["P2-01"],
+          "skills": ["react-data-fetching", "testing-strategy", "agent-honesty-and-verification"],
+          "files": [
+            "agent-plan.json",
+            "src/client/pages/GamePage.tsx",
+            "src/client/player-cache.ts",
+            "src/client/styles.css"
+          ],
+          "acceptance": [
+            "The initial view asks for a player name and offers an explicit Start action.",
+            "New players must replace the generated Player- name before they can start.",
+            "Saved player names are prefilled; returning players can start without changing them.",
+            "A changed name is persisted before the first quiz request; save failures leave the setup view visible with a clear retry path.",
+            "Quiz-session and history queries remain disabled until Start is clicked.",
+            "A recovered identity returns to the setup view and must explicitly start before loading its game.",
+            "The public UI does not display the internal player UUID; the browser cache stores only the display name and resume preference.",
+            "The chosen player name is cached in the same browser and a matching server profile resumes the current daily game.",
+            "The name label appears immediately above the input and the setup card uses compact spacing."
+          ],
+          "verify": [
+            "corepack pnpm typecheck",
+            "corepack pnpm lint",
+            "corepack pnpm test",
+            "corepack pnpm build"
+          ],
+          "humanReview": true,
+          "status": "needs_review",
+          "notes": "Implemented compact name-first setup, explicit Start, and same-browser resume using a local display name plus resume preference. The server profile must match the cached name before resuming; the player UUID is not stored in the browser cache. Existing named profiles without a cache are treated as returning players; new and recovered profiles remain at setup until Start. Verification passed: corepack pnpm typecheck, corepack pnpm lint, corepack pnpm build including the client leak scan, and git diff --check. Tests were not run."
         }
       ]
     }
