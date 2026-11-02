@@ -1,0 +1,172 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "a4a54b10-1b24-45fa-8881-1fe69a1f108f",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "allowed_guesses": {
+      "name": "allowed_guesses",
+      "columns": {
+        "word": {
+          "name": "word",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "answer_pool": {
+      "name": "answer_pool",
+      "columns": {
+        "word": {
+          "name": "word",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "daily_answers": {
+      "name": "daily_answers",
+      "columns": {
+        "day": {
+          "name": "day",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "word": {
+          "name": "word",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "daily_answers_word_unique": {
+          "name": "daily_answers_word_unique",
+          "columns": ["word"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "daily_answers_word_answer_pool_word_fk": {
+          "name": "daily_answers_word_answer_pool_word_fk",
+          "tableFrom": "daily_answers",
+          "tableTo": "answer_pool",
+          "columnsFrom": ["word"],
+          "columnsTo": ["word"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "guesses": {
+      "name": "guesses",
+      "columns": {
+        "day": {
+          "name": "day",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "attempt_no": {
+          "name": "attempt_no",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "guess": {
+          "name": "guess",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "feedback": {
+          "name": "feedback",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "idempotency_key": {
+          "name": "idempotency_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "guesses_player_day_idempotency_unique": {
+          "name": "guesses_player_day_idempotency_unique",
+          "columns": ["day", "player_id", "idempotency_key"],
+          "isUnique": true
+        },
+        "guesses_player_day_index": {
+          "name": "guesses_player_day_index",
+          "columns": ["player_id", "day"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "guesses_day_player_id_attempt_no_pk": {
+          "columns": ["day", "player_id", "attempt_no"],
+          "name": "guesses_day_player_id_attempt_no_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "guesses_attempt_no_range": {
+          "name": "guesses_attempt_no_range",
+          "value": "\"guesses\".\"attempt_no\" BETWEEN 1 AND 6"
+        }
+      }
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

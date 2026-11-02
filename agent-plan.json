@@ -1,0 +1,813 @@
+{
+  "$comment": "Task plan for AI coding agents. Read AGENTS.md section 7 for how to use this file. Owner: Anderson Mwangi.",
+  "schemaVersion": 2,
+  "project": {
+    "name": "Akili Moto",
+    "workingTitle": true,
+    "summary": "Daily shared trivia challenge with ten multiple-choice questions, seven in English and three in Swahili, server-scored points, and a daily leaderboard.",
+    "owner": "Anderson Mwangi",
+    "created": "2026-10-30",
+    "stack": [
+      "Cloudflare Workers",
+      "Hono",
+      "React",
+      "Vite",
+      "Zod",
+      "D1",
+      "Drizzle",
+      "KV",
+      "Cron Triggers",
+      "TanStack Query",
+      "Vitest",
+      "pnpm"
+    ]
+  },
+  "rules": {
+    "statuses": ["todo", "in_progress", "blocked", "needs_review", "done"],
+    "pickNext": "First task with status todo whose dependsOn tasks are all done.",
+    "oneTaskPerBranch": true,
+    "branchPattern": "task/\u003cid\u003e-\u003cslug\u003e",
+    "humanReviewTasksEndAt": "needs_review",
+    "neverDo": [
+      "deploy to production",
+      "apply remote migrations",
+      "change remote secrets",
+      "commit secrets",
+      "weaken auth or tests to pass a task",
+      "invent or generate Swahili words for the answer list or dictionary",
+      "send the daily answer to the client before the game is finished"
+    ],
+    "standardChecks": ["pnpm typecheck", "pnpm lint", "pnpm test", "pnpm build"]
+  },
+  "decisions": [
+    {
+      "id": "D1",
+      "question": "Database",
+      "default": "D1 with Drizzle",
+      "alternatives": ["Postgres via Hyperdrive"],
+      "status": "proposed",
+      "resolveIn": "P0-01"
+    },
+    {
+      "id": "D2",
+      "question": "Player identity",
+      "default": "Anonymous player id in a signed HttpOnly cookie, optional public handle, no email or password in v1",
+      "alternatives": ["Better Auth accounts", "magic link login"],
+      "status": "proposed",
+      "resolveIn": "P0-01"
+    },
+    {
+      "id": "D3",
+      "question": "Durable Objects needed?",
+      "default": "No. Attempt limits and concurrency are enforced by database unique constraints",
+      "alternatives": ["One Durable Object per player-day"],
+      "status": "proposed",
+      "resolveIn": "P0-01"
+    },
+    {
+      "id": "D4",
+      "question": "Package layout",
+      "default": "Single package with src/worker, src/client, src/shared",
+      "alternatives": ["pnpm workspace"],
+      "status": "proposed",
+      "resolveIn": "P0-01"
+    },
+    {
+      "id": "D5",
+      "question": "Letter model for Swahili",
+      "default": "Word length 5, letters a to z only, digraphs (ch, sh, ny, ng and so on) treated as separate letters, ng\u0027 stored as ng",
+      "alternatives": ["Treat digraphs as single tiles", "variable word length"],
+      "status": "proposed",
+      "resolveIn": "P0-01"
+    },
+    {
+      "id": "D6",
+      "question": "Word list source and licensing",
+      "default": "Owner supplies answers list and a larger dictionary. Source and licence recorded in docs/WORDLISTS.md. Agent never invents words",
+      "alternatives": ["Licensed open dictionary filtered by the owner"],
+      "status": "open",
+      "resolveIn": "P0-02"
+    },
+    {
+      "id": "D7",
+      "question": "Day boundary",
+      "default": "Midnight Africa/Nairobi (UTC+3, no DST), decided by the server",
+      "alternatives": ["UTC midnight"],
+      "status": "proposed",
+      "resolveIn": "P0-01"
+    },
+    {
+      "id": "D8",
+      "question": "Sheng mode",
+      "default": "Out of scope for v1, separate list and mode later",
+      "alternatives": ["Include in v1"],
+      "status": "proposed",
+      "resolveIn": "P0-01"
+    },
+    {
+      "id": "D9",
+      "question": "Daily quiz format",
+      "default": "Ten four-option questions per Nairobi day, seven English and three Swahili, shared in the same order",
+      "alternatives": ["Different questions per player", "Other language ratio"],
+      "status": "confirmed",
+      "resolveIn": "Q1-01"
+    },
+    {
+      "id": "D10",
+      "question": "Scoring",
+      "default": "100 points for a correct answer and a server-measured speed bonus up to 20 points during the first 20 seconds",
+      "alternatives": ["Correctness only"],
+      "status": "confirmed",
+      "resolveIn": "Q1-01"
+    },
+    {
+      "id": "D11",
+      "question": "Leaderboard ties",
+      "default": "Equal point totals share rank; only completed challenges are ranked",
+      "alternatives": ["Completion time breaks ties"],
+      "status": "confirmed",
+      "resolveIn": "Q1-01"
+    },
+    {
+      "id": "D12",
+      "question": "Question content review",
+      "default": "Sourced starter bank is a draft; owner and fluent Swahili reviewer approve before production",
+      "alternatives": ["Owner supplies all questions"],
+      "status": "open",
+      "resolveIn": "Q1-01"
+    }
+  ],
+  "phases": [
+    {
+      "id": "Q1",
+      "name": "Daily quiz MVP",
+      "goal": "Deliver a fair, fast daily trivia challenge with server-owned scoring and a shared leaderboard.",
+      "tasks": [
+        {
+          "id": "Q1-01",
+          "title": "Replace Wordle MVP with the daily trivia challenge",
+          "description": "Implement the approved ten-question shared daily challenge with a 7 English / 3 Swahili mix, server-side scoring, anonymous answer persistence, and a completed-player leaderboard. Keep the sourced starter bank draft-only pending owner and fluent reviewer approval. Preserve existing Wordle migrations as inactive legacy schema.",
+          "dependsOn": [],
+          "skills": [
+            "hono-workers-api",
+            "drizzle-orm",
+            "zod-validation",
+            "cloudflare-platform",
+            "react-data-fetching",
+            "testing-strategy",
+            "security-review",
+            "agent-honesty-and-verification"
+          ],
+          "files": [
+            "README.md",
+            "agent-plan.json",
+            "docs/DECISIONS.md",
+            "docs/QUESTIONS.md",
+            "docs/UNVERIFIED.md",
+            "src/shared/constants.ts",
+            "src/shared/schemas/quiz.ts",
+            "src/worker/db/schema.ts",
+            "src/worker/db/queries/quiz-repository.ts",
+            "src/worker/lib/quiz/",
+            "src/worker/routes/quiz.ts",
+            "src/worker/index.ts",
+            "src/worker/public-routes.ts",
+            "src/worker/middleware/rate-limit.ts",
+            "src/client/api.ts",
+            "src/client/pages/GamePage.tsx",
+            "src/client/styles.css",
+            "data/quiz-questions.json",
+            "migrations/",
+            "scripts/check-bundle-leaks.ts",
+            "test/"
+          ],
+          "acceptance": [
+            "All players receive the same ten question IDs in the same order for a Nairobi day, with seven English and three Swahili questions.",
+            "The client cannot submit score, answer keys, or future question IDs; the server validates sequence and calculates points.",
+            "One player cannot score twice for a question through retries or concurrent requests.",
+            "The answer, explanation, and source appear only after that question is answered.",
+            "Only completed sessions appear in the daily leaderboard; equal scores share rank and responses omit player IDs.",
+            "The React app handles loading, error, answer feedback, progress, completion, and leaderboard states on mobile layouts.",
+            "The sourced question bank is documented as a draft requiring human review before production."
+          ],
+          "verify": ["pnpm typecheck", "pnpm lint", "pnpm test", "pnpm build"],
+          "humanReview": true,
+          "status": "needs_review",
+          "notes": "Implemented the daily trivia MVP on task/quiz-daily-challenge. Local D1 migration applied. Verification: typecheck passed; lint passed with five non-blocking style warnings; all 27 tests passed; production build and client leak check passed; Cloudflare deploy dry run passed. Question bank remains a sourced draft pending owner and fluent Swahili review. No remote migration or deployment was run."
+        }
+      ]
+    }
+  ],
+  "backlog": [
+    {
+      "id": "B-001",
+      "title": "Past-day archive mode on a separate endpoint",
+      "status": "todo",
+      "notes": ""
+    },
+    {
+      "id": "B-002",
+      "title": "Sheng mode with its own word lists and moderation rules (decision D8)",
+      "status": "todo",
+      "notes": ""
+    },
+    {
+      "id": "B-003",
+      "title": "Installable PWA with offline shell and a small service worker",
+      "status": "todo",
+      "notes": "Game guesses still need the network because validation is server-side."
+    },
+    {
+      "id": "B-004",
+      "title": "Shareable result card image (Open Graph) generated at the edge",
+      "status": "todo",
+      "notes": "Must never include the answer."
+    },
+    {
+      "id": "B-005",
+      "title": "Optional accounts for cross-device streaks (revisit decision D2)",
+      "status": "todo",
+      "notes": ""
+    },
+    {
+      "id": "B-006",
+      "title": "Hard mode and word-length variants",
+      "status": "todo",
+      "notes": ""
+    }
+  ],
+  "supersededWordlePhases": [
+    {
+      "id": "P0",
+      "name": "Preflight and decisions",
+      "goal": "Confirm versions, resolve open decisions, and get the word lists in place before writing game code.",
+      "tasks": [
+        {
+          "id": "P0-01",
+          "title": "Verify current tooling and record decisions",
+          "description": "Check current official docs for Workers, Hono, the Cloudflare Vite plugin, Workers Static Assets, Cron Triggers (including how the cron expression maps to midnight in Nairobi), Drizzle with D1, and the Workers Vitest pool. Record exact versions and any differences from AGENTS.md. Confirm decisions D1 to D5, D7, and D8 with the owner. Write results to docs/DECISIONS.md and unverifiable claims to docs/UNVERIFIED.md.",
+          "dependsOn": [],
+          "skills": ["cloudflare-platform", "hono-workers-api", "agent-honesty-and-verification"],
+          "files": ["docs/DECISIONS.md", "docs/UNVERIFIED.md"],
+          "acceptance": [
+            "Versions recorded for every core dependency with the date checked",
+            "Decisions confirmed or changed with reasons",
+            "Cron expression for midnight Africa/Nairobi verified against current docs",
+            "AGENTS.md updated if reality differs from it"
+          ],
+          "verify": [],
+          "humanReview": true,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        },
+        {
+          "id": "P0-02",
+          "title": "Word list intake and validation script",
+          "description": "Define the file format for data/answers and data/dictionary (one word per line, lowercase, 5 letters a to z). Write scripts/validate-wordlists.ts that checks length, characters, duplicates, that every answer is also in the dictionary, and that no word appears in a blocklist file. Create docs/WORDLISTS.md with source and licence fields for the owner to fill. Do NOT create real Swahili words. Use only the owner\u0027s files. If none are supplied yet, create fake fixture lists in test/fixtures/ and mark this task blocked on the owner for real data.",
+          "dependsOn": ["P0-01"],
+          "skills": ["testing-strategy", "typescript-conventions"],
+          "files": ["scripts/validate-wordlists.ts", "docs/WORDLISTS.md", "test/fixtures/"],
+          "acceptance": [
+            "Validator exits nonzero on any invalid, duplicate, or missing-from-dictionary word",
+            "Validator has tests using fake fixture words",
+            "docs/WORDLISTS.md has source and licence fields for each list"
+          ],
+          "verify": ["pnpm test"],
+          "humanReview": true,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        }
+      ]
+    },
+    {
+      "id": "P1",
+      "name": "Scaffold and tooling",
+      "goal": "A repo that installs, type-checks, lints, tests, and builds, with CI and secret scanning from the first commit.",
+      "tasks": [
+        {
+          "id": "P1-01",
+          "title": "Initialize repository and package",
+          "description": "Create package.json with pinned versions, pnpm lockfile, strict tsconfig, .gitignore (including .dev.vars and .env*), .editorconfig, and the directory layout from AGENTS.md section 5.",
+          "dependsOn": ["P0-01"],
+          "skills": ["typescript-conventions", "config-and-secrets"],
+          "files": ["package.json", "tsconfig.json", ".gitignore", ".editorconfig", "src/"],
+          "acceptance": [
+            "pnpm install --frozen-lockfile succeeds",
+            "tsconfig has strict true and noUncheckedIndexedAccess true",
+            "No secret files are tracked by git"
+          ],
+          "verify": ["pnpm install --frozen-lockfile", "pnpm typecheck"],
+          "humanReview": false,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        },
+        {
+          "id": "P1-02",
+          "title": "Lint, format, and scripts",
+          "description": "Configure Biome (or the decided tool) and add the scripts listed in AGENTS.md section 6.",
+          "dependsOn": ["P1-01"],
+          "skills": ["typescript-conventions"],
+          "files": ["biome.json", "package.json"],
+          "acceptance": ["All scripts exist and run", "Lint passes on the empty scaffold"],
+          "verify": ["pnpm lint", "pnpm typecheck"],
+          "humanReview": false,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        },
+        {
+          "id": "P1-03",
+          "title": "Worker, Vite, and wrangler configuration",
+          "description": "Add wrangler.jsonc with compatibility date, static assets configuration for the SPA, a D1 binding placeholder, a KV binding placeholder, and a cron trigger placeholder. Add vite.config.ts using the Cloudflare Vite plugin. Do not create remote resources.",
+          "dependsOn": ["P1-01"],
+          "skills": ["cloudflare-platform", "hono-workers-api"],
+          "files": ["wrangler.jsonc", "vite.config.ts", ".dev.vars.example"],
+          "acceptance": [
+            "pnpm dev serves the frontend and a Worker route locally",
+            "pnpm cf:types generates binding types",
+            ".dev.vars.example lists variable names only, no values"
+          ],
+          "verify": ["pnpm cf:types", "pnpm build", "pnpm deploy:dry"],
+          "humanReview": true,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        },
+        {
+          "id": "P1-04",
+          "title": "Continuous integration and secret scanning",
+          "description": "Add a GitHub Actions workflow running install, typecheck, lint, test, and build on every push and pull request, with minimal permissions and actions pinned to commit SHAs. Add secret scanning and dependency audit, plus Dependabot or Renovate. Add a CI step that runs scripts/validate-wordlists.ts.",
+          "dependsOn": ["P1-02", "P0-02"],
+          "skills": ["security-review", "git-and-pr-workflow"],
+          "files": [".github/workflows/ci.yml", ".github/dependabot.yml"],
+          "acceptance": [
+            "Workflow permissions are read-only by default",
+            "All third-party actions pinned to a full commit SHA",
+            "Secret scan, dependency audit, and word list validation run on pull requests"
+          ],
+          "verify": ["pnpm typecheck", "pnpm lint", "pnpm test", "pnpm build"],
+          "humanReview": true,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        }
+      ]
+    },
+    {
+      "id": "P2",
+      "name": "API foundation",
+      "goal": "A secure-by-default Hono app with typed config, consistent errors, anonymous player identity, and rate limiting.",
+      "tasks": [
+        {
+          "id": "P2-01",
+          "title": "Typed environment and startup validation",
+          "description": "Create src/worker/env.ts with the Bindings type and a Zod schema validating config and secrets, including the cookie signing secret. Fail fast with a clear non-leaking error.",
+          "dependsOn": ["P1-03"],
+          "skills": ["config-and-secrets", "zod-validation"],
+          "files": ["src/worker/env.ts"],
+          "acceptance": [
+            "Invalid or missing config produces a clear, non-leaking error",
+            "Unit tests cover valid and invalid config"
+          ],
+          "verify": ["pnpm test", "pnpm typecheck"],
+          "humanReview": false,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        },
+        {
+          "id": "P2-02",
+          "title": "Hono app, middleware stack, and error envelope",
+          "description": "Compose the app in src/worker/index.ts with the fixed middleware order from AGENTS.md section 8. Add GET /api/health. Export AppType. All errors use the standard envelope with a request id.",
+          "dependsOn": ["P2-01"],
+          "skills": ["hono-workers-api", "api-design", "security-review"],
+          "files": ["src/worker/index.ts", "src/worker/middleware/", "src/worker/routes/health.ts"],
+          "acceptance": [
+            "Every error response matches the envelope and includes a request id",
+            "No stack traces or internal details in responses",
+            "Secure headers present on all responses",
+            "AppType exported"
+          ],
+          "verify": ["pnpm test", "pnpm typecheck"],
+          "humanReview": true,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        },
+        {
+          "id": "P2-03",
+          "title": "Anonymous player identity (signed cookie)",
+          "description": "Implement middleware that reads a signed player cookie or creates a new anonymous player id. Cookie is HttpOnly, Secure, SameSite=Lax, signed with a Workers secret, with constant-time signature comparison. Tampered or missing cookies become a new player without leaking why. Keep a single public-route allowlist file and a test that fails if a registered route is not classified.",
+          "dependsOn": ["P2-02"],
+          "skills": ["auth-patterns", "security-review", "testing-strategy"],
+          "files": [
+            "src/worker/middleware/player.ts",
+            "src/worker/public-routes.ts",
+            "test/player-cookie.test.ts",
+            "test/routes-classified.test.ts"
+          ],
+          "acceptance": [
+            "Cookie attributes verified in tests",
+            "Tampered cookie yields a new player, never an error that reveals validity details",
+            "Route classification test fails when a new route is unclassified"
+          ],
+          "verify": ["pnpm test"],
+          "humanReview": true,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        },
+        {
+          "id": "P2-04",
+          "title": "Rate limiting",
+          "description": "Add rate limiting using the approach chosen in P0-01. Apply tight limits to POST /api/game/guess (per player and per IP), handle changes, and leaderboard reads. Return 429 with Retry-After in the standard envelope.",
+          "dependsOn": ["P2-03"],
+          "skills": ["cloudflare-platform", "security-review"],
+          "files": ["src/worker/middleware/rate-limit.ts"],
+          "acceptance": [
+            "Limits apply per player and per IP",
+            "429 responses use the standard error envelope",
+            "Tests cover limit reached and limit reset"
+          ],
+          "verify": ["pnpm test"],
+          "humanReview": false,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        }
+      ]
+    },
+    {
+      "id": "P3",
+      "name": "Shared contract",
+      "goal": "One source of truth for request and response shapes, used by server and client.",
+      "tasks": [
+        {
+          "id": "P3-01",
+          "title": "Shared Zod schemas",
+          "description": "Create schemas in src/shared/schemas for: GuessRequest (attemptNo 1 to 6, guess as 5 lowercase a to z letters), LetterFeedback (correct, present, absent), GameState (status, attempts with feedback, answer only when finished), Stats (played, won, current streak, max streak, guess distribution), Handle (length and allowed characters), and LeaderboardEntry. Use strict objects on all write inputs. Export inferred types. No word lists in shared/.",
+          "dependsOn": ["P2-02"],
+          "skills": ["zod-validation", "typescript-conventions"],
+          "files": ["src/shared/schemas/", "src/shared/constants.ts"],
+          "acceptance": [
+            "Write schemas reject unknown fields",
+            "GameState type makes the answer optional and documents when it may be present",
+            "Types come from z.infer, no duplicated hand-written types",
+            "Unit tests cover valid, invalid, and extra-field inputs"
+          ],
+          "verify": ["pnpm test", "pnpm typecheck"],
+          "humanReview": false,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        }
+      ]
+    },
+    {
+      "id": "P4",
+      "name": "Data layer",
+      "goal": "Schema and migrations on D1 with Drizzle, with integrity enforced by constraints.",
+      "tasks": [
+        {
+          "id": "P4-01",
+          "title": "Drizzle schema and first migration",
+          "description": "Define tables: players (id, optional unique handle, created_at), answer_pool (word, used_on nullable), daily_words (day primary key, word, created_at), attempts (player_id, day, attempt_no, guess, feedback, created_at) with a unique constraint on (player_id, day, attempt_no) and a check that attempt_no is between 1 and 6, and games (player_id, day, status, attempts_used, finished_at) unique on (player_id, day). Generate and review the migration, apply to local D1 only.",
+          "dependsOn": ["P3-01"],
+          "skills": ["drizzle-orm", "safe-migrations", "cloudflare-platform"],
+          "files": [
+            "src/worker/db/schema.ts",
+            "src/worker/db/client.ts",
+            "drizzle.config.ts",
+            "migrations/"
+          ],
+          "acceptance": [
+            "Migration SQL reviewed and committed",
+            "Applied to local D1 only",
+            "Unique and check constraints present",
+            "Each index has its reason recorded in docs/DECISIONS.md"
+          ],
+          "verify": ["pnpm db:generate", "pnpm db:migrate:local", "pnpm test"],
+          "humanReview": true,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        },
+        {
+          "id": "P4-02",
+          "title": "Player-scoped data access functions",
+          "description": "Create query functions that always take the player id and filter by it inside the query. No function returns attempts or games without a player id. Include an atomic insert-attempt function that relies on the unique constraint to reject duplicates and over-limit attempts.",
+          "dependsOn": ["P4-01"],
+          "skills": ["drizzle-orm", "security-review", "testing-strategy"],
+          "files": ["src/worker/db/queries/"],
+          "acceptance": [
+            "Every query on attempts and games requires a player id",
+            "Tests prove player A cannot read or modify player B\u0027s rows",
+            "Tests prove concurrent duplicate attempts produce exactly one row"
+          ],
+          "verify": ["pnpm test"],
+          "humanReview": true,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        }
+      ]
+    },
+    {
+      "id": "P5",
+      "name": "Frontend scaffold",
+      "goal": "A typed React client that talks to the API only through the hc client.",
+      "tasks": [
+        {
+          "id": "P5-01",
+          "title": "React app shell and typed API client",
+          "description": "Create the Vite React entry, a QueryClient provider, and src/client/api.ts exporting the typed hc client built from AppType. Add global error and loading handling and a mobile first base layout.",
+          "dependsOn": ["P2-02"],
+          "skills": ["react-data-fetching", "hono-workers-api"],
+          "files": ["src/client/main.tsx", "src/client/api.ts", "src/client/"],
+          "acceptance": [
+            "Client imports only type AppType from the worker",
+            "A health check call works end to end in pnpm dev",
+            "No secrets or server-only code in the client bundle"
+          ],
+          "verify": ["pnpm typecheck", "pnpm build"],
+          "humanReview": false,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        },
+        {
+          "id": "P5-02",
+          "title": "Content-Security-Policy and safe rendering",
+          "description": "Define a strict CSP that matches the built assets. Confirm user-supplied text (handles) is rendered as text. Document any CSP exceptions with reasons in docs/THREAT-MODEL.md.",
+          "dependsOn": ["P5-01"],
+          "skills": ["security-review"],
+          "files": ["src/worker/middleware/security-headers.ts", "docs/THREAT-MODEL.md"],
+          "acceptance": [
+            "CSP blocks inline scripts unless a nonce or hash is used",
+            "No dangerouslySetInnerHTML without a recorded decision"
+          ],
+          "verify": ["pnpm build", "pnpm test"],
+          "humanReview": true,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        }
+      ]
+    },
+    {
+      "id": "P6",
+      "name": "Game features",
+      "goal": "The complete daily game as vertical slices: logic, daily word, endpoints, stats, leaderboard, UI, share.",
+      "tasks": [
+        {
+          "id": "P6-01",
+          "title": "Pure game logic",
+          "description": "In src/worker/lib/game implement: normalize (NFC, trim, lowercase), validate shape, compute Nairobi day key from a timestamp, and the two-pass feedback scoring function. No framework or binding imports. Test with fake fixture words only.",
+          "dependsOn": ["P3-01", "P0-02"],
+          "skills": ["typescript-conventions", "testing-strategy"],
+          "files": ["src/worker/lib/game/", "test/game/"],
+          "acceptance": [
+            "Scoring tests cover repeated letters in guess and answer, all-correct, all-absent, and mixed cases",
+            "Day key tests cover midnight boundaries and the 21:00 UTC rollover",
+            "Functions are pure and take time as an argument"
+          ],
+          "verify": ["pnpm test", "pnpm typecheck"],
+          "humanReview": true,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        },
+        {
+          "id": "P6-02",
+          "title": "Daily word selection (cron plus lazy fallback)",
+          "description": "Implement the scheduled handler that picks the next unused answer with crypto.getRandomValues and writes it with insert-or-ignore. Pre-pick the next day. Add the same idempotent path as a lazy fallback when today\u0027s word is missing. A word is never reused. Answers load from server-side data only.",
+          "dependsOn": ["P4-02", "P6-01"],
+          "skills": ["cloudflare-platform", "security-review"],
+          "files": ["src/worker/scheduled.ts", "src/worker/lib/words/", "test/daily-word.test.ts"],
+          "acceptance": [
+            "Running selection twice for the same day yields the same word",
+            "No word repeats until the pool is exhausted, and exhaustion is handled with a clear error and alert path",
+            "Missing cron does not break the game"
+          ],
+          "verify": ["pnpm test"],
+          "humanReview": true,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        },
+        {
+          "id": "P6-03",
+          "title": "Game endpoints",
+          "description": "Implement GET /api/game/today (current state for the caller, answer only if finished) and POST /api/game/guess (validates, rejects non-dictionary words without consuming an attempt, inserts the attempt atomically, returns feedback and status, reveals the answer only on finish). Handlers stay thin and call functions in lib and db.",
+          "dependsOn": ["P6-02", "P2-04"],
+          "skills": ["hono-workers-api", "api-design", "zod-validation", "security-review"],
+          "files": ["src/worker/routes/game.ts", "test/game-endpoints.test.ts"],
+          "acceptance": [
+            "Seventh guess rejected",
+            "Invalid word does not consume an attempt",
+            "Two concurrent identical guesses produce one attempt",
+            "Answer is absent from every response, error, and log until the game is finished",
+            "Tampered cookie cannot read or write another player\u0027s game"
+          ],
+          "verify": ["pnpm test", "pnpm typecheck"],
+          "humanReview": true,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        },
+        {
+          "id": "P6-04",
+          "title": "Stats and streaks",
+          "description": "Implement GET /api/stats computing played, won, current streak, max streak, and guess distribution from stored games. Streak logic handles missed days and the Nairobi day boundary.",
+          "dependsOn": ["P6-03"],
+          "skills": ["api-design", "testing-strategy"],
+          "files": [
+            "src/worker/routes/stats.ts",
+            "src/worker/lib/game/stats.ts",
+            "test/stats.test.ts"
+          ],
+          "acceptance": [
+            "Streak tests cover consecutive days, a missed day, a loss, and the day boundary",
+            "No stat is accepted from the client"
+          ],
+          "verify": ["pnpm test"],
+          "humanReview": false,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        },
+        {
+          "id": "P6-05",
+          "title": "Handles and leaderboard",
+          "description": "Implement PUT /api/handle (validate, blocklist check, unique constraint, rate limited) and GET /api/leaderboard (daily and streak boards computed server-side, cached in KV with a short TTL, D1 as the source of truth). Show handles only.",
+          "dependsOn": ["P6-04", "P2-04"],
+          "skills": ["api-design", "security-review", "cloudflare-platform"],
+          "files": [
+            "src/worker/routes/handle.ts",
+            "src/worker/routes/leaderboard.ts",
+            "test/leaderboard.test.ts"
+          ],
+          "acceptance": [
+            "Duplicate handle returns a clean error",
+            "Abusive or malformed handles are rejected",
+            "Leaderboard exposes no player ids, cookies, or answers",
+            "Cache expiry and miss paths tested"
+          ],
+          "verify": ["pnpm test"],
+          "humanReview": true,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        },
+        {
+          "id": "P6-06",
+          "title": "Game UI",
+          "description": "Build the board, on-screen keyboard (physical keyboard also works), feedback reveal, loading, error, invalid-word, and finished states using TanStack Query and the typed client. Color-blind-safe feedback with a non-color marker, screen reader labels, high-contrast option, works at 320px width, no layout shift on reveal. localStorage only for convenience, server state wins on mismatch.",
+          "dependsOn": ["P6-03", "P5-01"],
+          "skills": ["react-data-fetching"],
+          "files": ["src/client/"],
+          "acceptance": [
+            "All states handled on every data view",
+            "No answer letters present in client code or storage before the game ends",
+            "Accessibility checks pass (labels, keyboard, contrast, non-color cues)",
+            "Initial JS bundle size recorded in docs/DECISIONS.md"
+          ],
+          "verify": ["pnpm typecheck", "pnpm lint", "pnpm build"],
+          "humanReview": true,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        },
+        {
+          "id": "P6-07",
+          "title": "Stats, leaderboard, and share UI",
+          "description": "Add the stats view, leaderboard view with handle setting, and the share action that builds the emoji grid from server feedback. The shared text contains no answer letters, handle, or player id.",
+          "dependsOn": ["P6-04", "P6-05", "P6-06"],
+          "skills": ["react-data-fetching"],
+          "files": ["src/client/"],
+          "acceptance": [
+            "Share text verified by test to contain only grid emoji, the day number, and the attempt count",
+            "Loading, empty, and error states handled"
+          ],
+          "verify": ["pnpm typecheck", "pnpm test", "pnpm build"],
+          "humanReview": false,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        },
+        {
+          "id": "P6-08",
+          "title": "Answer-leak build check and end-to-end smoke test",
+          "description": "Add a build-time check that fails if any word from data/ appears in client assets. Add one end-to-end test through the real Worker locally: play a full game, hit the guess limit, and attempt cross-player access.",
+          "dependsOn": ["P6-07"],
+          "skills": ["testing-strategy", "security-review"],
+          "files": ["scripts/check-bundle-leaks.ts", "test/e2e/"],
+          "acceptance": [
+            "Leak check fails when a list word is injected into the client bundle (proven by a test)",
+            "End-to-end test is deterministic and needs no external services"
+          ],
+          "verify": ["pnpm build", "pnpm test"],
+          "humanReview": false,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        }
+      ]
+    },
+    {
+      "id": "P7",
+      "name": "Hardening and review",
+      "goal": "Find and fix what the happy path hid.",
+      "tasks": [
+        {
+          "id": "P7-01",
+          "title": "Full security review (deep mode)",
+          "description": "Run the security-review skill in deep mode over the whole codebase in a fresh session, not the one that wrote the code. Produce a severity-ranked report. Fix critical and high findings in separate commits with regression tests. Record accepted risks in docs/THREAT-MODEL.md.",
+          "dependsOn": ["P6-08", "P5-02", "P2-04"],
+          "skills": ["security-review"],
+          "files": ["docs/SECURITY-REVIEW.md", "docs/THREAT-MODEL.md"],
+          "acceptance": [
+            "Report states what was checked and what was not",
+            "No open critical or high findings",
+            "Each fix has a regression test"
+          ],
+          "verify": ["pnpm typecheck", "pnpm lint", "pnpm test", "pnpm build"],
+          "humanReview": true,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        },
+        {
+          "id": "P7-02",
+          "title": "Abuse and cheating tests",
+          "description": "Test: scripted guessing (rate limits), guess replay, forged attempt numbers, cookie tampering and theft, oversized and malformed bodies, unicode tricks in guesses and handles, attempts to read the answer through errors, timing differences, caching, or the leaderboard, requests across the day boundary, and dependency failures (D1 error, KV miss).",
+          "dependsOn": ["P6-08"],
+          "skills": ["testing-strategy", "security-review"],
+          "files": ["test/abuse/"],
+          "acceptance": [
+            "Every case returns a safe, enveloped error with no stack traces or data leaks",
+            "No tested path reveals the answer before the game is finished"
+          ],
+          "verify": ["pnpm test"],
+          "humanReview": false,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        }
+      ]
+    },
+    {
+      "id": "P8",
+      "name": "Release",
+      "goal": "A staged, reversible deploy with observability.",
+      "tasks": [
+        {
+          "id": "P8-01",
+          "title": "Staging environment and secrets runbook",
+          "description": "Write docs/RUNBOOK.md covering creating staging resources, setting the cookie signing secret, seeding the answer pool, applying migrations remotely, verifying the cron trigger, and rollback. Do not run remote commands. The owner runs them.",
+          "dependsOn": ["P7-01"],
+          "skills": ["cloudflare-platform", "config-and-secrets"],
+          "files": ["docs/RUNBOOK.md"],
+          "acceptance": [
+            "Runbook has exact commands and a rollback section",
+            "No real secret values appear anywhere"
+          ],
+          "verify": ["pnpm deploy:dry"],
+          "humanReview": true,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        },
+        {
+          "id": "P8-02",
+          "title": "Logging and alerting basics",
+          "description": "Add structured logging (request id, route, status, error code) with no answers, cookies, or request bodies. Enable platform observability. Document how to trace a request and how to detect a failed daily-word selection or an exhausted answer pool.",
+          "dependsOn": ["P7-01"],
+          "skills": ["cloudflare-platform", "security-review"],
+          "files": ["src/worker/middleware/logging.ts", "docs/RUNBOOK.md"],
+          "acceptance": [
+            "Logs contain no tokens, cookies, answers, or full request bodies",
+            "A failing request can be traced by request id"
+          ],
+          "verify": ["pnpm test", "pnpm build"],
+          "humanReview": false,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        },
+        {
+          "id": "P8-03",
+          "title": "Privacy notice and data handling",
+          "description": "Write a short privacy notice page and docs/PRIVACY.md describing exactly what is stored (anonymous id, optional handle, attempts) and how long, with a way for a player to delete their data. Flag items needing legal review under Kenya\u0027s Data Protection Act. This is engineering documentation, not legal advice.",
+          "dependsOn": ["P6-07"],
+          "skills": ["security-review"],
+          "files": ["docs/PRIVACY.md", "src/client/"],
+          "acceptance": [
+            "Stored data fields match the schema exactly",
+            "A delete-my-data endpoint exists, is tested, and removes the player\u0027s rows"
+          ],
+          "verify": ["pnpm test", "pnpm build"],
+          "humanReview": true,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        }
+      ]
+    },
+    {
+      "id": "P9",
+      "name": "Retrospective",
+      "goal": "Feed what went wrong back into the skills so the next project starts better.",
+      "tasks": [
+        {
+          "id": "P9-01",
+          "title": "Update skills and AGENTS.md from lessons learned",
+          "description": "List every mistake, correction, and surprise from this project. Propose edits to the Gotchas sections of the relevant skills and to AGENTS.md. Do not apply them without review.",
+          "dependsOn": ["P8-02", "P8-03"],
+          "skills": ["agent-honesty-and-verification"],
+          "files": ["docs/RETRO.md"],
+          "acceptance": ["Each lesson maps to a concrete proposed edit in a named skill or file"],
+          "verify": [],
+          "humanReview": true,
+          "status": "blocked",
+          "notes": "Superseded by the owner-approved daily trivia pivot. Retained for history; do not resume as Wordle work."
+        }
+      ]
+    }
+  ]
+}

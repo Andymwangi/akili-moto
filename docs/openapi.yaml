@@ -1,0 +1,220 @@
+openapi: 3.1.0
+info:
+  title: Akili Moto API
+  version: 0.1.0
+  description: Daily shared trivia challenge. The server owns question order, scoring, and leaderboard ranks.
+servers:
+  - url: https://neno-word-game-production.andymwangi3.workers.dev/api
+    description: Planned production origin; not deployed
+  - url: http://localhost:5173/api
+    description: Local development
+security:
+  - playerCookie: []
+paths:
+  /health:
+    get:
+      summary: Check API availability
+      responses:
+        "200":
+          description: Worker is available
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    const: ok
+  /quiz:
+    get:
+      summary: Get or resume today's quiz
+      description: The server determines the date and returns only the current unanswered question. It never returns future questions or answer keys.
+      responses:
+        "200":
+          description: Quiz state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizState"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /quiz/answer:
+    post:
+      summary: Submit the current question's choice
+      description: The server validates question order, calculates correctness and points, then returns feedback for the answered question. The client cannot submit scores or choose the day.
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 100
+            pattern: "^[A-Za-z0-9._~-]+$"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizAnswerRequest"
+      responses:
+        "200":
+          description: Updated quiz state with feedback for the submitted answer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizState"
+        "400":
+          $ref: "#/components/responses/InvalidRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: Quiz complete, answer already recorded, stale question, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          description: Answer rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /quiz/leaderboard:
+    get:
+      summary: Get today's completed-player leaderboard
+      description: Scores are server computed. Equal scores share rank. Player IDs and handles are never returned.
+      responses:
+        "200":
+          description: Top completed scores and the current player's rank, if finished
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizLeaderboard"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+components:
+  securitySchemes:
+    playerCookie:
+      type: apiKey
+      in: cookie
+      name: neno_player
+      description: Signed anonymous identity cookie set by the Worker.
+  schemas:
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, requestId]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            requestId: { type: string }
+    QuizAnswerRequest:
+      type: object
+      additionalProperties: false
+      required: [questionId, selectedOptionId]
+      properties:
+        questionId: { type: string, minLength: 1, maxLength: 64 }
+        selectedOptionId: { type: string, enum: [a, b, c, d] }
+    QuizQuestion:
+      type: object
+      additionalProperties: false
+      required: [id, language, prompt, options]
+      properties:
+        id: { type: string }
+        language: { type: string, enum: [en, sw] }
+        prompt: { type: string }
+        options:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items:
+            type: object
+            required: [id, text]
+            properties:
+              id: { type: string, enum: [a, b, c, d] }
+              text: { type: string }
+    QuizFeedback:
+      allOf:
+        - $ref: "#/components/schemas/QuizQuestion"
+        - type: object
+          required:
+            [
+              questionIndex,
+              selectedOptionId,
+              correctOptionId,
+              isCorrect,
+              points,
+              explanation,
+              sourceUrl,
+            ]
+          properties:
+            questionIndex: { type: integer, minimum: 0, maximum: 9 }
+            selectedOptionId: { type: string, enum: [a, b, c, d] }
+            correctOptionId: { type: string, enum: [a, b, c, d] }
+            isCorrect: { type: boolean }
+            points: { type: integer, minimum: 0, maximum: 120 }
+            explanation: { type: string }
+            sourceUrl: { type: string, format: uri }
+    QuizState:
+      type: object
+      required: [day, status, currentIndex, totalQuestions, score, correctCount, startedAt, answers]
+      properties:
+        day: { type: string, format: date }
+        status: { type: string, enum: [in_progress, finished] }
+        currentIndex: { type: integer, minimum: 0, maximum: 10 }
+        totalQuestions: { const: 10 }
+        score: { type: integer, minimum: 0, maximum: 1200 }
+        correctCount: { type: integer, minimum: 0, maximum: 10 }
+        startedAt: { type: string, format: date-time }
+        currentQuestionOpenedAt: { type: string, format: date-time }
+        currentQuestion: { $ref: "#/components/schemas/QuizQuestion" }
+        answers:
+          type: array
+          maxItems: 10
+          items: { $ref: "#/components/schemas/QuizFeedback" }
+        rank: { type: integer, minimum: 1 }
+        completedPlayers: { type: integer, minimum: 0 }
+    QuizLeaderboard:
+      type: object
+      required: [day, totalPlayers, playerRank, items]
+      properties:
+        day: { type: string, format: date }
+        totalPlayers: { type: integer, minimum: 0 }
+        playerRank: { type: [integer, "null"], minimum: 1 }
+        items:
+          type: array
+          maxItems: 20
+          items:
+            type: object
+            required: [position, rank, score, correctCount]
+            properties:
+              position: { type: integer, minimum: 1 }
+              rank: { type: integer, minimum: 1 }
+              score: { type: integer, minimum: 0, maximum: 1200 }
+              correctCount: { type: integer, minimum: 0, maximum: 10 }
+  responses:
+    InvalidRequest:
+      description: Invalid headers or answer payload
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ApiError" }
+    Unauthorized:
+      description: Route is not on the public allowlist
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ApiError" }
+    Unavailable:
+      description: Temporary database or quiz-content failure
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ApiError" }

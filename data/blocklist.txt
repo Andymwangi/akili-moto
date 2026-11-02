@@ -1,0 +1,4 @@
+# One word per line, lowercase a-z, 5 letters.
+# Words listed here are never allowed as answers or as valid guesses.
+# Fill this with a fluent reviewer: offensive, vulgar, or hurtful words.
+# Left empty on purpose: I did not generate this list from memory.

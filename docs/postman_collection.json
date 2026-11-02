@@ -1,0 +1,54 @@
+{
+  "info": {
+    "name": "Akili Moto API",
+    "description": "Daily quiz API. The neno_player cookie is set by the local Worker. Answer one current question at a time.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5173/api" },
+    { "key": "questionId", "value": "" },
+    { "key": "choiceId", "value": "a" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/health"
+      }
+    },
+    {
+      "name": "Get or resume today's quiz",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/quiz"
+      }
+    },
+    {
+      "name": "Submit current answer",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Idempotency-Key", "value": "{{$guid}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"questionId\": \"{{questionId}}\",\n  \"selectedOptionId\": \"{{choiceId}}\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/quiz/answer"
+      }
+    },
+    {
+      "name": "Today's leaderboard",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/quiz/leaderboard"
+      }
+    }
+  ]
+}

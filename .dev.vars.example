@@ -1,0 +1,2 @@
+# Required for local signed anonymous player cookies. Set a random value locally.
+COOKIE_SIGNING_SECRET=

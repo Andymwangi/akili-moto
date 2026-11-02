@@ -1,0 +1,10 @@
+export const QUIZ_QUESTION_COUNT = 10;
+export const QUIZ_ENGLISH_QUESTION_COUNT = 7;
+export const QUIZ_SWAHILI_QUESTION_COUNT = 3;
+export const QUIZ_CORRECT_POINTS = 100;
+export const QUIZ_SPEED_BONUS_MAX = 20;
+export const QUIZ_SPEED_BONUS_WINDOW_SECONDS = 20;
+export const WORD_LENGTH = 5;
+export const MAX_ATTEMPTS = 6;
+export const PLAYER_COOKIE_NAME = 'neno_player';
+export const PLAYER_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;

@@ -1,0 +1,99 @@
+import { z } from 'zod';
+import { QUIZ_QUESTION_COUNT } from '../constants';
+
+export const ChoiceIdSchema = z.enum(['a', 'b', 'c', 'd']);
+export const QuestionLanguageSchema = z.enum(['en', 'sw']);
+
+export const QuizQuestionSchema = z.strictObject({
+  id: z.string().min(1).max(64),
+  language: QuestionLanguageSchema,
+  prompt: z.string().min(1).max(500),
+  options: z
+    .array(
+      z.strictObject({
+        id: ChoiceIdSchema,
+        text: z.string().min(1).max(160),
+      }),
+    )
+    .length(4),
+});
+
+export const QuizAnswerBodySchema = z.strictObject({
+  questionId: z.string().min(1).max(64),
+  selectedOptionId: ChoiceIdSchema,
+});
+
+export const IdempotencyHeaderSchema = z.object({
+  'idempotency-key': z
+    .string()
+    .min(8)
+    .max(100)
+    .regex(/^[A-Za-z0-9._~-]+$/),
+});
+
+export const QuizAnswerSchema = z.strictObject({
+  questionIndex: z
+    .number()
+    .int()
+    .min(0)
+    .max(QUIZ_QUESTION_COUNT - 1),
+  question: QuizQuestionSchema,
+  selectedOptionId: ChoiceIdSchema,
+  correctOptionId: ChoiceIdSchema,
+  isCorrect: z.boolean(),
+  points: z.number().int().min(0).max(120),
+  explanation: z.string().min(1).max(500),
+  sourceUrl: z.string().url(),
+});
+
+export const QuizStateSchema = z.strictObject({
+  day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  status: z.enum(['in_progress', 'finished']),
+  currentIndex: z.number().int().min(0).max(QUIZ_QUESTION_COUNT),
+  totalQuestions: z.literal(QUIZ_QUESTION_COUNT),
+  score: z
+    .number()
+    .int()
+    .min(0)
+    .max(QUIZ_QUESTION_COUNT * 120),
+  correctCount: z.number().int().min(0).max(QUIZ_QUESTION_COUNT),
+  startedAt: z.string().datetime(),
+  currentQuestionOpenedAt: z.string().datetime().optional(),
+  currentQuestion: QuizQuestionSchema.optional(),
+  answers: z.array(QuizAnswerSchema).max(QUIZ_QUESTION_COUNT),
+  rank: z.number().int().positive().optional(),
+  completedPlayers: z.number().int().nonnegative().optional(),
+});
+
+export const QuizLeaderboardSchema = z.strictObject({
+  day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  totalPlayers: z.number().int().nonnegative(),
+  playerRank: z.number().int().positive().nullable(),
+  items: z
+    .array(
+      z.strictObject({
+        position: z.number().int().positive(),
+        rank: z.number().int().positive(),
+        score: z
+          .number()
+          .int()
+          .min(0)
+          .max(QUIZ_QUESTION_COUNT * 120),
+        correctCount: z.number().int().min(0).max(QUIZ_QUESTION_COUNT),
+      }),
+    )
+    .max(20),
+});
+
+export const ApiErrorSchema = z.strictObject({
+  error: z.strictObject({
+    code: z.string(),
+    message: z.string(),
+    requestId: z.string(),
+  }),
+});
+
+export type QuizQuestion = z.infer<typeof QuizQuestionSchema>;
+export type QuizAnswer = z.infer<typeof QuizAnswerSchema>;
+export type QuizState = z.infer<typeof QuizStateSchema>;
+export type QuizLeaderboard = z.infer<typeof QuizLeaderboardSchema>;

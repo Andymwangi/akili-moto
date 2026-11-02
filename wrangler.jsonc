@@ -1,0 +1,62 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "neno-word-game",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-10-26",
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist/client",
+    "not_found_handling": "single-page-application"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "neno-local",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "RATE_LIMIT",
+      "id": "00000000000000000000000000000000"
+    }
+  ],
+  "vars": {
+    "APP_ENV": "development",
+    "ALLOWED_ORIGIN": "http://localhost:5173"
+  },
+  "triggers": {
+    "crons": ["0 21 * * *"]
+  },
+  "env": {
+    "production": {
+      "assets": {
+        "binding": "ASSETS",
+        "directory": "./dist/client",
+        "not_found_handling": "single-page-application"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "neno-word-game",
+          "database_id": "2d7f7fc6-ed24-46e5-aaa3-b2e06ffa5fc4",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "kv_namespaces": [
+        {
+          "binding": "RATE_LIMIT",
+          "id": "fbe5f465cb3547f0bd3b1015cd4b3167"
+        }
+      ],
+      "vars": {
+        "APP_ENV": "production",
+        "ALLOWED_ORIGIN": "https://neno-word-game-production.andymwangi3.workers.dev"
+      },
+      "triggers": {
+        "crons": ["0 21 * * *"]
+      }
+    }
+  }
+}
