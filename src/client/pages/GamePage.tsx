@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { type FormEvent, useEffect, useLayoutEffect, useState } from 'react';
-import { QUIZ_SPEED_BONUS_WINDOW_SECONDS } from '../../shared/constants';
+import { QUIZ_ANSWER_TIME_LIMIT_SECONDS } from '../../shared/constants';
 import type { QuizAnswer, QuizState } from '../../shared/schemas/quiz';
 import {
   ApiClientError,
@@ -20,7 +20,7 @@ type ChoiceId = 'a' | 'b' | 'c' | 'd';
 type AnswerInput = Readonly<{
   round: 1 | 2;
   questionId: string;
-  selectedOptionId: ChoiceId;
+  selectedOptionId?: ChoiceId;
   idempotencyKey: string;
 }>;
 
@@ -72,6 +72,7 @@ export function GamePage() {
   const [activeRound, setActiveRound] = useState<1 | 2>(1);
   const [feedbackIndex, setFeedbackIndex] = useState<number | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
+  const [timerAnchor, setTimerAnchor] = useState(() => ({ key: '', remainingMs: -1, receivedAt: Date.now() }));
   const [notice, setNotice] = useState('');
   const [nameInput, setNameInput] = useState(() => getCachedPlayerName() ?? '');
   const [recoveryInput, setRecoveryInput] = useState('');
@@ -99,6 +100,8 @@ export function GamePage() {
       !(isDefaultPlayerName(profileQuery.data) && normalizedName === profileQuery.data.displayName),
   );
   const currentAnswer = latestAnswer(quiz);
+  const isQuizInProgress = quiz?.status === 'in_progress';
+  const currentQuestionOpenedAt = quiz?.currentQuestionOpenedAt;
   const isFinished = quiz?.status === 'finished';
   const showingFeedback = Boolean(
     quiz && !isFinished && currentAnswer && feedbackIndex === currentAnswer.questionIndex,
@@ -107,10 +110,16 @@ export function GamePage() {
   const displayedIndex = showingFeedback
     ? (currentAnswer?.questionIndex ?? quiz?.currentIndex ?? 0)
     : (quiz?.currentIndex ?? 0);
-  const elapsedSeconds = quiz?.currentQuestionOpenedAt
-    ? Math.max(0, Math.floor((nowMs - new Date(quiz.currentQuestionOpenedAt).getTime()) / 1000))
+  const timerKey = `${quiz?.day ?? ''}:${quiz?.round ?? ''}:${quiz?.currentIndex ?? ''}:${quiz?.currentQuestionOpenedAt ?? ''}`;
+  const elapsedMs = quiz?.currentQuestionTimeRemainingMs !== undefined
+    ? Math.max(0, QUIZ_ANSWER_TIME_LIMIT_SECONDS * 1000 - quiz.currentQuestionTimeRemainingMs + Math.max(0, nowMs - timerAnchor.receivedAt))
     : 0;
-  const speedBonusLeft = Math.max(0, QUIZ_SPEED_BONUS_WINDOW_SECONDS - elapsedSeconds);
+  const secondsLeft = Math.max(0, Math.ceil((QUIZ_ANSWER_TIME_LIMIT_SECONDS * 1000 - elapsedMs) / 1000));
+  const speedMultiplier = Math.max(
+    1,
+    2 - Math.min(elapsedMs, QUIZ_ANSWER_TIME_LIMIT_SECONDS * 1000) /
+      (QUIZ_ANSWER_TIME_LIMIT_SECONDS * 1000),
+  );
   const leaderboardQuery = useQuery({
     queryKey: ['quiz', 'leaderboard'],
     queryFn: getQuizLeaderboard,
@@ -225,15 +234,6 @@ export function GamePage() {
   });
 
   useEffect(() => {
-    if (!quiz || quiz.status === 'finished' || showingFeedback || !quiz.currentQuestionOpenedAt) {
-      return;
-    }
-    setNowMs(Date.now());
-    const timer = window.setInterval(() => setNowMs(Date.now()), 1000);
-    return () => window.clearInterval(timer);
-  }, [quiz?.currentQuestionOpenedAt, quiz?.status, showingFeedback, quiz]);
-
-  useEffect(() => {
     if (profilePlayerId && profileDisplayName) {
       const profile = { playerId: profilePlayerId, displayName: profileDisplayName };
       setNameInput(isDefaultPlayerName(profile) ? '' : profile.displayName);
@@ -292,6 +292,37 @@ export function GamePage() {
     });
   }
 
+  useEffect(() => {
+    if (
+      quiz?.currentQuestionTimeRemainingMs !== undefined &&
+      (timerAnchor.key !== timerKey || timerAnchor.remainingMs !== quiz.currentQuestionTimeRemainingMs)
+    ) {
+      const receivedAt = Date.now();
+      setTimerAnchor({ key: timerKey, remainingMs: quiz.currentQuestionTimeRemainingMs, receivedAt });
+      setNowMs(receivedAt);
+    }
+  }, [timerKey, quiz?.currentQuestionTimeRemainingMs, timerAnchor.key, timerAnchor.remainingMs]);
+
+  useEffect(() => {
+    if (!isQuizInProgress || showingFeedback || !currentQuestionOpenedAt) return;
+    setNowMs(Date.now());
+    const timer = window.setInterval(() => setNowMs(Date.now()), 250);
+    return () => window.clearInterval(timer);
+  }, [isQuizInProgress, currentQuestionOpenedAt, showingFeedback]);
+
+  useEffect(() => {
+    const questionId = quiz?.currentQuestion?.id;
+    if (
+      secondsLeft === 0 &&
+      questionId &&
+      isQuizInProgress &&
+      !showingFeedback &&
+      !answerMutation.isPending
+    ) {
+      answerMutation.mutate({ round: activeRound, questionId, idempotencyKey: crypto.randomUUID() });
+    }
+  }, [secondsLeft, quiz?.currentQuestion?.id, isQuizInProgress, showingFeedback, answerMutation.isPending, answerMutation.mutate, activeRound]);
+
   return (
     <main className="page-shell">
       <header className="page-header">
@@ -300,7 +331,7 @@ export function GamePage() {
         </a>
         <div className="header-actions">
           <span className="day-label">{quiz?.day ?? 'Daily challenge'}</span>
-          <span className="daily-tag">2 rounds · 10 questions each</span>
+          <span className="daily-tag">2 rounds · 15 questions each</span>
           {gameStarted && (
             <button
               className="theme-toggle"
@@ -547,7 +578,7 @@ export function GamePage() {
         </div>
         <div className="hero-note" aria-hidden="true">
           <span>ROUND {activeRound}</span>
-          <strong>10</strong>
+          <strong>15</strong>
           <span>QUESTIONS</span>
         </div>
       </section>
@@ -578,7 +609,7 @@ export function GamePage() {
               <span className="score-label">CORRECT</span>
               <strong>
                 {quiz.correctCount}
-                <small> / 10</small>
+                <small> / {quiz.totalQuestions}</small>
               </strong>
               <small>answers</small>
             </div>
@@ -664,7 +695,7 @@ export function GamePage() {
                       <li className="leaderboard-row" key={item.position}>
                         <span className="leaderboard-rank">{item.rank}</span>
                         <span className="leaderboard-player">{item.displayName}</span>
-                        <span className="leaderboard-correct">{item.correctCount}/10 correct</span>
+                        <span className="leaderboard-correct">{item.correctCount} correct</span>
                         <strong>{item.score.toLocaleString()}</strong>
                       </li>
                     ))}
@@ -690,7 +721,7 @@ export function GamePage() {
                           <span className="leaderboard-rank">{item.rank}</span>
                           <span className="leaderboard-player">{item.displayName}</span>
                           <span className="leaderboard-correct">
-                            {item.correctCount}/20 correct
+                            {item.correctCount} correct
                           </span>
                           <strong>{item.score.toLocaleString()}</strong>
                         </li>
@@ -705,17 +736,17 @@ export function GamePage() {
               <div className="question-meta">
                 <div className="progress-label">
                   <span>QUESTION {String(displayedIndex + 1).padStart(2, '0')}</span>
-                  <span>OF 10</span>
+                  <span>OF {quiz.totalQuestions}</span>
                 </div>
                 <div
                   className="progress-track"
                   role="progressbar"
                   aria-label="Quiz progress"
                   aria-valuemin={1}
-                  aria-valuemax={10}
+                  aria-valuemax={quiz.totalQuestions}
                   aria-valuenow={displayedIndex + 1}
                 >
-                  <span style={{ width: `${((displayedIndex + 1) / 10) * 100}%` }} />
+                  <span style={{ width: `${((displayedIndex + 1) / quiz.totalQuestions) * 100}%` }} />
                 </div>
                 <div className="question-submeta">
                   <span className={`language-pill language-${displayedQuestion?.language ?? 'en'}`}>
@@ -728,9 +759,9 @@ export function GamePage() {
                   )}
                   {!showingFeedback && (
                     <span className="speed-pill">
-                      {speedBonusLeft > 0
-                        ? `+${speedBonusLeft} speed pts`
-                        : 'Accuracy still counts'}
+                      {secondsLeft > 0
+                        ? `${secondsLeft}s · ${speedMultiplier.toFixed(2)}× points`
+                        : 'Time’s up'}
                     </span>
                   )}
                 </div>
@@ -747,7 +778,11 @@ export function GamePage() {
                   aria-live="polite"
                 >
                   <span className="feedback-kicker">
-                    {currentAnswer.isCorrect ? 'NICE ONE' : 'GOOD TRY'}
+                    {currentAnswer.selectedOptionId === null
+                      ? 'TIME’S UP'
+                      : currentAnswer.isCorrect
+                        ? 'NICE ONE'
+                        : 'GOOD TRY'}
                   </span>
                   <h2>{feedbackText(currentAnswer)}</h2>
                   <p>
@@ -760,7 +795,9 @@ export function GamePage() {
                       }
                     </strong>
                     {' · '}
-                    {currentAnswer.points} points
+                    {currentAnswer.selectedOptionId === null
+                      ? 'Time ran out. This question scored zero points.'
+                      : `${currentAnswer.points} points`}
                   </p>
                   <p className="explanation">{currentAnswer.explanation}</p>
                   <a href={currentAnswer.sourceUrl} target="_blank" rel="noreferrer">
@@ -769,7 +806,10 @@ export function GamePage() {
                   <button
                     className="continue-button"
                     type="button"
-                    onClick={() => setFeedbackIndex(null)}
+                    onClick={() => {
+                      setFeedbackIndex(null);
+                      void quizQuery.refetch();
+                    }}
                   >
                     Next question <span aria-hidden="true">→</span>
                   </button>
@@ -810,7 +850,7 @@ export function GamePage() {
                     </p>
                   )}
                   <p className="question-footnote">
-                    Correct answer: 100 pts. Answer fast for up to 20 bonus points.
+                    Correct answers score from 200 points down to 100 over 30 seconds. Late answers score zero.
                   </p>
                 </>
               )}
@@ -848,7 +888,7 @@ export function GamePage() {
                   <li key={game.day}>
                     <time dateTime={game.day}>{game.day}</time>
                     <span>
-                      {game.correctCount}/{game.roundsCompleted * 10} correct ·{' '}
+                      {game.correctCount} correct ·{' '}
                       {game.roundsCompleted}/2 rounds
                     </span>
                     <strong>{game.score.toLocaleString()} pts</strong>

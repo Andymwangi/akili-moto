@@ -43,6 +43,13 @@
       "when": 1793625224431,
       "tag": "0005_lonely_nomad",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1793699872525,
+      "tag": "0006_free_vermin",
+      "breakpoints": true
     }
   ]
 }

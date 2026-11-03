@@ -4,7 +4,7 @@
   "project": {
     "name": "Akili Moto",
     "workingTitle": true,
-    "summary": "Daily shared trivia challenge with two rounds of ten questions, seven in English and three in Swahili per round, server-scored points, separate round leaderboards, and a combined leaderboard.",
+    "summary": "Daily shared trivia challenge with two rounds of fifteen questions, eleven in English and four in Swahili per round, server-timed multiplier scoring, separate round leaderboards, and a combined leaderboard.",
     "owner": "Anderson Mwangi",
     "created": "2026-10-30",
     "stack": [
@@ -107,7 +107,7 @@
     {
       "id": "D9",
       "question": "Daily quiz format",
-      "default": "Two rounds of ten four-option questions per Nairobi day, seven English and three Swahili per round; both sets are shared and disjoint",
+      "default": "Two rounds of fifteen four-option questions per Nairobi day, eleven English and four Swahili per round; both sets are shared and disjoint",
       "alternatives": ["Different questions per player", "Other language ratio"],
       "status": "confirmed",
       "resolveIn": "Q1-01"
@@ -115,7 +115,7 @@
     {
       "id": "D10",
       "question": "Scoring",
-      "default": "100 points for a correct answer and a server-measured speed bonus up to 20 points during the first 20 seconds",
+      "default": "Correct answers score from 200 down to 100 over a server-timed 30-second window; late answers score zero",
       "alternatives": ["Correctness only"],
       "status": "confirmed",
       "resolveIn": "Q1-01"
@@ -190,8 +190,8 @@
       "tasks": [
         {
           "id": "Q3-01",
-          "title": "Add two daily rounds, round rankings, and broad question coverage",
-          "description": "Hide player management during play. Add a second shared round that unlocks after round one is complete, enforce a maximum of two rounds per player per Nairobi day, use disjoint question IDs across the two rounds, show separate round leaderboards and a combined leaderboard for players who completed both, preserve existing round-one history, and diversify sourced question topics with plausible distractors.",
+          "title": "Expand daily rounds to 15 questions with timed multiplier scoring",
+          "description": "Use 15 shared questions per round with five medium, seven challenging, and three hard questions; keep an 11:4 English/Swahili mix and broaden sourced topics. Persist a server-owned 30-second timer and award up to a 2x correct-answer multiplier, with zero points after timeout. Preserve ten-question assignments already in progress for that Nairobi day.",
           "dependsOn": ["Q2-01", "P2-01"],
           "skills": [
             "hono-workers-api",
@@ -210,7 +210,7 @@
             "docs/DECISIONS.md",
             "docs/openapi.yaml",
             "docs/postman_collection.json",
-            "data/quiz-questions-v4.json",
+            "data/quiz-questions-v5.json",
             "src/shared/constants.ts",
             "src/shared/schemas/quiz.ts",
             "src/worker/db/schema.ts",
@@ -223,8 +223,8 @@
             "src/client/pages/GamePage.tsx",
             "src/client/styles.css",
             "migrations/",
-            "test/quiz-logic.test.ts",
-            "test/quiz-endpoints.test.ts"
+            "migrations/0006_free_vermin.sql",
+            "migrations/meta/_journal.json"
           ],
           "acceptance": [
             "A player can complete round one and then round two, but cannot start round two early or create a third round.",
@@ -232,7 +232,8 @@
             "Round one and round two have separate completed-player leaderboards; the combined leaderboard includes only players who completed both rounds and ranks their summed scores.",
             "Existing completed round-one data is preserved through an additive, locally applied migration.",
             "Player name and recovery controls are absent while playing, while setup and recovery remain available before a round starts.",
-            "The current question bank has broad topic tags and balanced topics, retains the seven-English/three-Swahili ratio and increasing difficulty, and uses plausible answer choices.",
+            "New daily rounds contain 15 questions, 11 English and four Swahili, with five medium, seven challenging, and three hard questions across broad topics.",
+            "The server persists each active question's open time, rejects early timeout submissions, accepts late submissions only as zero-point timeouts, and scores correct answers from 200 down to 100 points over 30 seconds.",
             "Question bank content includes institutional sources and remains marked for human review before production use."
           ],
           "verify": [
@@ -244,7 +245,7 @@
           ],
           "humanReview": true,
           "status": "needs_review",
-          "notes": "Implemented two shared rounds per Nairobi day, separate round leaderboards, and a combined ranking for players who complete both. Local migration and automated checks passed. Question content is still draft material requiring owner and fluent Swahili review. No production migration or deployment was run."
+          "notes": "Added the 15-question 11:4 schedule, five-medium/seven-challenging/three-hard progression, broader v5 sourced topics, server-persisted 30-second answer window, and 2x-to-1x scoring with zero-point timeout. Existing ten-question assignments remain playable for their Nairobi day. Local migration 0006 was applied; typecheck, changed-file Biome lint, and production build passed. Repository-wide Biome check still reports formatting diagnostics in this repository, including formatting-only diagnostics in touched files; changed-file lint passes. Tests were not run under the session-level instruction. Human review of question wording and Swahili remains required. No remote migration, deploy, commit, or push was performed."
         }
       ]
     },

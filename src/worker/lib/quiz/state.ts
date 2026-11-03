@@ -1,4 +1,4 @@
-import { QUIZ_QUESTION_COUNT } from '../../../shared/constants';
+import { QUIZ_ANSWER_TIME_LIMIT_SECONDS } from '../../../shared/constants';
 import {
   ChoiceIdSchema,
   type QuizAnswer,
@@ -8,7 +8,7 @@ import {
 import type { QuizRoundNumber, StoredQuizAnswer } from '../../db/queries/quiz-repository';
 import { correctOptionId, questionById, toPublicQuestion } from './question-bank';
 
-type QuizSession = Readonly<{ startedAt: string }>;
+type QuizSession = Readonly<{ startedAt: string; currentQuestionOpenedAt: string | null }>;
 
 export function buildQuizState(input: {
   day: string;
@@ -30,15 +30,27 @@ export function buildQuizState(input: {
   return {
     day: input.day,
     round: input.round,
-    status: currentIndex === QUIZ_QUESTION_COUNT ? 'finished' : 'in_progress',
+    status: currentIndex === input.questionIds.length ? 'finished' : 'in_progress',
     currentIndex,
-    totalQuestions: QUIZ_QUESTION_COUNT,
+    totalQuestions: input.questionIds.length === 10 ? 10 : 15,
     score: input.answers.reduce((sum, answer) => sum + answer.points, 0),
     correctCount: input.answers.reduce((sum, answer) => sum + Number(answer.isCorrect), 0),
     startedAt: input.session.startedAt,
     ...(currentQuestion ? { currentQuestion } : {}),
     ...(currentQuestion
-      ? { currentQuestionOpenedAt: lastAnswer?.submittedAt ?? input.session.startedAt }
+      ? (() => {
+          const openedAt = input.session.currentQuestionOpenedAt ?? lastAnswer?.submittedAt ?? input.session.startedAt;
+          return {
+            currentQuestionOpenedAt: openedAt,
+            currentQuestionTimeRemainingMs: Math.max(
+              0,
+              Math.min(
+                QUIZ_ANSWER_TIME_LIMIT_SECONDS * 1000,
+                QUIZ_ANSWER_TIME_LIMIT_SECONDS * 1000 - (Date.now() - new Date(openedAt).getTime()),
+              ),
+            ),
+          };
+        })()
       : {}),
     answers,
     ...(input.rank ? input.rank : {}),
@@ -53,7 +65,9 @@ function toPublicAnswer(day: string, answer: StoredQuizAnswer): QuizAnswer {
   return {
     questionIndex: answer.questionIndex,
     question: toPublicQuestion(entry, day),
-    selectedOptionId: ChoiceIdSchema.parse(answer.selectedOptionId),
+    selectedOptionId: answer.selectedOptionId === null
+      ? null
+      : ChoiceIdSchema.parse(answer.selectedOptionId),
     correctOptionId: correctId,
     isCorrect: answer.isCorrect,
     points: answer.points,
