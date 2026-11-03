@@ -277,6 +277,13 @@ a:focus-visible {
   font-size: 0.86rem;
 }
 
+.recovery-panel .recovery-code-hint {
+  max-width: 28rem;
+  margin-top: 0.45rem;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
 .recovery-code {
   display: inline-block;
   margin-top: 0.75rem;
