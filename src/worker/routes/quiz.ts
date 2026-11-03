@@ -1,6 +1,6 @@
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
-import { QUIZ_QUESTION_COUNT, QUIZ_SPEED_BONUS_WINDOW_SECONDS } from '../../shared/constants';
+import { QUIZ_ANSWER_TIME_LIMIT_SECONDS } from '../../shared/constants';
 import {
   ApiErrorSchema,
   IdempotencyHeaderSchema,
@@ -63,11 +63,14 @@ const routes = new Hono<AppEnvironment>()
         }
         const [roundOneIds, roundTwoIds] = await ensureDailyQuizPair(repository, day);
         const questionIds = round === 1 ? roundOneIds : roundTwoIds;
-        const session = await repository.getOrCreateRoundSession(day, playerId, round);
-        await repository.reconcileRoundTotals(day, playerId, round);
+        let session = await repository.getOrCreateRoundSession(day, playerId, round);
+        await repository.reconcileRoundTotals(day, playerId, round, questionIds.length);
         const answers = await repository.getRoundAnswers(day, playerId, round);
+        if (answers.length < questionIds.length) {
+          session = await repository.openCurrentQuestion(day, playerId, round, answers.length);
+        }
         const rank =
-          answers.length === QUIZ_QUESTION_COUNT
+          answers.length === questionIds.length
             ? await repository.getCompletedRoundRank(day, playerId, round)
             : undefined;
         return context.json(
@@ -141,7 +144,7 @@ const routes = new Hono<AppEnvironment>()
         if (previous) {
           if (
             previous.questionId !== questionId ||
-            previous.selectedOptionId !== selectedOptionId
+            previous.selectedOptionId !== (selectedOptionId ?? null)
           ) {
             return safeError(
               context.res.headers.get('X-Request-Id') ?? 'unavailable',
@@ -153,10 +156,10 @@ const routes = new Hono<AppEnvironment>()
           const [roundOneIds, roundTwoIds] = await ensureDailyQuizPair(repository, day);
           const questionIds = round === 1 ? roundOneIds : roundTwoIds;
           const session = await repository.getOrCreateRoundSession(day, playerId, round);
-          await repository.reconcileRoundTotals(day, playerId, round);
+          await repository.reconcileRoundTotals(day, playerId, round, questionIds.length);
           const answers = await repository.getRoundAnswers(day, playerId, round);
           const rank =
-            answers.length === QUIZ_QUESTION_COUNT
+            answers.length === questionIds.length
               ? await repository.getCompletedRoundRank(day, playerId, round)
               : undefined;
           return context.json(
@@ -175,10 +178,10 @@ const routes = new Hono<AppEnvironment>()
 
         const [roundOneIds, roundTwoIds] = await ensureDailyQuizPair(repository, day);
         const questionIds = round === 1 ? roundOneIds : roundTwoIds;
-        const session = await repository.getOrCreateRoundSession(day, playerId, round);
-        await repository.reconcileRoundTotals(day, playerId, round);
+        await repository.getOrCreateRoundSession(day, playerId, round);
+        await repository.reconcileRoundTotals(day, playerId, round, questionIds.length);
         const answers = await repository.getRoundAnswers(day, playerId, round);
-        if (answers.length >= QUIZ_QUESTION_COUNT) {
+        if (answers.length >= questionIds.length) {
           return safeError(
             context.res.headers.get('X-Request-Id') ?? 'unavailable',
             'quiz_finished',
@@ -199,35 +202,43 @@ const routes = new Hono<AppEnvironment>()
         const question = questionById(questionId);
         if (!question) throw new Error('QUESTION_NOT_FOUND');
 
-        const openedAt = answers.at(-1)?.submittedAt ?? session.startedAt;
+        const currentSession = await repository.openCurrentQuestion(day, playerId, round, answers.length);
+        const openedAt = currentSession.currentQuestionOpenedAt ?? submittedAt;
         const elapsedMs = Math.min(
           86_400_000,
           Math.max(0, now.getTime() - new Date(openedAt).getTime()),
         );
+        const timedOut = elapsedMs >= QUIZ_ANSWER_TIME_LIMIT_SECONDS * 1000;
+        if (!timedOut && !selectedOptionId) {
+          return safeError(
+            context.res.headers.get('X-Request-Id') ?? 'unavailable',
+            'answer_too_early',
+            'The answer timer has not expired.',
+            409,
+          );
+        }
         const correctId = correctOptionId(question, day);
-        const isCorrect = selectedOptionId === correctId;
-        const points = scoreQuizAnswer(
-          isCorrect,
-          Math.min(elapsedMs, QUIZ_SPEED_BONUS_WINDOW_SECONDS * 1000),
-        );
+        const isCorrect = !timedOut && selectedOptionId === correctId;
+        const points = scoreQuizAnswer(isCorrect, elapsedMs);
         const inserted = await repository.saveRoundAnswer({
           day,
           playerId,
           round,
           questionIndex: answers.length,
           questionId,
-          selectedOptionId,
+          selectedOptionId: timedOut ? null : selectedOptionId ?? null,
           correctOptionId: correctId,
           isCorrect,
           points,
           responseMs: elapsedMs,
           idempotencyKey,
           submittedAt,
+          questionCount: questionIds.length,
         });
         if (!inserted) {
           const current = await repository.getRoundAnswers(day, playerId, round);
           const conflicting = current.find((answer) => answer.questionIndex === answers.length);
-          if (conflicting?.selectedOptionId !== selectedOptionId) {
+          if (conflicting?.selectedOptionId !== (timedOut ? null : selectedOptionId ?? null)) {
             return safeError(
               context.res.headers.get('X-Request-Id') ?? 'unavailable',
               'answer_conflict',
@@ -239,7 +250,7 @@ const routes = new Hono<AppEnvironment>()
 
         const updatedAnswers = await repository.getRoundAnswers(day, playerId, round);
         const rank =
-          updatedAnswers.length === QUIZ_QUESTION_COUNT
+          updatedAnswers.length === questionIds.length
             ? await repository.getCompletedRoundRank(day, playerId, round)
             : undefined;
         return context.json(

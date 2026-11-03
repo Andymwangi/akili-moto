@@ -1,9 +1,9 @@
-export const QUIZ_QUESTION_COUNT = 10;
-export const QUIZ_ENGLISH_QUESTION_COUNT = 7;
-export const QUIZ_SWAHILI_QUESTION_COUNT = 3;
+export const QUIZ_QUESTION_COUNT = 15;
+export const QUIZ_ENGLISH_QUESTION_COUNT = 11;
+export const QUIZ_SWAHILI_QUESTION_COUNT = 4;
 export const QUIZ_CORRECT_POINTS = 100;
-export const QUIZ_SPEED_BONUS_MAX = 20;
-export const QUIZ_SPEED_BONUS_WINDOW_SECONDS = 20;
+export const QUIZ_SPEED_MULTIPLIER_MAX = 2;
+export const QUIZ_ANSWER_TIME_LIMIT_SECONDS = 30;
 export const WORD_LENGTH = 5;
 export const MAX_ATTEMPTS = 6;
 export const PLAYER_COOKIE_NAME = 'neno_player';

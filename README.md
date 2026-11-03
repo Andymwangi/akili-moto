@@ -1,6 +1,6 @@
 # Akili Moto
 
-Akili Moto is a mobile-first daily trivia challenge. Everyone gets the same two rounds of ten multiple-choice questions in the same order each Nairobi day: each round has seven English and three Swahili questions. Round two unlocks after round one is complete. Players earn points for correct answers, with a small server-timed speed bonus, then see separate round rankings and a combined ranking for players who finish both.
+Akili Moto is a mobile-first daily trivia challenge. Everyone gets the same two rounds of fifteen multiple-choice questions in the same order each Nairobi day: each round has eleven English and four Swahili questions, progressing from medium through challenging to hard. Round two unlocks after round one is complete. Correct answers earn a 2× to 1× multiplier over 30 seconds; expired answers score zero. Players see separate round rankings and a combined ranking if they finish both rounds.
 
 ## MVP scope
 
@@ -11,7 +11,7 @@ The active question bank contains 56 sourced draft questions across broad topic 
 ## Scoring
 
 - A correct answer is worth 100 points.
-- A correct answer can earn up to 20 extra points for speed. The bonus decreases each second and reaches zero after 20 seconds.
+- A correct answer scores up to 200 points immediately, then declines to 100 points across 30 seconds. Answers after the deadline score zero.
 - The server records answer time and computes all points. The browser never submits a score.
 - The leaderboard ranks completed games by points. Equal scores share a rank.
 - A player may complete at most two rounds per Nairobi day. Round two opens only after round one is complete. The combined leaderboard includes players who completed both rounds and sums their points.
@@ -37,7 +37,7 @@ corepack pnpm db:migrate:local
 corepack pnpm dev
 ```
 
-The app uses local D1. Start Vite and open the printed URL. Appearance follows the device preference by default; use the header control to switch themes. Check the project with:
+The app uses local D1. Start Vite and open the printed URL. Appearance follows the device preference by default; use the header control to switch themes. Each round has 15 shared questions (11 English, 4 Swahili), with five medium, seven challenging, and three hard questions. A correct answer scores up to 200 points when answered immediately and declines to 100 over 30 seconds; answers after the deadline score zero. Check the project with:
 
 ```sh
 corepack pnpm typecheck

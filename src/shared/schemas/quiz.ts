@@ -31,7 +31,7 @@ export const QuizQuestionSchema = z.strictObject({
 export const QuizAnswerBodySchema = z.strictObject({
   round: QuizRoundNumberSchema,
   questionId: z.string().min(1).max(64),
-  selectedOptionId: ChoiceIdSchema,
+  selectedOptionId: ChoiceIdSchema.optional(),
 });
 
 export const IdempotencyHeaderSchema = z.object({
@@ -49,10 +49,10 @@ export const QuizAnswerSchema = z.strictObject({
     .min(0)
     .max(QUIZ_QUESTION_COUNT - 1),
   question: QuizQuestionSchema,
-  selectedOptionId: ChoiceIdSchema,
+  selectedOptionId: ChoiceIdSchema.nullable(),
   correctOptionId: ChoiceIdSchema,
   isCorrect: z.boolean(),
-  points: z.number().int().min(0).max(120),
+  points: z.number().int().min(0).max(200),
   explanation: z.string().min(1).max(500),
   sourceUrl: z.string().url(),
 });
@@ -62,15 +62,16 @@ export const QuizStateSchema = z.strictObject({
   round: QuizRoundNumberSchema,
   status: z.enum(['in_progress', 'finished']),
   currentIndex: z.number().int().min(0).max(QUIZ_QUESTION_COUNT),
-  totalQuestions: z.literal(QUIZ_QUESTION_COUNT),
+  totalQuestions: z.union([z.literal(10), z.literal(QUIZ_QUESTION_COUNT)]),
   score: z
     .number()
     .int()
     .min(0)
-    .max(QUIZ_QUESTION_COUNT * 120),
+    .max(QUIZ_QUESTION_COUNT * 200),
   correctCount: z.number().int().min(0).max(QUIZ_QUESTION_COUNT),
   startedAt: z.string().datetime(),
   currentQuestionOpenedAt: z.string().datetime().optional(),
+  currentQuestionTimeRemainingMs: z.number().int().min(0).max(30_000).optional(),
   currentQuestion: QuizQuestionSchema.optional(),
   answers: z.array(QuizAnswerSchema).max(QUIZ_QUESTION_COUNT),
   rank: z.number().int().positive().optional(),
@@ -93,7 +94,7 @@ const RoundLeaderboardSchema = z.strictObject({
     .number()
     .int()
     .min(0)
-    .max(QUIZ_QUESTION_COUNT * 120)
+    .max(QUIZ_QUESTION_COUNT * 200)
     .nullable(),
   items: z.array(LeaderboardItemSchema).max(20),
 });
@@ -108,7 +109,7 @@ export const QuizLeaderboardSchema = z.strictObject({
       .number()
       .int()
       .min(0)
-      .max(QUIZ_QUESTION_COUNT * 240)
+      .max(QUIZ_QUESTION_COUNT * 400)
       .nullable(),
     items: z.array(LeaderboardItemSchema).max(20),
   }),
@@ -157,7 +158,7 @@ export const PlayerHistorySchema = z.strictObject({
           .number()
           .int()
           .min(0)
-          .max(QUIZ_QUESTION_COUNT * 240),
+          .max(QUIZ_QUESTION_COUNT * 400),
         correctCount: z
           .number()
           .int()

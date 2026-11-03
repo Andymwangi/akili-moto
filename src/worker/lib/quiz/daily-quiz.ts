@@ -55,10 +55,10 @@ function validateStoredPair(assignment: QuestionSetPair): [string[], string[]] {
   if (pair.some((ids) => ids.some((id) => !questionById(id)))) {
     throw new Error('INVALID_DAILY_QUIZ');
   }
-  if (new Set([...pair[0], ...pair[1]]).size !== 20) {
+  if (pair[0].length !== pair[1].length || ![10, 15].includes(pair[0].length) || new Set([...pair[0], ...pair[1]]).size !== pair[0].length * 2) {
     throw new Error('INVALID_DAILY_QUIZ');
   }
-  if (assignment.roundOneVersion === QUIZ_QUESTION_SET_VERSION) {
+  if (assignment.roundOneVersion === QUIZ_QUESTION_SET_VERSION && pair[0].length === 15) {
     validateDailyQuestionPair(pair);
   }
   return pair;

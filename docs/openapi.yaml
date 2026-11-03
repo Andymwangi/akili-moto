@@ -241,11 +241,11 @@ components:
     QuizAnswerRequest:
       type: object
       additionalProperties: false
-      required: [round, questionId, selectedOptionId]
+      required: [round, questionId]
       properties:
         round: { type: integer, enum: [1, 2] }
         questionId: { type: string, minLength: 1, maxLength: 64 }
-        selectedOptionId: { type: string, enum: [a, b, c, d] }
+        selectedOptionId: { type: string, enum: [a, b, c, d], description: Omit only to submit after the server-timed 30-second answer deadline. }
     QuizQuestion:
       type: object
       additionalProperties: false
@@ -280,11 +280,11 @@ components:
               sourceUrl,
             ]
           properties:
-            questionIndex: { type: integer, minimum: 0, maximum: 9 }
-            selectedOptionId: { type: string, enum: [a, b, c, d] }
+            questionIndex: { type: integer, minimum: 0, maximum: 14 }
+            selectedOptionId: { type: [string, "null"], enum: [a, b, c, d, null] }
             correctOptionId: { type: string, enum: [a, b, c, d] }
             isCorrect: { type: boolean }
-            points: { type: integer, minimum: 0, maximum: 120 }
+            points: { type: integer, minimum: 0, maximum: 200 }
             explanation: { type: string }
             sourceUrl: { type: string, format: uri }
     QuizState:
@@ -295,16 +295,17 @@ components:
         day: { type: string, format: date }
         round: { type: integer, enum: [1, 2] }
         status: { type: string, enum: [in_progress, finished] }
-        currentIndex: { type: integer, minimum: 0, maximum: 10 }
-        totalQuestions: { const: 10 }
-        score: { type: integer, minimum: 0, maximum: 1200 }
-        correctCount: { type: integer, minimum: 0, maximum: 10 }
+        currentIndex: { type: integer, minimum: 0, maximum: 15 }
+        totalQuestions: { type: integer, enum: [10, 15] }
+        score: { type: integer, minimum: 0, maximum: 3000 }
+        correctCount: { type: integer, minimum: 0, maximum: 15 }
         startedAt: { type: string, format: date-time }
         currentQuestionOpenedAt: { type: string, format: date-time }
+        currentQuestionTimeRemainingMs: { type: integer, minimum: 0, maximum: 30000 }
         currentQuestion: { $ref: "#/components/schemas/QuizQuestion" }
         answers:
           type: array
-          maxItems: 10
+          maxItems: 15
           items: { $ref: "#/components/schemas/QuizFeedback" }
         rank: { type: integer, minimum: 1 }
         completedPlayers: { type: integer, minimum: 0 }
@@ -326,7 +327,7 @@ components:
         round: { type: integer, enum: [1, 2] }
         totalPlayers: { type: integer, minimum: 0 }
         playerRank: { type: [integer, "null"], minimum: 1 }
-        playerScore: { type: [integer, "null"], minimum: 0, maximum: 1200 }
+        playerScore: { type: [integer, "null"], minimum: 0, maximum: 3000 }
         items:
           { type: array, maxItems: 20, items: { $ref: "#/components/schemas/LeaderboardItem" } }
     CombinedLeaderboard:
@@ -335,7 +336,7 @@ components:
       properties:
         totalPlayers: { type: integer, minimum: 0 }
         playerRank: { type: [integer, "null"], minimum: 1 }
-        playerScore: { type: [integer, "null"], minimum: 0, maximum: 2400 }
+        playerScore: { type: [integer, "null"], minimum: 0, maximum: 6000 }
         items:
           { type: array, maxItems: 20, items: { $ref: "#/components/schemas/LeaderboardItem" } }
     LeaderboardItem:

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import legacyQuestionData from '../../../../data/legacy-quiz-questions-v1.json';
 import questionData from '../../../../data/quiz-questions.json';
 import currentQuestionData from '../../../../data/quiz-questions-v4.json';
+import nextQuestionData from '../../../../data/quiz-questions-v5.json';
 import {
   QUIZ_ENGLISH_QUESTION_COUNT,
   QUIZ_QUESTION_COUNT,
@@ -20,6 +21,9 @@ export const QuestionTopicSchema = z.enum([
   'mathematics',
   'music',
   'science',
+  'technology',
+  'sports',
+  'language',
 ]);
 export type QuestionTopic = z.infer<typeof QuestionTopicSchema>;
 
@@ -38,9 +42,14 @@ const QuestionBankEntrySchema = z.strictObject({
 export type QuestionBankEntry = z.infer<typeof QuestionBankEntrySchema>;
 
 const currentEntries = z.array(QuestionBankEntrySchema).parse(currentQuestionData);
+const nextEntries = z.array(QuestionBankEntrySchema).parse(nextQuestionData);
 const previousEntries = z.array(QuestionBankEntrySchema).parse(questionData);
 const legacyEntries = z.array(QuestionBankEntrySchema).parse(legacyQuestionData);
-const allEntries = [...currentEntries, ...previousEntries, ...legacyEntries];
+const allEntries = [...nextEntries, ...currentEntries, ...previousEntries, ...legacyEntries];
+const activeEntries = [
+  ...currentEntries.filter((entry) => entry.difficulty !== 'very_hard'),
+  ...nextEntries,
+];
 
 if (new Set(allEntries.map((entry) => entry.id)).size !== allEntries.length) {
   throw new Error('Quiz question IDs must be unique.');
@@ -51,14 +60,19 @@ const dailySlots: ReadonlyArray<
 > = [
   ['medium', 'en'],
   ['medium', 'en'],
+  ['medium', 'sw'],
+  ['medium', 'en'],
+  ['medium', 'en'],
   ['challenging', 'en'],
   ['challenging', 'sw'],
   ['challenging', 'en'],
+  ['challenging', 'en'],
+  ['challenging', 'sw'],
+  ['challenging', 'en'],
+  ['challenging', 'en'],
+  ['hard', 'en'],
   ['hard', 'en'],
   ['hard', 'sw'],
-  ['hard', 'en'],
-  ['very_hard', 'sw'],
-  ['very_hard', 'en'],
 ];
 
 for (const [index, [difficulty, language]] of dailySlots.entries()) {
@@ -66,12 +80,12 @@ for (const [index, [difficulty, language]] of dailySlots.entries()) {
     continue;
   const requiredForTwoRounds =
     dailySlots.filter(([level, lang]) => level === difficulty && lang === language).length * 2;
-  const available = currentEntries.filter(
+  const available = activeEntries.filter(
     (entry) => entry.difficulty === difficulty && entry.language === language,
   ).length;
   if (available < requiredForTwoRounds) {
     throw new Error(
-      `The v4 quiz bank needs ${requiredForTwoRounds} ${difficulty} ${language} questions for two rounds.`,
+      `The v5 quiz bank needs ${requiredForTwoRounds} ${difficulty} ${language} questions for two rounds.`,
     );
   }
 }
@@ -82,8 +96,8 @@ for (const entry of allEntries) {
   }
 }
 
-export const QUIZ_QUESTION_SET_VERSION = 'v4';
-export const questionBank: readonly QuestionBankEntry[] = currentEntries;
+export const QUIZ_QUESTION_SET_VERSION = 'v5';
+export const questionBank: readonly QuestionBankEntry[] = activeEntries;
 
 export function questionById(id: string): QuestionBankEntry | undefined {
   return allEntries.find((question) => question.id === id);
@@ -119,12 +133,12 @@ export function selectDailyQuestionPair(day: string, variant = 0): [string[], st
 
   dailySlots.forEach(([difficulty, language], slotIndex) => {
     for (const roundIndex of [0, 1] as const) {
-      const candidates = currentEntries.filter(
+      const candidates = activeEntries.filter(
         (entry) => entry.difficulty === difficulty && entry.language === language,
       );
       const available = shuffle(
         candidates.filter((entry) => !selected.has(entry.id)),
-        createRandom(`${day}:v4:${variant}:${difficulty}:${language}:${slotIndex}:${roundIndex}`),
+        createRandom(`${day}:v5:${variant}:${difficulty}:${language}:${slotIndex}:${roundIndex}`),
       );
       const otherRound = (1 - roundIndex) as 0 | 1;
       const otherRoundTopic = ids[otherRound][slotIndex]
@@ -169,7 +183,7 @@ export function selectDailyQuestionIds(day: string, variant = 0): string[] {
 
 export function validateDailyQuestionPair(pair: readonly [string[], string[]]): void {
   for (const ids of pair) {
-    if (ids.length !== QUIZ_QUESTION_COUNT || ids.some((id) => !questionById(id))) {
+    if (ids.length !== QUIZ_QUESTION_COUNT || ids.some((id) => !activeEntries.some((entry) => entry.id === id))) {
       throw new Error('INVALID_DAILY_QUIZ');
     }
     const questions = ids.map((id) => questionById(id));
@@ -194,6 +208,12 @@ export function validateDailyQuestionPair(pair: readonly [string[], string[]]): 
         QUIZ_SWAHILI_QUESTION_COUNT
     ) {
       throw new Error('The daily round does not match the required language schedule.');
+    }
+    const mediumCount = questions.filter((question) => question?.difficulty === 'medium').length;
+    const challengingCount = questions.filter((question) => question?.difficulty === 'challenging').length;
+    const hardCount = questions.filter((question) => question?.difficulty === 'hard').length;
+    if (mediumCount !== 5 || challengingCount !== 7 || hardCount !== 3) {
+      throw new Error('The daily round does not match the medium-to-hard difficulty schedule.');
     }
   }
 
