@@ -65,24 +65,17 @@ async function main(): Promise<void> {
   } catch {
     throw new Error('Client build output is missing; run the production build first.');
   }
-  const [
-    answers,
-    dictionary,
-    currentQuestionContent,
-    legacyQuestionContent,
-    activeQuestionContent,
-  ] = await Promise.all([
+  // Every question bank in data/ is server-only, including versions added later.
+  const questionBanks = (await readdir(resolve(root, 'data')))
+    .filter((name) => /quiz-questions.*\.json$/.test(name))
+    .sort();
+  if (questionBanks.length === 0) throw new Error('No quiz question banks found in data/.');
+  const [answers, dictionary, ...bankContent] = await Promise.all([
     readFinalList(resolve(root, 'data/answers.txt')),
     readFinalList(resolve(root, 'data/dictionary.txt')),
-    readQuestionContent(resolve(root, 'data/quiz-questions.json')),
-    readQuestionContent(resolve(root, 'data/legacy-quiz-questions-v1.json')),
-    readQuestionContent(resolve(root, 'data/quiz-questions-v4.json')),
+    ...questionBanks.map((name) => readQuestionContent(resolve(root, 'data', name))),
   ]);
-  const questionContent = [
-    ...currentQuestionContent,
-    ...legacyQuestionContent,
-    ...activeQuestionContent,
-  ];
+  const questionContent = bankContent.flat();
   const assets = await Promise.all(files.map((path) => readFile(path, 'utf8')));
   const allWords = [...answers, ...dictionary];
   const leaked = findLeakedWords(allWords, assets);
@@ -94,7 +87,7 @@ async function main(): Promise<void> {
       `Server-only quiz content found in client assets: ${leakedQuestions.join(', ')}`,
     );
   process.stdout.write(
-    `Client leak check passed for ${new Set(allWords).size} finalized words and ${questionContent.length} server-only question strings.\n`,
+    `Client leak check passed for ${new Set(allWords).size} finalized words and ${questionContent.length} server-only question strings from ${questionBanks.join(', ')}.\n`,
   );
 }
 

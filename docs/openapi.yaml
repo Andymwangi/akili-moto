@@ -245,7 +245,12 @@ components:
       properties:
         round: { type: integer, enum: [1, 2] }
         questionId: { type: string, minLength: 1, maxLength: 64 }
-        selectedOptionId: { type: string, enum: [a, b, c, d], description: Omit only to submit after the server-timed 30-second answer deadline. }
+        selectedOptionId:
+          {
+            type: string,
+            enum: [a, b, c, d],
+            description: Omit only to submit after the server-timed 30-second answer deadline.,
+          }
     QuizQuestion:
       type: object
       additionalProperties: false
@@ -302,7 +307,13 @@ components:
         startedAt: { type: string, format: date-time }
         currentQuestionOpenedAt: { type: string, format: date-time }
         currentQuestionTimeRemainingMs: { type: integer, minimum: 0, maximum: 30000 }
-        bonusQuestionIndex: { type: integer, minimum: 0, maximum: 14, description: Zero-based index of the round's bonus question; absent for legacy 10-question rounds. }
+        bonusQuestionIndex:
+          {
+            type: integer,
+            minimum: 0,
+            maximum: 14,
+            description: Zero-based index of the round's bonus question; absent for legacy 10-question rounds.,
+          }
         currentQuestion:
           description: Returned only by GET /quiz, which also starts the question timer. Answer responses omit it.
           allOf: [{ $ref: "#/components/schemas/QuizQuestion" }]
