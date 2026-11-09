@@ -1,7 +1,10 @@
 import { and, eq, lte, ne, sql } from 'drizzle-orm';
+import { createRandomPlayerName } from '../../lib/identity/random-player-name';
 import { createRecoveryCode, hashRecoveryCode } from '../../lib/identity/recovery-code';
 import { createDatabase } from '../client';
 import { playerRecoveryRateLimits, players } from '../schema';
+
+const MAX_PROFILE_CREATION_ATTEMPTS = 8;
 
 export type PlayerProfile = Readonly<{
   id: string;
@@ -13,27 +16,32 @@ export type PlayerProfile = Readonly<{
 export class PlayerRepository {
   private readonly db;
 
-  constructor(binding: D1Database) {
+  constructor(
+    binding: D1Database,
+    private readonly createName: () => string = createRandomPlayerName,
+  ) {
     this.db = createDatabase(binding);
   }
 
   async getOrCreate(id: string): Promise<{ profile: PlayerProfile; recoveryCode?: string }> {
     const now = new Date().toISOString();
-    const recoveryCode = createRecoveryCode();
-    const [created] = await this.db
-      .insert(players)
-      .values({
-        id,
-        displayName: `Player-${id.replaceAll('-', '').slice(0, 17).toUpperCase()}`,
-        recoveryCodeHash: await hashRecoveryCode(recoveryCode),
-        createdAt: now,
-        updatedAt: now,
-      })
-      .onConflictDoNothing()
-      .returning({ id: players.id });
-    const profile = await this.getById(id);
-    if (!profile) throw new Error('PLAYER_PROFILE_UNAVAILABLE');
-    return created ? { profile, recoveryCode } : { profile };
+    for (let attempt = 0; attempt < MAX_PROFILE_CREATION_ATTEMPTS; attempt += 1) {
+      const recoveryCode = createRecoveryCode();
+      const [created] = await this.db
+        .insert(players)
+        .values({
+          id,
+          displayName: this.createName(),
+          recoveryCodeHash: await hashRecoveryCode(recoveryCode),
+          createdAt: now,
+          updatedAt: now,
+        })
+        .onConflictDoNothing()
+        .returning({ id: players.id });
+      const profile = await this.getById(id);
+      if (profile) return created ? { profile, recoveryCode } : { profile };
+    }
+    throw new Error('PLAYER_PROFILE_UNAVAILABLE');
   }
 
   async getById(id: string): Promise<PlayerProfile | undefined> {
