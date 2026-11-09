@@ -119,7 +119,7 @@ export const quizRoundSessions = sqliteTable(
   (table) => [
     primaryKey({ columns: [table.day, table.playerId, table.round] }),
     check('quiz_round_sessions_round_range', sql`${table.round} BETWEEN 1 AND 2`),
-    check('quiz_round_sessions_score_range', sql`${table.score} BETWEEN 0 AND 3000`),
+    check('quiz_round_sessions_score_range', sql`${table.score} BETWEEN 0 AND 3200`),
     check('quiz_round_sessions_correct_range', sql`${table.correctCount} BETWEEN 0 AND 15`),
     index('quiz_round_sessions_daily_leaderboard_index').on(
       table.day,
@@ -160,7 +160,7 @@ export const quizRoundAnswers = sqliteTable(
       'quiz_round_answers_correct_option_id_range',
       sql`${table.correctOptionId} IN ('a', 'b', 'c', 'd')`,
     ),
-    check('quiz_round_answers_points_range', sql`${table.points} BETWEEN 0 AND 200`),
+    check('quiz_round_answers_points_range', sql`${table.points} BETWEEN 0 AND 400`),
     check('quiz_round_answers_response_ms_range', sql`${table.responseMs} BETWEEN 0 AND 86400000`),
     uniqueIndex('quiz_round_answers_player_day_idempotency_unique').on(
       table.day,

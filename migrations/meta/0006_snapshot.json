@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "00720a41-ab07-4f10-bb39-bb4a88803638",
+  "id": "12cda2ae-7325-417a-940a-08928fd2bd2f",
   "prevId": "36d64d69-33c7-44f8-b8d8-09270565b790",
   "tables": {
     "allowed_guesses": {
@@ -654,7 +654,7 @@
         },
         "quiz_round_answers_points_range": {
           "name": "quiz_round_answers_points_range",
-          "value": "\"quiz_round_answers\".\"points\" BETWEEN 0 AND 200"
+          "value": "\"quiz_round_answers\".\"points\" BETWEEN 0 AND 400"
         },
         "quiz_round_answers_response_ms_range": {
           "name": "quiz_round_answers_response_ms_range",
@@ -786,7 +786,7 @@
         },
         "quiz_round_sessions_score_range": {
           "name": "quiz_round_sessions_score_range",
-          "value": "\"quiz_round_sessions\".\"score\" BETWEEN 0 AND 3000"
+          "value": "\"quiz_round_sessions\".\"score\" BETWEEN 0 AND 3200"
         },
         "quiz_round_sessions_correct_range": {
           "name": "quiz_round_sessions_correct_range",
