@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { QUIZ_QUESTION_COUNT } from '../constants';
+import {
+  QUIZ_ANSWER_TIME_LIMIT_SECONDS,
+  QUIZ_LEGACY_QUESTION_COUNT,
+  QUIZ_MAX_ANSWER_POINTS,
+  QUIZ_MAX_ROUND_SCORE,
+  QUIZ_QUESTION_COUNT,
+} from '../constants';
 
 export const ChoiceIdSchema = z.enum(['a', 'b', 'c', 'd']);
 export const QuestionLanguageSchema = z.enum(['en', 'sw']);
@@ -52,7 +58,7 @@ export const QuizAnswerSchema = z.strictObject({
   selectedOptionId: ChoiceIdSchema.nullable(),
   correctOptionId: ChoiceIdSchema,
   isCorrect: z.boolean(),
-  points: z.number().int().min(0).max(200),
+  points: z.number().int().min(0).max(QUIZ_MAX_ANSWER_POINTS),
   explanation: z.string().min(1).max(500),
   sourceUrl: z.string().url(),
 });
@@ -62,16 +68,23 @@ export const QuizStateSchema = z.strictObject({
   round: QuizRoundNumberSchema,
   status: z.enum(['in_progress', 'finished']),
   currentIndex: z.number().int().min(0).max(QUIZ_QUESTION_COUNT),
-  totalQuestions: z.union([z.literal(10), z.literal(QUIZ_QUESTION_COUNT)]),
-  score: z
-    .number()
-    .int()
-    .min(0)
-    .max(QUIZ_QUESTION_COUNT * 200),
+  totalQuestions: z.union([z.literal(QUIZ_LEGACY_QUESTION_COUNT), z.literal(QUIZ_QUESTION_COUNT)]),
+  score: z.number().int().min(0).max(QUIZ_MAX_ROUND_SCORE),
   correctCount: z.number().int().min(0).max(QUIZ_QUESTION_COUNT),
   startedAt: z.string().datetime(),
   currentQuestionOpenedAt: z.string().datetime().optional(),
-  currentQuestionTimeRemainingMs: z.number().int().min(0).max(30_000).optional(),
+  currentQuestionTimeRemainingMs: z
+    .number()
+    .int()
+    .min(0)
+    .max(QUIZ_ANSWER_TIME_LIMIT_SECONDS * 1000)
+    .optional(),
+  bonusQuestionIndex: z
+    .number()
+    .int()
+    .min(0)
+    .max(QUIZ_QUESTION_COUNT - 1)
+    .optional(),
   currentQuestion: QuizQuestionSchema.optional(),
   answers: z.array(QuizAnswerSchema).max(QUIZ_QUESTION_COUNT),
   rank: z.number().int().positive().optional(),
@@ -90,12 +103,7 @@ const RoundLeaderboardSchema = z.strictObject({
   round: QuizRoundNumberSchema,
   totalPlayers: z.number().int().nonnegative(),
   playerRank: z.number().int().positive().nullable(),
-  playerScore: z
-    .number()
-    .int()
-    .min(0)
-    .max(QUIZ_QUESTION_COUNT * 200)
-    .nullable(),
+  playerScore: z.number().int().min(0).max(QUIZ_MAX_ROUND_SCORE).nullable(),
   items: z.array(LeaderboardItemSchema).max(20),
 });
 
@@ -109,7 +117,7 @@ export const QuizLeaderboardSchema = z.strictObject({
       .number()
       .int()
       .min(0)
-      .max(QUIZ_QUESTION_COUNT * 400)
+      .max(QUIZ_MAX_ROUND_SCORE * 2)
       .nullable(),
     items: z.array(LeaderboardItemSchema).max(20),
   }),
@@ -158,7 +166,7 @@ export const PlayerHistorySchema = z.strictObject({
           .number()
           .int()
           .min(0)
-          .max(QUIZ_QUESTION_COUNT * 400),
+          .max(QUIZ_MAX_ROUND_SCORE * 2),
         correctCount: z
           .number()
           .int()

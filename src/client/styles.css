@@ -588,6 +588,7 @@ h1 {
 }
 .language-pill,
 .difficulty-pill,
+.bonus-pill,
 .speed-pill {
   display: inline-flex;
   min-height: 25px;
@@ -611,6 +612,11 @@ h1 {
   border-color: transparent;
   background: var(--accent-soft);
   color: var(--accent-strong);
+}
+.bonus-pill {
+  border-color: var(--gold);
+  color: var(--gold);
+  letter-spacing: 0.04em;
 }
 .speed-pill {
   margin-left: auto;

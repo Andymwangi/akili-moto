@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { type FormEvent, useEffect, useLayoutEffect, useState } from 'react';
-import { QUIZ_ANSWER_TIME_LIMIT_SECONDS } from '../../shared/constants';
+import { QUIZ_ANSWER_TIME_LIMIT_SECONDS, QUIZ_BONUS_MULTIPLIER } from '../../shared/constants';
 import type { QuizAnswer, QuizState } from '../../shared/schemas/quiz';
 import {
   ApiClientError,
@@ -72,7 +72,11 @@ export function GamePage() {
   const [activeRound, setActiveRound] = useState<1 | 2>(1);
   const [feedbackIndex, setFeedbackIndex] = useState<number | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
-  const [timerAnchor, setTimerAnchor] = useState(() => ({ key: '', remainingMs: -1, receivedAt: Date.now() }));
+  const [timerAnchor, setTimerAnchor] = useState(() => ({
+    key: '',
+    remainingMs: -1,
+    receivedAt: Date.now(),
+  }));
   const [notice, setNotice] = useState('');
   const [nameInput, setNameInput] = useState(() => getCachedPlayerName() ?? '');
   const [recoveryInput, setRecoveryInput] = useState('');
@@ -111,15 +115,18 @@ export function GamePage() {
     ? (currentAnswer?.questionIndex ?? quiz?.currentIndex ?? 0)
     : (quiz?.currentIndex ?? 0);
   const timerKey = `${quiz?.day ?? ''}:${quiz?.round ?? ''}:${quiz?.currentIndex ?? ''}:${quiz?.currentQuestionOpenedAt ?? ''}`;
-  const elapsedMs = quiz?.currentQuestionTimeRemainingMs !== undefined
-    ? Math.max(0, QUIZ_ANSWER_TIME_LIMIT_SECONDS * 1000 - quiz.currentQuestionTimeRemainingMs + Math.max(0, nowMs - timerAnchor.receivedAt))
-    : 0;
-  const secondsLeft = Math.max(0, Math.ceil((QUIZ_ANSWER_TIME_LIMIT_SECONDS * 1000 - elapsedMs) / 1000));
-  const speedMultiplier = Math.max(
-    1,
-    2 - Math.min(elapsedMs, QUIZ_ANSWER_TIME_LIMIT_SECONDS * 1000) /
-      (QUIZ_ANSWER_TIME_LIMIT_SECONDS * 1000),
-  );
+  const timeLimitMs = QUIZ_ANSWER_TIME_LIMIT_SECONDS * 1000;
+  const serverRemainingMs = quiz?.currentQuestion ? quiz.currentQuestionTimeRemainingMs : undefined;
+  const hasTimer = serverRemainingMs !== undefined;
+  // Until the anchor effect records this response, no local time has passed for it.
+  const sinceReceiptMs =
+    timerAnchor.key === timerKey ? Math.max(0, nowMs - timerAnchor.receivedAt) : 0;
+  const remainingMs = hasTimer ? Math.max(0, serverRemainingMs - sinceReceiptMs) : timeLimitMs;
+  const secondsLeft = Math.ceil(remainingMs / 1000);
+  const isBonusQuestion =
+    quiz?.bonusQuestionIndex !== undefined && quiz.bonusQuestionIndex === displayedIndex;
+  const pointsMultiplier =
+    (1 + remainingMs / timeLimitMs) * (isBonusQuestion ? QUIZ_BONUS_MULTIPLIER : 1);
   const leaderboardQuery = useQuery({
     queryKey: ['quiz', 'leaderboard'],
     queryFn: getQuizLeaderboard,
@@ -260,11 +267,6 @@ export function GamePage() {
     }
   }, [profilePlayerId, profileDisplayName, profileQuery.data]);
 
-  useEffect(() => {
-    if (!quiz || quiz.status === 'finished' || quiz.answers.length === 0) return;
-    setFeedbackIndex((current) => current ?? quiz.answers.at(-1)?.questionIndex ?? null);
-  }, [quiz?.day, quiz?.answers.length, quiz?.status, quiz]);
-
   useLayoutEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     document
@@ -295,10 +297,15 @@ export function GamePage() {
   useEffect(() => {
     if (
       quiz?.currentQuestionTimeRemainingMs !== undefined &&
-      (timerAnchor.key !== timerKey || timerAnchor.remainingMs !== quiz.currentQuestionTimeRemainingMs)
+      (timerAnchor.key !== timerKey ||
+        timerAnchor.remainingMs !== quiz.currentQuestionTimeRemainingMs)
     ) {
       const receivedAt = Date.now();
-      setTimerAnchor({ key: timerKey, remainingMs: quiz.currentQuestionTimeRemainingMs, receivedAt });
+      setTimerAnchor({
+        key: timerKey,
+        remainingMs: quiz.currentQuestionTimeRemainingMs,
+        receivedAt,
+      });
       setNowMs(receivedAt);
     }
   }, [timerKey, quiz?.currentQuestionTimeRemainingMs, timerAnchor.key, timerAnchor.remainingMs]);
@@ -310,18 +317,33 @@ export function GamePage() {
     return () => window.clearInterval(timer);
   }, [isQuizInProgress, currentQuestionOpenedAt, showingFeedback]);
 
+  const timerAnchored = hasTimer && timerAnchor.key === timerKey;
   useEffect(() => {
     const questionId = quiz?.currentQuestion?.id;
     if (
+      timerAnchored &&
       secondsLeft === 0 &&
       questionId &&
       isQuizInProgress &&
       !showingFeedback &&
       !answerMutation.isPending
     ) {
-      answerMutation.mutate({ round: activeRound, questionId, idempotencyKey: crypto.randomUUID() });
+      answerMutation.mutate({
+        round: activeRound,
+        questionId,
+        idempotencyKey: crypto.randomUUID(),
+      });
     }
-  }, [secondsLeft, quiz?.currentQuestion?.id, isQuizInProgress, showingFeedback, answerMutation.isPending, answerMutation.mutate, activeRound]);
+  }, [
+    timerAnchored,
+    secondsLeft,
+    quiz?.currentQuestion?.id,
+    isQuizInProgress,
+    showingFeedback,
+    answerMutation.isPending,
+    answerMutation.mutate,
+    activeRound,
+  ]);
 
   return (
     <main className="page-shell">
@@ -720,9 +742,7 @@ export function GamePage() {
                         <li className="leaderboard-row" key={item.position}>
                           <span className="leaderboard-rank">{item.rank}</span>
                           <span className="leaderboard-player">{item.displayName}</span>
-                          <span className="leaderboard-correct">
-                            {item.correctCount} correct
-                          </span>
+                          <span className="leaderboard-correct">{item.correctCount} correct</span>
                           <strong>{item.score.toLocaleString()}</strong>
                         </li>
                       ))}
@@ -746,7 +766,9 @@ export function GamePage() {
                   aria-valuemax={quiz.totalQuestions}
                   aria-valuenow={displayedIndex + 1}
                 >
-                  <span style={{ width: `${((displayedIndex + 1) / quiz.totalQuestions) * 100}%` }} />
+                  <span
+                    style={{ width: `${((displayedIndex + 1) / quiz.totalQuestions) * 100}%` }}
+                  />
                 </div>
                 <div className="question-submeta">
                   <span className={`language-pill language-${displayedQuestion?.language ?? 'en'}`}>
@@ -757,10 +779,13 @@ export function GamePage() {
                       {difficultyName[displayedQuestion.difficulty]}
                     </span>
                   )}
-                  {!showingFeedback && (
-                    <span className="speed-pill">
+                  {isBonusQuestion && displayedQuestion && (
+                    <span className="bonus-pill">Bonus ×{QUIZ_BONUS_MULTIPLIER}</span>
+                  )}
+                  {!showingFeedback && hasTimer && (
+                    <span className="speed-pill" aria-live="off">
                       {secondsLeft > 0
-                        ? `${secondsLeft}s · ${speedMultiplier.toFixed(2)}× points`
+                        ? `${secondsLeft}s · ${pointsMultiplier.toFixed(2)}× points`
                         : 'Time’s up'}
                     </span>
                   )}
@@ -797,7 +822,12 @@ export function GamePage() {
                     {' · '}
                     {currentAnswer.selectedOptionId === null
                       ? 'Time ran out. This question scored zero points.'
-                      : `${currentAnswer.points} points`}
+                      : `${currentAnswer.points} points${
+                          currentAnswer.isCorrect &&
+                          quiz.bonusQuestionIndex === currentAnswer.questionIndex
+                            ? ` (bonus ×${QUIZ_BONUS_MULTIPLIER})`
+                            : ''
+                        }`}
                   </p>
                   <p className="explanation">{currentAnswer.explanation}</p>
                   <a href={currentAnswer.sourceUrl} target="_blank" rel="noreferrer">
@@ -850,7 +880,8 @@ export function GamePage() {
                     </p>
                   )}
                   <p className="question-footnote">
-                    Correct answers score from 200 points down to 100 over 30 seconds. Late answers score zero.
+                    Correct answers score from 200 points down to 100 over 30 seconds. One bonus
+                    question per round doubles its points. Late answers score zero.
                   </p>
                 </>
               )}
@@ -888,8 +919,7 @@ export function GamePage() {
                   <li key={game.day}>
                     <time dateTime={game.day}>{game.day}</time>
                     <span>
-                      {game.correctCount} correct ·{' '}
-                      {game.roundsCompleted}/2 rounds
+                      {game.correctCount} correct · {game.roundsCompleted}/2 rounds
                     </span>
                     <strong>{game.score.toLocaleString()} pts</strong>
                   </li>

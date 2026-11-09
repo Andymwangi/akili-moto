@@ -7,6 +7,7 @@ import { QuizRepository } from '../src/worker/db/queries/quiz-repository';
 import { getNairobiDay } from '../src/worker/lib/game/day';
 import { ensureDailyQuiz } from '../src/worker/lib/quiz/daily-quiz';
 import {
+  bonusQuestionIndex,
   correctOptionId,
   questionById,
   selectDailyQuestionPair,
@@ -76,112 +77,72 @@ async function submitAnswer(
   });
 }
 
+// Changing the first signature character always changes the decoded bytes. The last
+// base64url character carries padding bits, so editing it can leave the signature valid.
+function tamperCookie(cookie: string): string {
+  const signatureStart = cookie.lastIndexOf('.') + 1;
+  const first = cookie[signatureStart];
+  return `${cookie.slice(0, signatureStart)}${first === 'A' ? 'B' : 'A'}${cookie.slice(signatureStart + 1)}`;
+}
+
+async function postAnswer(
+  cookie: string,
+  body: Record<string, unknown>,
+  idempotencyKey = `answer-${crypto.randomUUID()}`,
+): Promise<Response> {
+  return request('/api/quiz/answer', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Idempotency-Key': idempotencyKey,
+      Cookie: cookie,
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+/** Opens the current question the way the client does (GET), then answers it correctly. */
+async function answerCurrentCorrectly(
+  cookie: string,
+  round: 1 | 2 = 1,
+): Promise<{ opened: QuizState; answered: QuizState; response: Response }> {
+  const opened = (await getQuiz(cookie, round)).state;
+  const question = opened.currentQuestion;
+  if (!question) throw new Error('Current question is missing');
+  const entry = questionById(question.id);
+  if (!entry) throw new Error('Question bank entry is missing');
+  const response = await submitAnswer(
+    question.id,
+    correctOptionId(entry, opened.day),
+    cookie,
+    `answer-${crypto.randomUUID()}`,
+    round,
+  );
+  const answered = QuizStateSchema.parse(await response.clone().json());
+  return { opened, answered, response };
+}
+
+async function backdateCurrentQuestion(cookie: string, millisecondsAgo: number): Promise<void> {
+  const playerId = cookie.split('=')[1]?.split('.')[0];
+  await testEnv.DB.prepare(
+    'UPDATE quiz_round_sessions SET current_question_opened_at = ? WHERE player_id = ?',
+  )
+    .bind(new Date(Date.now() - millisecondsAgo).toISOString(), playerId)
+    .run();
+}
+
 async function resetDatabase(): Promise<void> {
-  await testEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS daily_quizzes (
-    day TEXT PRIMARY KEY NOT NULL, question_ids TEXT NOT NULL, question_set_key TEXT,
-    question_set_version TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL
-  )`).run();
-  const existingColumns = await testEnv.DB.prepare('PRAGMA table_info(daily_quizzes)').all<{
-    name: string;
-  }>();
-  const columns = new Set(existingColumns.results?.map((column) => column.name) ?? []);
-  for (const [name, type] of [
-    ['round_two_question_ids', 'TEXT'],
-    ['round_two_question_set_key', 'TEXT'],
-    ['round_two_question_set_version', 'TEXT'],
-  ] as const) {
-    if (!columns.has(name))
-      await testEnv.DB.prepare(`ALTER TABLE daily_quizzes ADD COLUMN ${name} ${type}`).run();
-  }
-  await testEnv.DB.batch([
-    testEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS daily_quizzes (
-      day TEXT PRIMARY KEY NOT NULL,
-      question_ids TEXT NOT NULL,
-      question_set_key TEXT,
-      question_set_version TEXT NOT NULL,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
-    )`),
-    testEnv.DB.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS daily_quizzes_question_set_key_unique
-      ON daily_quizzes(question_set_key) WHERE question_set_key IS NOT NULL`),
-    testEnv.DB.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS daily_quizzes_round_two_question_set_key_unique
-      ON daily_quizzes(round_two_question_set_key) WHERE round_two_question_set_key IS NOT NULL`),
-    testEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS players (
-      id TEXT PRIMARY KEY NOT NULL,
-      display_name TEXT NOT NULL,
-      recovery_code_hash TEXT NOT NULL,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
-    )`),
-    testEnv.DB.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS players_recovery_code_hash_unique
-      ON players(recovery_code_hash)`),
-    testEnv.DB.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS players_display_name_unique
-      ON players(lower(display_name))`),
-    testEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS player_recovery_rate_limits (
-      address_hash TEXT PRIMARY KEY NOT NULL,
-      window_started_at INTEGER NOT NULL,
-      hit_count INTEGER NOT NULL,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
-    )`),
-    testEnv.DB.prepare(`CREATE INDEX IF NOT EXISTS player_recovery_rate_limits_window_index
-      ON player_recovery_rate_limits(window_started_at)`),
-    testEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS quiz_sessions (
-      day TEXT NOT NULL,
-      player_id TEXT NOT NULL,
-      started_at TEXT NOT NULL,
-      score INTEGER NOT NULL DEFAULT 0 CHECK(score BETWEEN 0 AND 1200),
-      correct_count INTEGER NOT NULL DEFAULT 0 CHECK(correct_count BETWEEN 0 AND 10),
-      completed_at TEXT,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL,
-      PRIMARY KEY(day, player_id)
-    )`),
-    testEnv.DB.prepare(`CREATE INDEX IF NOT EXISTS quiz_sessions_daily_leaderboard_index
-      ON quiz_sessions(day, completed_at, score, correct_count)`),
-    testEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS quiz_answers (
-      day TEXT NOT NULL,
-      player_id TEXT NOT NULL,
-      question_index INTEGER NOT NULL CHECK(question_index BETWEEN 0 AND 9),
-      question_id TEXT NOT NULL,
-      selected_option_id TEXT NOT NULL CHECK(selected_option_id IN ('a', 'b', 'c', 'd')),
-      correct_option_id TEXT NOT NULL CHECK(correct_option_id IN ('a', 'b', 'c', 'd')),
-      is_correct INTEGER NOT NULL,
-      points INTEGER NOT NULL CHECK(points BETWEEN 0 AND 120),
-      response_ms INTEGER NOT NULL CHECK(response_ms BETWEEN 0 AND 86400000),
-      idempotency_key TEXT NOT NULL,
-      submitted_at TEXT NOT NULL,
-      PRIMARY KEY(day, player_id, question_index)
-    )`),
-    testEnv.DB.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS quiz_answers_player_day_idempotency_unique
-      ON quiz_answers(day, player_id, idempotency_key)`),
-    testEnv.DB.prepare(`CREATE INDEX IF NOT EXISTS quiz_answers_player_day_index
-      ON quiz_answers(player_id, day)`),
-    testEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS quiz_round_sessions (
-      day TEXT NOT NULL, player_id TEXT NOT NULL, round_no INTEGER NOT NULL,
-      started_at TEXT NOT NULL, score INTEGER NOT NULL DEFAULT 0,
-      correct_count INTEGER NOT NULL DEFAULT 0, completed_at TEXT,
-      created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
-      PRIMARY KEY(day, player_id, round_no)
-    )`),
-    testEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS quiz_round_answers (
-      day TEXT NOT NULL, player_id TEXT NOT NULL, round_no INTEGER NOT NULL,
-      question_index INTEGER NOT NULL, question_id TEXT NOT NULL,
-      selected_option_id TEXT NOT NULL, correct_option_id TEXT NOT NULL,
-      is_correct INTEGER NOT NULL, points INTEGER NOT NULL, response_ms INTEGER NOT NULL,
-      idempotency_key TEXT NOT NULL, submitted_at TEXT NOT NULL,
-      PRIMARY KEY(day, player_id, round_no, question_index)
-    )`),
-    testEnv.DB.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS quiz_round_answers_player_day_idempotency_unique
-      ON quiz_round_answers(day, player_id, round_no, idempotency_key)`),
-    testEnv.DB.prepare('DELETE FROM quiz_round_answers'),
-    testEnv.DB.prepare('DELETE FROM quiz_round_sessions'),
-    testEnv.DB.prepare('DELETE FROM quiz_answers'),
-    testEnv.DB.prepare('DELETE FROM quiz_sessions'),
-    testEnv.DB.prepare('DELETE FROM daily_quizzes'),
-    testEnv.DB.prepare('DELETE FROM players'),
-    testEnv.DB.prepare('DELETE FROM player_recovery_rate_limits'),
-  ]);
+  await testEnv.DB.batch(
+    [
+      'quiz_round_answers',
+      'quiz_round_sessions',
+      'quiz_answers',
+      'quiz_sessions',
+      'daily_quizzes',
+      'players',
+      'player_recovery_rate_limits',
+    ].map((table) => testEnv.DB.prepare(`DELETE FROM ${table}`)),
+  );
 }
 
 beforeEach(async () => {
@@ -324,7 +285,7 @@ describe('daily quiz routes', () => {
     const response = await request('/api/player/history?limit=10', { headers: { Cookie: cookie } });
     const history = (await response.json()) as { items: { day: string; score: number }[] };
     const tampered = await request('/api/player/history', {
-      headers: { Cookie: `${cookie.slice(0, -1)}x` },
+      headers: { Cookie: tamperCookie(cookie) },
     });
     const privateHistory = (await tampered.json()) as { items: unknown[] };
     const invalid = await request('/api/player/history?limit=1000', {
@@ -485,7 +446,7 @@ describe('daily quiz routes', () => {
     expect(firstCookie).not.toBe(secondCookie);
     expect(first.state.currentQuestion?.id).toBe(second.state.currentQuestion?.id);
     expect(assignment).toBeDefined();
-    expect(JSON.parse(assignment?.question_ids ?? '[]')).toHaveLength(10);
+    expect(JSON.parse(assignment?.question_ids ?? '[]')).toHaveLength(15);
   });
 
   it('resumes a persisted v1 assignment using the compatibility question bank', async () => {
@@ -564,7 +525,9 @@ describe('daily quiz routes', () => {
     expect(state.answers[0]?.isCorrect).toBe(true);
     expect(state.answers[0]?.correctOptionId).toBe(correctId);
     expect(state.answers[0]?.points).toBeGreaterThanOrEqual(100);
-    expect(state.currentQuestion?.id).not.toBe(questionId);
+    // The next question is only revealed by GET, which also starts its timer.
+    expect(state.currentQuestion).toBeUndefined();
+    expect(state.currentQuestionOpenedAt).toBeUndefined();
   });
 
   it('replays idempotent answers and rejects a changed replay', async () => {
@@ -613,13 +576,13 @@ describe('daily quiz routes', () => {
     await submitAnswer(questionId, 'a', firstCookie);
     const second = await getQuiz();
     expect(second.state.answers).toHaveLength(0);
-    const lastCharacter = firstCookie.at(-1);
-    const tampered = `${firstCookie.slice(0, -1)}${lastCharacter === 'x' ? 'y' : 'x'}`;
-    const replacement = await request('/api/quiz', { headers: { Cookie: tampered } });
+    const replacement = await request('/api/quiz', {
+      headers: { Cookie: tamperCookie(firstCookie) },
+    });
     expect(cookieFrom(replacement)).not.toBe(firstCookie);
   });
 
-  it('finishes after ten questions and ranks only completed players', async () => {
+  it('finishes after fifteen questions and ranks only completed players', async () => {
     const initial = await getQuiz();
     const cookie = cookieFrom(initial.response);
     const thirdRound = await request('/api/quiz?round=3', { headers: { Cookie: cookie } });
@@ -633,21 +596,17 @@ describe('daily quiz routes', () => {
     ).toMatchObject({ count: 0 });
     let state = initial.state;
     while (state.status !== 'finished') {
-      const question = state.currentQuestion;
-      if (!question) throw new Error('Question is missing before the quiz is finished');
-      const entry = questionById(question.id);
-      if (!entry) throw new Error('Question bank entry is missing');
-      const response = await submitAnswer(question.id, correctOptionId(entry, state.day), cookie);
-      expect(response.status).toBe(200);
-      state = QuizStateSchema.parse(await response.json());
+      const step = await answerCurrentCorrectly(cookie, 1);
+      expect(step.response.status).toBe(200);
+      state = step.answered;
     }
     const leaderboardResponse = await request('/api/quiz/leaderboard', {
       headers: { Cookie: cookie },
     });
     const leaderboard: unknown = await leaderboardResponse.json();
     expect(leaderboardResponse.status).toBe(200);
-    expect(state.answers).toHaveLength(10);
-    expect(state.correctCount).toBe(10);
+    expect(state.answers).toHaveLength(15);
+    expect(state.correctCount).toBe(15);
     expect(state.rank).toBe(1);
     expect(state.completedPlayers).toBe(1);
     const secondRoundStart = await getQuiz(cookie, 2);
@@ -659,23 +618,13 @@ describe('daily quiz routes', () => {
       .first<{ question_ids: string; round_two_question_ids: string }>();
     const firstIds = JSON.parse(pair?.question_ids ?? '[]') as string[];
     const secondIds = JSON.parse(pair?.round_two_question_ids ?? '[]') as string[];
-    expect(secondIds).toHaveLength(10);
+    expect(secondIds).toHaveLength(15);
     expect(firstIds.some((id) => secondIds.includes(id))).toBe(false);
     let secondState = secondRoundStart.state;
     while (secondState.status !== 'finished') {
-      const question = secondState.currentQuestion;
-      if (!question) throw new Error('Round two question missing before completion');
-      const entry = questionById(question.id);
-      if (!entry) throw new Error('Question bank entry is missing');
-      const response = await submitAnswer(
-        question.id,
-        correctOptionId(entry, secondState.day),
-        cookie,
-        `round-two-${secondState.currentIndex}`,
-        2,
-      );
-      expect(response.status).toBe(200);
-      secondState = QuizStateSchema.parse(await response.json());
+      const step = await answerCurrentCorrectly(cookie, 2);
+      expect(step.response.status).toBe(200);
+      secondState = step.answered;
     }
     expect(leaderboard).not.toHaveProperty('playerId');
     expect(leaderboard).not.toHaveProperty('answers');
@@ -704,7 +653,7 @@ describe('daily quiz routes', () => {
           day: state.day,
           roundsCompleted: 2,
           score: state.score + secondState.score,
-          correctCount: 20,
+          correctCount: 30,
         },
       ],
     });
@@ -718,6 +667,121 @@ describe('daily quiz routes', () => {
       ],
       combined: { totalPlayers: 0, playerRank: null },
     });
+  });
+
+  it('rejects an answer to a question that was never opened by GET', async () => {
+    const initial = await getQuiz();
+    const cookie = cookieFrom(initial.response);
+    await answerCurrentCorrectly(cookie);
+    const assignment = await testEnv.DB.prepare(
+      'SELECT question_ids FROM daily_quizzes WHERE day = ?',
+    )
+      .bind(initial.state.day)
+      .first<{ question_ids: string }>();
+    const nextId = (JSON.parse(assignment?.question_ids ?? '[]') as string[])[1];
+    if (!nextId) throw new Error('Second question is missing');
+    const entry = questionById(nextId);
+    if (!entry) throw new Error('Question bank entry is missing');
+    const blind = await submitAnswer(nextId, correctOptionId(entry, initial.state.day), cookie);
+    const body = (await blind.json()) as { error: { code: string } };
+    const count = await testEnv.DB.prepare(
+      'SELECT COUNT(*) AS count FROM quiz_round_answers',
+    ).first<{ count: number }>();
+    expect(blind.status).toBe(409);
+    expect(body.error.code).toBe('question_not_opened');
+    expect(count?.count).toBe(1);
+  });
+
+  it('keeps the question timer running across refreshes', async () => {
+    const first = await getQuiz();
+    const cookie = cookieFrom(first.response);
+    const again = await getQuiz(cookie);
+    expect(first.state.currentQuestionOpenedAt).toBeDefined();
+    expect(again.state.currentQuestionOpenedAt).toBe(first.state.currentQuestionOpenedAt);
+    await backdateCurrentQuestion(cookie, 20_000);
+    const later = await getQuiz(cookie);
+    expect(later.state.currentQuestionTimeRemainingMs).toBeLessThanOrEqual(10_000);
+    expect(later.state.currentQuestionTimeRemainingMs).toBeGreaterThan(8_000);
+  });
+
+  it('rejects an early timeout and records a real timeout as zero points', async () => {
+    const initial = await getQuiz();
+    const cookie = cookieFrom(initial.response);
+    const questionId = initial.state.currentQuestion?.id;
+    if (!questionId) throw new Error('Current question is missing');
+    const early = await postAnswer(cookie, { round: 1, questionId });
+    expect(early.status).toBe(409);
+    expect(((await early.json()) as { error: { code: string } }).error.code).toBe(
+      'answer_too_early',
+    );
+
+    await backdateCurrentQuestion(cookie, 31_000);
+    const timedOut = await postAnswer(cookie, { round: 1, questionId });
+    const state = QuizStateSchema.parse(await timedOut.json());
+    expect(timedOut.status).toBe(200);
+    expect(state.answers[0]).toMatchObject({ selectedOptionId: null, isCorrect: false, points: 0 });
+  });
+
+  it('counts a correct answer in the grace window at the minimum and drops later ones', async () => {
+    const graceCookie = cookieFrom((await getQuiz()).response);
+    await backdateCurrentQuestion(graceCookie, 30_500);
+    const graceState = (await getQuiz(graceCookie)).state;
+    const question = graceState.currentQuestion;
+    if (!question) throw new Error('Current question is missing');
+    const entry = questionById(question.id);
+    if (!entry) throw new Error('Question bank entry is missing');
+    const correctId = correctOptionId(entry, graceState.day);
+    const inGrace = QuizStateSchema.parse(
+      await (await submitAnswer(question.id, correctId, graceCookie)).json(),
+    );
+    const bonus = graceState.bonusQuestionIndex === 0 ? 2 : 1;
+    expect(inGrace.answers[0]).toMatchObject({ isCorrect: true, points: 100 * bonus });
+
+    const lateCookie = cookieFrom((await getQuiz()).response);
+    await backdateCurrentQuestion(lateCookie, 40_000);
+    const late = QuizStateSchema.parse(
+      await (await submitAnswer(question.id, correctId, lateCookie)).json(),
+    );
+    expect(late.answers[0]).toMatchObject({ selectedOptionId: null, isCorrect: false, points: 0 });
+  });
+
+  it('replays a late answer that was stored as a timeout instead of reporting a conflict', async () => {
+    const initial = await getQuiz();
+    const cookie = cookieFrom(initial.response);
+    const questionId = initial.state.currentQuestion?.id;
+    if (!questionId) throw new Error('Current question is missing');
+    await backdateCurrentQuestion(cookie, 40_000);
+    const first = await submitAnswer(questionId, 'a', cookie, 'late-answer-key-01');
+    const replay = await submitAnswer(questionId, 'a', cookie, 'late-answer-key-01');
+    expect(first.status).toBe(200);
+    expect(replay.status).toBe(200);
+  });
+
+  it('doubles the points of the shared bonus question', async () => {
+    const initial = await getQuiz();
+    const cookie = cookieFrom(initial.response);
+    const bonusIndex = initial.state.bonusQuestionIndex;
+    if (bonusIndex === undefined) throw new Error('Bonus question index is missing');
+    const ids = JSON.parse(
+      (
+        await testEnv.DB.prepare('SELECT question_ids FROM daily_quizzes WHERE day = ?')
+          .bind(initial.state.day)
+          .first<{ question_ids: string }>()
+      )?.question_ids ?? '[]',
+    ) as string[];
+    expect(bonusQuestionIndex(initial.state.day, 1, ids)).toBe(bonusIndex);
+    const otherPlayer = await getQuiz();
+    expect(otherPlayer.state.bonusQuestionIndex).toBe(bonusIndex);
+
+    let state = initial.state;
+    for (let index = 0; index <= bonusIndex; index += 1) {
+      state = (await answerCurrentCorrectly(cookie)).answered;
+    }
+    const bonusAnswer = state.answers[bonusIndex];
+    const regularAnswer = state.answers.find((answer) => answer.questionIndex !== bonusIndex);
+    expect(bonusAnswer?.points).toBeGreaterThan(300);
+    expect(bonusAnswer?.points).toBeLessThanOrEqual(400);
+    if (regularAnswer) expect(regularAnswer.points).toBeLessThanOrEqual(200);
   });
 
   it('does not expose the retired Wordle endpoint', async () => {

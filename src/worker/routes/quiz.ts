@@ -9,13 +9,21 @@ import {
   QuizRoundQuerySchema,
   QuizStateSchema,
 } from '../../shared/schemas/quiz';
-import { QuizRepository, type QuizRoundNumber } from '../db/queries/quiz-repository';
+import {
+  QuizRepository,
+  type QuizRoundNumber,
+  type StoredQuizAnswer,
+} from '../db/queries/quiz-repository';
 import type { AppEnvironment } from '../env';
 import { getNairobiDay } from '../lib/game/day';
 import { ensureDailyQuizPair } from '../lib/quiz/daily-quiz';
-import { correctOptionId, questionById } from '../lib/quiz/question-bank';
-import { scoreQuizAnswer } from '../lib/quiz/scoring';
+import { bonusQuestionIndex, correctOptionId, questionById } from '../lib/quiz/question-bank';
+import { isWithinAnswerWindow, scoreQuizAnswer } from '../lib/quiz/scoring';
 import { buildQuizState } from '../lib/quiz/state';
+
+type ChoiceId = 'a' | 'b' | 'c' | 'd';
+
+const TIME_LIMIT_MS = QUIZ_ANSWER_TIME_LIMIT_SECONDS * 1000;
 
 function safeError(requestId: string, code: string, message: string, status: 400 | 409 | 503) {
   return Response.json(ApiErrorSchema.parse({ error: { code, message, requestId } }), { status });
@@ -31,6 +39,52 @@ function isRoundUnlocked(
   return repository
     .getRoundSession(day, playerId, 1)
     .then((session) => Boolean(session?.completedAt));
+}
+
+/** A stored answer satisfies a retry when it is the same question and choice. */
+function matchesStoredAnswer(
+  stored: StoredQuizAnswer,
+  questionId: string,
+  selectedOptionId: ChoiceId | undefined,
+): boolean {
+  if (stored.questionId !== questionId) return false;
+  if (stored.selectedOptionId === (selectedOptionId ?? null)) return true;
+  // A choice that arrived after the answer window is stored as a timeout.
+  return stored.selectedOptionId === null && stored.responseMs >= TIME_LIMIT_MS;
+}
+
+async function roundState(input: {
+  repository: QuizRepository;
+  day: string;
+  playerId: string;
+  round: QuizRoundNumber;
+  questionIds: string[];
+  now: Date;
+  revealCurrentQuestion: boolean;
+}) {
+  const { repository, day, playerId, round, questionIds } = input;
+  let session = await repository.getOrCreateRoundSession(day, playerId, round);
+  await repository.reconcileRoundTotals(day, playerId, round, questionIds.length);
+  const answers = await repository.getRoundAnswers(day, playerId, round);
+  if (input.revealCurrentQuestion && answers.length < questionIds.length) {
+    session = await repository.openCurrentQuestion(day, playerId, round, answers.length);
+  }
+  const rank =
+    answers.length === questionIds.length
+      ? await repository.getCompletedRoundRank(day, playerId, round)
+      : undefined;
+  return QuizStateSchema.parse(
+    buildQuizState({
+      day,
+      round,
+      questionIds,
+      session,
+      answers,
+      now: input.now,
+      revealCurrentQuestion: input.revealCurrentQuestion,
+      ...(rank ? { rank } : {}),
+    }),
+  );
 }
 
 const routes = new Hono<AppEnvironment>()
@@ -62,29 +116,16 @@ const routes = new Hono<AppEnvironment>()
           );
         }
         const [roundOneIds, roundTwoIds] = await ensureDailyQuizPair(repository, day);
-        const questionIds = round === 1 ? roundOneIds : roundTwoIds;
-        let session = await repository.getOrCreateRoundSession(day, playerId, round);
-        await repository.reconcileRoundTotals(day, playerId, round, questionIds.length);
-        const answers = await repository.getRoundAnswers(day, playerId, round);
-        if (answers.length < questionIds.length) {
-          session = await repository.openCurrentQuestion(day, playerId, round, answers.length);
-        }
-        const rank =
-          answers.length === questionIds.length
-            ? await repository.getCompletedRoundRank(day, playerId, round)
-            : undefined;
-        return context.json(
-          QuizStateSchema.parse(
-            buildQuizState({
-              day,
-              round,
-              questionIds,
-              session,
-              answers,
-              ...(rank ? { rank } : {}),
-            }),
-          ),
-        );
+        const state = await roundState({
+          repository,
+          day,
+          playerId,
+          round,
+          questionIds: round === 1 ? roundOneIds : roundTwoIds,
+          now,
+          revealCurrentQuestion: true,
+        });
+        return context.json(state);
       } catch {
         return safeError(
           context.res.headers.get('X-Request-Id') ?? 'unavailable',
@@ -125,16 +166,32 @@ const routes = new Hono<AppEnvironment>()
       const { round, questionId, selectedOptionId } = context.req.valid('json');
       const idempotencyKey = context.req.valid('header')['idempotency-key'];
       const repository = new QuizRepository(context.env.DB);
+      const requestId = context.res.headers.get('X-Request-Id') ?? 'unavailable';
 
       try {
         if (!(await isRoundUnlocked(repository, day, playerId, round))) {
           return safeError(
-            context.res.headers.get('X-Request-Id') ?? 'unavailable',
+            requestId,
             'round_locked',
             'Complete round one before starting round two.',
             409,
           );
         }
+        const [roundOneIds, roundTwoIds] = await ensureDailyQuizPair(repository, day);
+        const questionIds = round === 1 ? roundOneIds : roundTwoIds;
+        const respond = async () =>
+          context.json(
+            await roundState({
+              repository,
+              day,
+              playerId,
+              round,
+              questionIds,
+              now,
+              revealCurrentQuestion: false,
+            }),
+          );
+
         const previous = await repository.getIdempotentRoundAnswer(
           day,
           playerId,
@@ -142,58 +199,27 @@ const routes = new Hono<AppEnvironment>()
           idempotencyKey,
         );
         if (previous) {
-          if (
-            previous.questionId !== questionId ||
-            previous.selectedOptionId !== (selectedOptionId ?? null)
-          ) {
+          if (!matchesStoredAnswer(previous, questionId, selectedOptionId)) {
             return safeError(
-              context.res.headers.get('X-Request-Id') ?? 'unavailable',
+              requestId,
               'idempotency_conflict',
               'That request key was already used.',
               409,
             );
           }
-          const [roundOneIds, roundTwoIds] = await ensureDailyQuizPair(repository, day);
-          const questionIds = round === 1 ? roundOneIds : roundTwoIds;
-          const session = await repository.getOrCreateRoundSession(day, playerId, round);
-          await repository.reconcileRoundTotals(day, playerId, round, questionIds.length);
-          const answers = await repository.getRoundAnswers(day, playerId, round);
-          const rank =
-            answers.length === questionIds.length
-              ? await repository.getCompletedRoundRank(day, playerId, round)
-              : undefined;
-          return context.json(
-            QuizStateSchema.parse(
-              buildQuizState({
-                day,
-                round,
-                questionIds,
-                session,
-                answers,
-                ...(rank ? { rank } : {}),
-              }),
-            ),
-          );
+          return respond();
         }
 
-        const [roundOneIds, roundTwoIds] = await ensureDailyQuizPair(repository, day);
-        const questionIds = round === 1 ? roundOneIds : roundTwoIds;
         await repository.getOrCreateRoundSession(day, playerId, round);
         await repository.reconcileRoundTotals(day, playerId, round, questionIds.length);
         const answers = await repository.getRoundAnswers(day, playerId, round);
-        if (answers.length >= questionIds.length) {
-          return safeError(
-            context.res.headers.get('X-Request-Id') ?? 'unavailable',
-            'quiz_finished',
-            'You have completed this round.',
-            409,
-          );
+        const questionIndex = answers.length;
+        if (questionIndex >= questionIds.length) {
+          return safeError(requestId, 'quiz_finished', 'You have completed this round.', 409);
         }
-
-        const currentQuestionId = questionIds[answers.length];
-        if (questionId !== currentQuestionId) {
+        if (questionId !== questionIds[questionIndex]) {
           return safeError(
-            context.res.headers.get('X-Request-Id') ?? 'unavailable',
+            requestId,
             'question_out_of_order',
             'Refresh the challenge to continue with the current question.',
             409,
@@ -202,34 +228,39 @@ const routes = new Hono<AppEnvironment>()
         const question = questionById(questionId);
         if (!question) throw new Error('QUESTION_NOT_FOUND');
 
-        const currentSession = await repository.openCurrentQuestion(day, playerId, round, answers.length);
-        const openedAt = currentSession.currentQuestionOpenedAt ?? submittedAt;
+        // The timer starts only when GET /quiz reveals the question.
+        const session = await repository.getRoundSession(day, playerId, round);
+        const openedAt = session?.currentQuestionOpenedAt;
+        if (!openedAt || session.currentQuestionIndex !== questionIndex) {
+          return safeError(
+            requestId,
+            'question_not_opened',
+            'Refresh the challenge to load the current question.',
+            409,
+          );
+        }
         const elapsedMs = Math.min(
           86_400_000,
           Math.max(0, now.getTime() - new Date(openedAt).getTime()),
         );
-        const timedOut = elapsedMs >= QUIZ_ANSWER_TIME_LIMIT_SECONDS * 1000;
-        if (!timedOut && !selectedOptionId) {
-          return safeError(
-            context.res.headers.get('X-Request-Id') ?? 'unavailable',
-            'answer_too_early',
-            'The answer timer has not expired.',
-            409,
-          );
+        if (!selectedOptionId && elapsedMs < TIME_LIMIT_MS) {
+          return safeError(requestId, 'answer_too_early', 'The answer timer has not expired.', 409);
         }
+        const recordedOptionId =
+          selectedOptionId && isWithinAnswerWindow(elapsedMs) ? selectedOptionId : null;
         const correctId = correctOptionId(question, day);
-        const isCorrect = !timedOut && selectedOptionId === correctId;
-        const points = scoreQuizAnswer(isCorrect, elapsedMs);
+        const isCorrect = recordedOptionId === correctId;
+        const isBonus = bonusQuestionIndex(day, round, questionIds) === questionIndex;
         const inserted = await repository.saveRoundAnswer({
           day,
           playerId,
           round,
-          questionIndex: answers.length,
+          questionIndex,
           questionId,
-          selectedOptionId: timedOut ? null : selectedOptionId ?? null,
+          selectedOptionId: recordedOptionId,
           correctOptionId: correctId,
           isCorrect,
-          points,
+          points: scoreQuizAnswer(isCorrect, elapsedMs, isBonus),
           responseMs: elapsedMs,
           idempotencyKey,
           submittedAt,
@@ -237,37 +268,20 @@ const routes = new Hono<AppEnvironment>()
         });
         if (!inserted) {
           const current = await repository.getRoundAnswers(day, playerId, round);
-          const conflicting = current.find((answer) => answer.questionIndex === answers.length);
-          if (conflicting?.selectedOptionId !== (timedOut ? null : selectedOptionId ?? null)) {
+          const stored = current.find((answer) => answer.questionIndex === questionIndex);
+          if (!stored || !matchesStoredAnswer(stored, questionId, selectedOptionId)) {
             return safeError(
-              context.res.headers.get('X-Request-Id') ?? 'unavailable',
+              requestId,
               'answer_conflict',
               'An answer was already recorded for this question.',
               409,
             );
           }
         }
-
-        const updatedAnswers = await repository.getRoundAnswers(day, playerId, round);
-        const rank =
-          updatedAnswers.length === questionIds.length
-            ? await repository.getCompletedRoundRank(day, playerId, round)
-            : undefined;
-        return context.json(
-          QuizStateSchema.parse(
-            buildQuizState({
-              day,
-              round,
-              questionIds,
-              session,
-              answers: updatedAnswers,
-              ...(rank ? { rank } : {}),
-            }),
-          ),
-        );
+        return respond();
       } catch {
         return safeError(
-          context.res.headers.get('X-Request-Id') ?? 'unavailable',
+          requestId,
           'answer_unavailable',
           'Your answer could not be saved. Refresh and try again.',
           503,

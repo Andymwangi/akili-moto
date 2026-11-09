@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gt, isNotNull, isNull, lt, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gt, gte, isNotNull, isNull, lt, sql } from 'drizzle-orm';
 import { createDatabase, type Database } from '../client';
 import { dailyQuizzes, players, quizRoundAnswers, quizRoundSessions } from '../schema';
 
@@ -42,6 +42,21 @@ export class QuizRepository {
       roundTwoIds: parseIds(row.roundTwoQuestionIds),
       roundTwoVersion: row.roundTwoQuestionSetVersion,
     };
+  }
+
+  /** Question IDs assigned on the `days` days before `day` (both rounds). */
+  async getRecentQuestionIds(day: string, days: number): Promise<Set<string>> {
+    const start = new Date(`${day}T00:00:00Z`);
+    start.setUTCDate(start.getUTCDate() - days);
+    const rows = await this.db
+      .select({ first: dailyQuizzes.questionIds, second: dailyQuizzes.roundTwoQuestionIds })
+      .from(dailyQuizzes)
+      .where(
+        and(gte(dailyQuizzes.day, start.toISOString().slice(0, 10)), lt(dailyQuizzes.day, day)),
+      );
+    return new Set(
+      rows.flatMap((row) => [...(parseIds(row.first) ?? []), ...(parseIds(row.second) ?? [])]),
+    );
   }
 
   async getUsedQuestionSetKeys(): Promise<Set<string>> {
@@ -227,7 +242,13 @@ export class QuizRepository {
       .values(input)
       .onConflictDoNothing()
       .returning({ questionIndex: quizRoundAnswers.questionIndex });
-    await this.refreshRoundTotals(input.day, input.playerId, input.round, input.questionCount, true);
+    await this.refreshRoundTotals(
+      input.day,
+      input.playerId,
+      input.round,
+      input.questionCount,
+      true,
+    );
     return inserted.length === 1;
   }
 
@@ -415,29 +436,33 @@ export class QuizRepository {
     playerId: string,
     round: QuizRoundNumber,
     questionCount: number,
-    resetQuestionTimer: boolean,
+    advanceQuestion: boolean,
   ): Promise<void> {
     const answers = await this.getRoundAnswers(day, playerId, round);
     const score = answers.reduce((total, answer) => total + answer.points, 0);
     const correctCount = answers.reduce((total, answer) => total + Number(answer.isCorrect), 0);
     const completedAt = answers.length === questionCount ? answers.at(-1)?.submittedAt : null;
+    const now = new Date().toISOString();
+    const sessionScope = and(
+      eq(quizRoundSessions.day, day),
+      eq(quizRoundSessions.playerId, playerId),
+      eq(quizRoundSessions.round, round),
+    );
     await this.db
       .update(quizRoundSessions)
-      .set({
-        score,
-        correctCount,
-        completedAt,
-        ...(resetQuestionTimer
-          ? { currentQuestionIndex: answers.length, currentQuestionOpenedAt: null }
-          : {}),
-        updatedAt: new Date().toISOString(),
-      })
-      .where(
-        and(
-          eq(quizRoundSessions.day, day),
-          eq(quizRoundSessions.playerId, playerId),
-          eq(quizRoundSessions.round, round),
-        ),
-      );
+      .set({ score, correctCount, completedAt, updatedAt: now })
+      .where(sessionScope);
+    if (advanceQuestion) {
+      // Only move forward. A late duplicate save must not clear a timer the
+      // player has already started on the next question.
+      await this.db
+        .update(quizRoundSessions)
+        .set({
+          currentQuestionIndex: answers.length,
+          currentQuestionOpenedAt: null,
+          updatedAt: now,
+        })
+        .where(and(sessionScope, lt(quizRoundSessions.currentQuestionIndex, answers.length)));
+    }
   }
 }

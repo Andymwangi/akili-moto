@@ -1,17 +1,18 @@
 # Akili Moto
 
-Akili Moto is a mobile-first daily trivia challenge. Everyone gets the same two rounds of fifteen multiple-choice questions in the same order each Nairobi day: each round has eleven English and four Swahili questions, progressing from medium through challenging to hard. Round two unlocks after round one is complete. Correct answers earn a 2× to 1× multiplier over 30 seconds; expired answers score zero. Players see separate round rankings and a combined ranking if they finish both rounds.
+Akili Moto is a mobile-first daily trivia challenge. Everyone gets the same two rounds of fifteen multiple-choice questions in the same order each Nairobi day: each round has eleven English and four Swahili questions, progressing from medium through challenging to hard. Round two unlocks after round one is complete. Correct answers earn a 2× to 1× speed multiplier over 30 seconds, one bonus question per round doubles its points, and expired answers score zero. Players see separate round rankings and a combined ranking if they finish both rounds.
 
 ## MVP scope
 
 The playable MVP includes two daily shared question sets, recoverable anonymous player identity, editable unique player names, private completed-game history, server-side scoring, answer explanations and sources, D1 persistence, per-round leaderboards, and a combined leaderboard. Email accounts, weekly leagues, historic challenge replay, Sheng mode, ads, payments, and production deployment are outside this milestone.
 
-The active question bank contains 56 sourced draft questions across broad topic areas and four progressive difficulty levels. Each round moves from medium to very hard, with seven English and three Swahili questions. Round assignments have no questions in common. Swahili wording, distractors, and all question sourcing still need review before public gameplay. The old Swahili word candidates remain in `data/` for possible future use but are not used by Akili Moto.
+The active question bank contains 139 sourced draft questions across 15 topic areas. Each round has six medium, seven challenging, and two hard questions, with eleven English and four Swahili questions. Questions used on the previous three days are avoided. Round assignments have no questions in common. Swahili wording, distractors, and all question sourcing still need review before public gameplay. The old Swahili word candidates remain in `data/` for possible future use but are not used by Akili Moto.
 
 ## Scoring
 
-- A correct answer is worth 100 points.
-- A correct answer scores up to 200 points immediately, then declines to 100 points across 30 seconds. Answers after the deadline score zero.
+- A correct answer scores up to 200 points immediately, then declines to 100 points across 30 seconds.
+- The timer starts when the server reveals the question and survives page refreshes. Answers that arrive within 1.5 seconds after the deadline (slow networks) score 100; later answers score zero.
+- One question per round, the same for every player that day, is a bonus question marked before answering. It doubles that question's points (up to 400).
 - The server records answer time and computes all points. The browser never submits a score.
 - The leaderboard ranks completed games by points. Equal scores share a rank.
 - A player may complete at most two rounds per Nairobi day. Round two opens only after round one is complete. The combined leaderboard includes players who completed both rounds and sums their points.
@@ -37,7 +38,7 @@ corepack pnpm db:migrate:local
 corepack pnpm dev
 ```
 
-The app uses local D1. Start Vite and open the printed URL. Appearance follows the device preference by default; use the header control to switch themes. Each round has 15 shared questions (11 English, 4 Swahili), with five medium, seven challenging, and three hard questions. A correct answer scores up to 200 points when answered immediately and declines to 100 over 30 seconds; answers after the deadline score zero. Check the project with:
+The app uses local D1. Start Vite and open the printed URL. Appearance follows the device preference by default; use the header control to switch themes. Each round has 15 shared questions (11 English, 4 Swahili), with six medium, seven challenging, and two hard questions. A correct answer scores up to 200 points when answered immediately and declines to 100 over 30 seconds; the bonus question doubles its points. Check the project with:
 
 ```sh
 corepack pnpm typecheck
