@@ -27,9 +27,10 @@ beforeEach(async () => {
 
 describe('player profile creation', () => {
   it('retries with a new name when the generated name is already taken', async () => {
-    const first = await new PlayerRepository(env.DB, scriptedNames('Bright Otter 0001')).getOrCreate(
-      crypto.randomUUID(),
-    );
+    const first = await new PlayerRepository(
+      env.DB,
+      scriptedNames('Bright Otter 0001'),
+    ).getOrCreate(crypto.randomUUID());
     const second = await new PlayerRepository(
       env.DB,
       scriptedNames('bright otter 0001', 'BRIGHT OTTER 0001', 'Calm Heron 0002'),

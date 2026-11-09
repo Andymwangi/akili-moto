@@ -34,9 +34,10 @@ describe('resume decision', () => {
   });
 
   it('treats a signed-in identity without a browser record as returning', () => {
-    expect(decideResume({ displayName: 'Kind Zebra', isNewProfile: false, cached: null })).toEqual(
-      { startGame: true, cache: { displayName: 'Kind Zebra', resume: true } },
-    );
+    expect(decideResume({ displayName: 'Kind Zebra', isNewProfile: false, cached: null })).toEqual({
+      startGame: true,
+      cache: { displayName: 'Kind Zebra', resume: true },
+    });
   });
 
   it('keeps a player who has not pressed start on the name screen', () => {
