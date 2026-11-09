@@ -108,6 +108,8 @@ export const quizRoundSessions = sqliteTable(
     playerId: text('player_id').notNull(),
     round: integer('round_no').notNull(),
     startedAt: text('started_at').notNull(),
+    currentQuestionIndex: integer('current_question_index').notNull().default(0),
+    currentQuestionOpenedAt: text('current_question_opened_at'),
     score: integer('score').notNull().default(0),
     correctCount: integer('correct_count').notNull().default(0),
     completedAt: text('completed_at'),
@@ -117,8 +119,8 @@ export const quizRoundSessions = sqliteTable(
   (table) => [
     primaryKey({ columns: [table.day, table.playerId, table.round] }),
     check('quiz_round_sessions_round_range', sql`${table.round} BETWEEN 1 AND 2`),
-    check('quiz_round_sessions_score_range', sql`${table.score} BETWEEN 0 AND 1200`),
-    check('quiz_round_sessions_correct_range', sql`${table.correctCount} BETWEEN 0 AND 10`),
+    check('quiz_round_sessions_score_range', sql`${table.score} BETWEEN 0 AND 3200`),
+    check('quiz_round_sessions_correct_range', sql`${table.correctCount} BETWEEN 0 AND 15`),
     index('quiz_round_sessions_daily_leaderboard_index').on(
       table.day,
       table.round,
@@ -138,7 +140,7 @@ export const quizRoundAnswers = sqliteTable(
     round: integer('round_no').notNull(),
     questionIndex: integer('question_index').notNull(),
     questionId: text('question_id').notNull(),
-    selectedOptionId: text('selected_option_id').notNull(),
+    selectedOptionId: text('selected_option_id'),
     correctOptionId: text('correct_option_id').notNull(),
     isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
     points: integer('points').notNull(),
@@ -149,16 +151,16 @@ export const quizRoundAnswers = sqliteTable(
   (table) => [
     primaryKey({ columns: [table.day, table.playerId, table.round, table.questionIndex] }),
     check('quiz_round_answers_round_range', sql`${table.round} BETWEEN 1 AND 2`),
-    check('quiz_round_answers_question_index_range', sql`${table.questionIndex} BETWEEN 0 AND 9`),
+    check('quiz_round_answers_question_index_range', sql`${table.questionIndex} BETWEEN 0 AND 14`),
     check(
       'quiz_round_answers_option_id_range',
-      sql`${table.selectedOptionId} IN ('a', 'b', 'c', 'd')`,
+      sql`${table.selectedOptionId} IS NULL OR ${table.selectedOptionId} IN ('a', 'b', 'c', 'd')`,
     ),
     check(
       'quiz_round_answers_correct_option_id_range',
       sql`${table.correctOptionId} IN ('a', 'b', 'c', 'd')`,
     ),
-    check('quiz_round_answers_points_range', sql`${table.points} BETWEEN 0 AND 120`),
+    check('quiz_round_answers_points_range', sql`${table.points} BETWEEN 0 AND 400`),
     check('quiz_round_answers_response_ms_range', sql`${table.responseMs} BETWEEN 0 AND 86400000`),
     uniqueIndex('quiz_round_answers_player_day_idempotency_unique').on(
       table.day,

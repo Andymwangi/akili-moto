@@ -1,0 +1,1258 @@
+[
+  {
+    "id": "v5-sw-medium-language-01",
+    "language": "sw",
+    "difficulty": "medium",
+    "topic": "language",
+    "prompt": "Katika Kiswahili, wingi wa neno 'jicho' ni upi?",
+    "options": ["Macho", "Majicho", "Vijicho", "Mijicho"],
+    "correctOptionIndex": 0,
+    "explanation": "Jicho ni nomino ya ngeli ya ji/ma; wingi wake ni macho.",
+    "sourceUrl": "https://kiswahili.ku.edu/lessons"
+  },
+  {
+    "id": "v5-sw-medium-culture-01",
+    "language": "sw",
+    "difficulty": "medium",
+    "topic": "culture",
+    "prompt": "Taarab inahusishwa zaidi na aina gani ya sanaa?",
+    "options": [
+      "Muziki wa Waswahili",
+      "Ufinyanzi wa Kimasai",
+      "Uchoraji wa miamba",
+      "Ngoma ya kivita"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Taarab ni utamaduni wa muziki unaohusishwa na jamii za Waswahili katika pwani ya Afrika Mashariki.",
+    "sourceUrl": "https://ich.unesco.org/en/projects/safeguarding-the-songs-of-the-moon-traditional-swahili-music-from-tanzania-unguja-and-pemba-and-the-comoros-00101"
+  },
+  {
+    "id": "v5-en-medium-technology-01",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "technology",
+    "prompt": "A digital signature is primarily used to provide which pair of properties?",
+    "options": [
+      "Authenticity and integrity",
+      "Confidentiality and compression",
+      "Anonymity and availability",
+      "Encryption and deletion"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A digital signature can show who signed data and whether it changed; it does not itself hide the data.",
+    "sourceUrl": "https://csrc.nist.gov/glossary/term/digital_signature"
+  },
+  {
+    "id": "v5-en-medium-sports-01",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "sports",
+    "prompt": "Why was Dorando Pietri disqualified after crossing the finish line first in the 1908 Olympic marathon?",
+    "options": [
+      "Officials physically assisted him during the race",
+      "He ran a shorter course than required",
+      "He started before the signal",
+      "He received water from a spectator"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Officials helped the exhausted Pietri several times near the finish, making him ineligible for the victory.",
+    "sourceUrl": "https://www.olympics.com/ioc/news/olympic-marathon-innovations"
+  },
+  {
+    "id": "v5-en-challenging-economics-01",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "economics",
+    "prompt": "A household's nominal income rises by 4% while its cost of living rises by 6%. What most likely happens to its real purchasing power?",
+    "options": [
+      "It falls",
+      "It rises by 10%",
+      "It stays exactly the same",
+      "It cannot be compared"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Prices rose faster than nominal income, so the household can buy less on average.",
+    "sourceUrl": "https://www.bls.gov/cpi/questions-and-answers.htm"
+  },
+  {
+    "id": "v5-sw-challenging-culture-01",
+    "language": "sw",
+    "difficulty": "challenging",
+    "topic": "culture",
+    "prompt": "Kwa mujibu wa UNESCO, Taarab huimbwa sana katika mazingira gani ya kijamii?",
+    "options": [
+      "Harusi na sherehe",
+      "Mikutano ya mahakama pekee",
+      "Mashindano ya kilimo",
+      "Mazishi ya kifalme pekee"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Taarab ni sehemu ya sherehe na matukio ya kijamii, yakiwemo harusi.",
+    "sourceUrl": "https://ich.unesco.org/en/projects/safeguarding-the-songs-of-the-moon-traditional-swahili-music-from-tanzania-unguja-and-pemba-and-the-comoros-00101"
+  },
+  {
+    "id": "v5-en-challenging-science-01",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "science",
+    "prompt": "Why can a diverse insect pollinator community make crop production more resilient?",
+    "options": [
+      "Different pollinators can provide pollination across varied conditions",
+      "It guarantees every flower becomes fruit",
+      "It removes the need for fertile soil",
+      "It prevents all crop pests"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Different pollinator species may remain active under different conditions, helping sustain pollination.",
+    "sourceUrl": "https://www.fao.org/pollination/"
+  },
+  {
+    "id": "v5-en-medium-mathematics-01",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "mathematics",
+    "prompt": "A fair six-sided die is rolled twice. What is the probability of getting a total of 7?",
+    "options": ["1/6", "1/12", "1/3", "1/2"],
+    "correctOptionIndex": 0,
+    "explanation": "Six of the 36 equally likely ordered outcomes sum to 7, so the probability is 6/36 = 1/6.",
+    "sourceUrl": "https://openstax.org/books/statistics/pages/1-chapter-review"
+  },
+  {
+    "id": "v5-sw-medium-language-02",
+    "language": "sw",
+    "difficulty": "medium",
+    "topic": "language",
+    "prompt": "Katika Kiswahili, wingi wa neno 'kitabu' ni upi?",
+    "options": ["Vitabu", "Mitabu", "Matabu", "Zitabu"],
+    "correctOptionIndex": 0,
+    "explanation": "Kitabu kiko katika ngeli ya ki/vi, kwa hiyo wingi wake ni vitabu.",
+    "sourceUrl": "https://kiswahili.ku.edu/sites/kiswahili/files/documents/lessons/Lesson_09.pdf"
+  },
+  {
+    "id": "v5-en-medium-geography-lake-victoria",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "geography",
+    "prompt": "Which is the largest lake in Africa by surface area?",
+    "options": ["Lake Victoria", "Lake Tanganyika", "Lake Malawi", "Lake Chad"],
+    "correctOptionIndex": 0,
+    "explanation": "Lake Victoria, shared by Kenya, Uganda and Tanzania, is the largest lake in Africa by area.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Lake_Victoria"
+  },
+  {
+    "id": "v5-en-medium-geography-nile-confluence",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "geography",
+    "prompt": "The Blue Nile and the White Nile meet in which city?",
+    "options": ["Khartoum", "Juba", "Kampala", "Addis Ababa"],
+    "correctOptionIndex": 0,
+    "explanation": "The two main branches of the Nile join at Khartoum, the capital of Sudan.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Khartoum"
+  },
+  {
+    "id": "v5-en-medium-geography-lake-turkana",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "geography",
+    "prompt": "Most of Lake Turkana lies within which country?",
+    "options": ["Kenya", "Ethiopia", "Uganda", "South Sudan"],
+    "correctOptionIndex": 0,
+    "explanation": "Lake Turkana lies mainly in northern Kenya, with its far northern tip in Ethiopia.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Lake_Turkana"
+  },
+  {
+    "id": "v5-en-medium-history-kenya-independence",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "history",
+    "prompt": "In which year did Kenya gain independence from Britain?",
+    "options": ["1963", "1961", "1964", "1957"],
+    "correctOptionIndex": 0,
+    "explanation": "Kenya became independent on 12 December 1963.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Kenya"
+  },
+  {
+    "id": "v5-en-medium-history-pharos",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "history",
+    "prompt": "Which ancient wonder stood at the harbour of Alexandria in Egypt?",
+    "options": [
+      "The Lighthouse of Alexandria",
+      "The Hanging Gardens",
+      "The Colossus of Rhodes",
+      "The Temple of Artemis"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The Pharos, or Lighthouse of Alexandria, guided ships into the city harbour.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Lighthouse_of_Alexandria"
+  },
+  {
+    "id": "v5-en-medium-science-atmosphere-nitrogen",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "science",
+    "prompt": "Which gas makes up most of Earth's atmosphere?",
+    "options": ["Nitrogen", "Oxygen", "Carbon dioxide", "Argon"],
+    "correctOptionIndex": 0,
+    "explanation": "Nitrogen makes up about 78% of dry air; oxygen is about 21%.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Atmosphere_of_Earth"
+  },
+  {
+    "id": "v5-en-medium-health-insulin-pancreas",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "health",
+    "prompt": "Which organ produces the hormone insulin?",
+    "options": ["Pancreas", "Liver", "Kidneys", "Spleen"],
+    "correctOptionIndex": 0,
+    "explanation": "Beta cells in the pancreas produce insulin, which helps control blood sugar.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Insulin"
+  },
+  {
+    "id": "v5-en-medium-health-vitamin-d-sunlight",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "health",
+    "prompt": "Which vitamin does human skin produce when exposed to sunlight?",
+    "options": ["Vitamin D", "Vitamin C", "Vitamin A", "Vitamin B12"],
+    "correctOptionIndex": 0,
+    "explanation": "Ultraviolet B light lets the skin make vitamin D.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Vitamin_D"
+  },
+  {
+    "id": "v5-en-medium-technology-https-padlock",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "technology",
+    "prompt": "What does the padlock shown for an \"https\" website mainly tell you?",
+    "options": [
+      "The connection to the site is encrypted",
+      "The site is approved by the government",
+      "The site contains no adverts",
+      "The page will load faster"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "HTTPS encrypts traffic between the browser and the server. It does not prove a site is trustworthy.",
+    "sourceUrl": "https://developer.mozilla.org/en-US/docs/Glossary/HTTPS"
+  },
+  {
+    "id": "v5-en-medium-technology-m-pesa",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "technology",
+    "prompt": "M-Pesa, launched in Kenya in 2007, is best known as what kind of service?",
+    "options": [
+      "Mobile money transfer",
+      "Ride hailing",
+      "Satellite television",
+      "Online encyclopedia"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "M-Pesa lets people send, receive and store money using a mobile phone.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/M-Pesa"
+  },
+  {
+    "id": "v5-en-medium-sports-ten-thousand-laps",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "sports",
+    "prompt": "How many laps of a standard 400 m track make up a 10,000 m race?",
+    "options": ["25", "20", "24", "40"],
+    "correctOptionIndex": 0,
+    "explanation": "10,000 divided by 400 is 25 laps.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/10,000_metres"
+  },
+  {
+    "id": "v5-en-medium-sports-kipchoge-sub-two",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "sports",
+    "prompt": "Eliud Kipchoge ran the first marathon distance in under two hours in which city?",
+    "options": ["Vienna", "Berlin", "London", "Nairobi"],
+    "correctOptionIndex": 0,
+    "explanation": "Kipchoge ran 1:59:40 in Vienna in October 2019 in a specially organised event.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Ineos_1:59_Challenge"
+  },
+  {
+    "id": "v5-en-medium-music-staff-lines",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "music",
+    "prompt": "How many lines does a standard musical staff have?",
+    "options": ["Five", "Four", "Six", "Seven"],
+    "correctOptionIndex": 0,
+    "explanation": "Modern Western notation uses a five-line staff.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Staff_(music)"
+  },
+  {
+    "id": "v5-en-medium-literature-things-fall-apart",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "literature",
+    "prompt": "Who wrote the novel 'Things Fall Apart'?",
+    "options": ["Chinua Achebe", "Ngugi wa Thiong'o", "Wole Soyinka", "Ben Okri"],
+    "correctOptionIndex": 0,
+    "explanation": "Nigerian author Chinua Achebe published Things Fall Apart in 1958.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Things_Fall_Apart"
+  },
+  {
+    "id": "v5-en-medium-art-sistine-ceiling",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "art",
+    "prompt": "Which artist painted the ceiling of the Sistine Chapel?",
+    "options": ["Michelangelo", "Raphael", "Leonardo da Vinci", "Botticelli"],
+    "correctOptionIndex": 0,
+    "explanation": "Michelangelo painted the ceiling between 1508 and 1512.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Sistine_Chapel_ceiling"
+  },
+  {
+    "id": "v5-en-medium-film-lupita-oscar",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "film",
+    "prompt": "Lupita Nyong'o won an Academy Award for her role in which film?",
+    "options": ["12 Years a Slave", "Black Panther", "Us", "Queen of Katwe"],
+    "correctOptionIndex": 0,
+    "explanation": "She won Best Supporting Actress for 12 Years a Slave (2013).",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Lupita_Nyong%27o"
+  },
+  {
+    "id": "v5-en-medium-economics-interest-rates",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "economics",
+    "prompt": "When a central bank raises interest rates, what is it usually trying to reduce?",
+    "options": ["Inflation", "Exports", "Population growth", "Tax revenue"],
+    "correctOptionIndex": 0,
+    "explanation": "Higher rates make borrowing costlier, which tends to slow spending and price rises.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Monetary_policy"
+  },
+  {
+    "id": "v5-en-medium-mathematics-fifteen-percent",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "mathematics",
+    "prompt": "What is 15% of 80?",
+    "options": ["12", "8", "15", "18"],
+    "correctOptionIndex": 0,
+    "explanation": "10% of 80 is 8 and 5% is 4, so 15% is 12.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Percentage"
+  },
+  {
+    "id": "v5-en-medium-science-shortest-year",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "science",
+    "prompt": "Which planet in our solar system has the shortest year?",
+    "options": ["Mercury", "Venus", "Mars", "Earth"],
+    "correctOptionIndex": 0,
+    "explanation": "Mercury, closest to the Sun, orbits in about 88 Earth days.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Mercury_(planet)"
+  },
+  {
+    "id": "v5-en-medium-environment-photosynthesis-gas",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "environment",
+    "prompt": "Which gas do plants take in from the air during photosynthesis?",
+    "options": ["Carbon dioxide", "Oxygen", "Nitrogen", "Methane"],
+    "correctOptionIndex": 0,
+    "explanation": "Plants use carbon dioxide and water with light energy to make sugars, releasing oxygen.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Photosynthesis"
+  },
+  {
+    "id": "v5-en-medium-culture-injera",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "culture",
+    "prompt": "Injera, a spongy fermented flatbread, is a staple food most associated with which country?",
+    "options": ["Ethiopia", "Ghana", "Morocco", "Senegal"],
+    "correctOptionIndex": 0,
+    "explanation": "Injera, usually made from teff, is central to Ethiopian and Eritrean meals.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Injera"
+  },
+  {
+    "id": "v5-en-medium-language-most-native-speakers",
+    "language": "en",
+    "difficulty": "medium",
+    "topic": "language",
+    "prompt": "Which language has the most native speakers in the world?",
+    "options": ["Mandarin Chinese", "English", "Spanish", "Hindi"],
+    "correctOptionIndex": 0,
+    "explanation": "Mandarin has the most native speakers; English has more total speakers when second-language users are counted.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/List_of_languages_by_number_of_native_speakers"
+  },
+  {
+    "id": "v5-sw-medium-language-kinyume-juu",
+    "language": "sw",
+    "difficulty": "medium",
+    "topic": "language",
+    "prompt": "Kinyume cha neno 'juu' ni kipi?",
+    "options": ["Chini", "Kando", "Ndani", "Mbele"],
+    "correctOptionIndex": 0,
+    "explanation": "Kinyume cha 'juu' ni 'chini'.",
+    "sourceUrl": "https://kiswahili.ku.edu/lessons"
+  },
+  {
+    "id": "v5-sw-medium-language-wingi-mti",
+    "language": "sw",
+    "difficulty": "medium",
+    "topic": "language",
+    "prompt": "Wingi wa neno 'mti' ni upi?",
+    "options": ["Miti", "Mamti", "Viti", "Mti"],
+    "correctOptionIndex": 0,
+    "explanation": "Mti uko katika ngeli ya M-MI, kwa hiyo wingi wake ni miti. 'Viti' ni wingi wa 'kiti'.",
+    "sourceUrl": "https://kiswahili.ku.edu/lessons"
+  },
+  {
+    "id": "v5-sw-medium-language-ngeli-mwalimu",
+    "language": "sw",
+    "difficulty": "medium",
+    "topic": "language",
+    "prompt": "Neno 'mwalimu' liko katika ngeli gani?",
+    "options": ["A-WA", "KI-VI", "LI-YA", "U-I"],
+    "correctOptionIndex": 0,
+    "explanation": "Majina ya watu kama mwalimu huwa katika ngeli ya A-WA: mwalimu, walimu.",
+    "sourceUrl": "https://kiswahili.ku.edu/lessons"
+  },
+  {
+    "id": "v5-sw-medium-geography-mto-mrefu",
+    "language": "sw",
+    "difficulty": "medium",
+    "topic": "geography",
+    "prompt": "Mto mrefu zaidi barani Afrika ni upi?",
+    "options": ["Mto Nile", "Mto Kongo", "Mto Niger", "Mto Zambezi"],
+    "correctOptionIndex": 0,
+    "explanation": "Mto Nile ndio mto mrefu zaidi barani Afrika.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Nile"
+  },
+  {
+    "id": "v5-sw-medium-science-maji-kuganda",
+    "language": "sw",
+    "difficulty": "medium",
+    "topic": "science",
+    "prompt": "Kwa shinikizo la kawaida la hewa, maji safi huganda kuwa barafu kwenye nyuzi joto ngapi za Selsiasi?",
+    "options": ["0", "4", "100", "-10"],
+    "correctOptionIndex": 0,
+    "explanation": "Maji safi huganda kwenye nyuzi joto 0 za Selsiasi na huchemka kwenye 100.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Ice"
+  },
+  {
+    "id": "v5-sw-medium-science-sayari-nyekundu",
+    "language": "sw",
+    "difficulty": "medium",
+    "topic": "science",
+    "prompt": "Sayari ipi hujulikana kama 'Sayari Nyekundu'?",
+    "options": ["Mirihi", "Zuhura", "Zohali", "Mshtarii"],
+    "correctOptionIndex": 0,
+    "explanation": "Mirihi (Mars) huonekana nyekundu kwa sababu ya oksidi ya chuma kwenye udongo wake.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Mars"
+  },
+  {
+    "id": "v5-sw-medium-health-vyumba-moyo",
+    "language": "sw",
+    "difficulty": "medium",
+    "topic": "health",
+    "prompt": "Moyo wa binadamu una vyumba vingapi?",
+    "options": ["Vinne", "Viwili", "Vitatu", "Vitano"],
+    "correctOptionIndex": 0,
+    "explanation": "Moyo una vyumba vinne: atria mbili juu na ventrikali mbili chini.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Heart"
+  },
+  {
+    "id": "v5-sw-medium-history-rais-tanganyika",
+    "language": "sw",
+    "difficulty": "medium",
+    "topic": "history",
+    "prompt": "Rais wa kwanza wa Tanganyika huru alikuwa nani?",
+    "options": ["Julius Nyerere", "Jomo Kenyatta", "Milton Obote", "Ali Hassan Mwinyi"],
+    "correctOptionIndex": 0,
+    "explanation": "Julius Nyerere aliongoza Tanganyika kupata uhuru na akawa rais wake wa kwanza mwaka 1962.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Julius_Nyerere"
+  },
+  {
+    "id": "v5-sw-medium-culture-maandishi-kanga",
+    "language": "sw",
+    "difficulty": "medium",
+    "topic": "culture",
+    "prompt": "Kanga nyingi huwa na nini kimeandikwa juu yake?",
+    "options": [
+      "Ujumbe mfupi au methali",
+      "Ramani ya mji",
+      "Nambari ya simu ya muuzaji",
+      "Tarehe ya kutengenezwa"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Kanga huwa na maandishi mafupi, mara nyingi methali au ujumbe, yanayoitwa jina la kanga.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Kanga_(garment)"
+  },
+  {
+    "id": "v5-sw-medium-language-haba-na-haba",
+    "language": "sw",
+    "difficulty": "medium",
+    "topic": "language",
+    "prompt": "Methali 'Haba na haba hujaza kibaba' inafundisha nini?",
+    "options": [
+      "Vitu vidogo vikikusanywa huleta wingi",
+      "Usiwe na haraka katika safari",
+      "Waheshimu wazee wako",
+      "Usimdharau adui yako"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Methali hii inahimiza kuweka akiba kidogo kidogo hadi kupata kitu kikubwa.",
+    "sourceUrl": "https://en.wiktionary.org/wiki/haba_na_haba_hujaza_kibaba"
+  },
+  {
+    "id": "v5-sw-medium-mathematics-pembe-pembetatu",
+    "language": "sw",
+    "difficulty": "medium",
+    "topic": "mathematics",
+    "prompt": "Jumla ya pembe za ndani za pembetatu ni nyuzi ngapi?",
+    "options": ["180", "90", "270", "360"],
+    "correctOptionIndex": 0,
+    "explanation": "Pembe tatu za ndani za pembetatu yoyote hujumlisha nyuzi 180.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Triangle"
+  },
+  {
+    "id": "v5-sw-medium-sports-umbali-marathoni",
+    "language": "sw",
+    "difficulty": "medium",
+    "topic": "sports",
+    "prompt": "Mbio za marathoni zina urefu wa takriban kilomita ngapi?",
+    "options": ["42", "21", "10", "50"],
+    "correctOptionIndex": 0,
+    "explanation": "Marathoni ina urefu wa kilomita 42.195; nusu marathoni ni takriban kilomita 21.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Marathon"
+  },
+  {
+    "id": "v5-sw-medium-environment-mikoko-mazingira",
+    "language": "sw",
+    "difficulty": "medium",
+    "topic": "environment",
+    "prompt": "Mikoko hustawi zaidi katika mazingira gani?",
+    "options": [
+      "Pwani, kwenye maji ya chumvi au yenye chumvi kidogo",
+      "Juu ya milima mirefu",
+      "Katikati ya jangwa",
+      "Kwenye maziwa ya maji baridi milimani"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Mikoko ni miti inayostahimili chumvi na hukua katika maeneo ya pwani yanayofikiwa na maji ya bahari.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Mangrove"
+  },
+  {
+    "id": "v5-sw-medium-geography-mji-mkuu-uganda",
+    "language": "sw",
+    "difficulty": "medium",
+    "topic": "geography",
+    "prompt": "Mji mkuu wa Uganda ni upi?",
+    "options": ["Kampala", "Entebbe", "Jinja", "Gulu"],
+    "correctOptionIndex": 0,
+    "explanation": "Kampala ndio mji mkuu wa Uganda; Entebbe ina uwanja mkuu wa ndege.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Kampala"
+  },
+  {
+    "id": "v5-sw-medium-science-kipimajoto",
+    "language": "sw",
+    "difficulty": "medium",
+    "topic": "science",
+    "prompt": "Kifaa kinachotumika kupima joto la mwili huitwaje?",
+    "options": ["Kipimajoto", "Darubini", "Dira", "Mizani"],
+    "correctOptionIndex": 0,
+    "explanation": "Kipimajoto hupima joto. Darubini huona vitu vya mbali au vidogo, dira huonyesha mwelekeo, na mizani hupima uzito.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Thermometer"
+  },
+  {
+    "id": "v5-en-challenging-science-metal-feels-cold",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "science",
+    "prompt": "At the same room temperature, why does a metal spoon feel colder than a wooden one?",
+    "options": [
+      "Metal conducts heat away from your hand faster",
+      "The metal is actually at a lower temperature",
+      "Wood produces its own heat",
+      "Metal reflects your body heat away"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Both are at room temperature, but metal draws heat from your skin more quickly, so it feels colder.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Thermal_conductivity"
+  },
+  {
+    "id": "v5-en-challenging-science-iss-float",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "science",
+    "prompt": "Why do astronauts float inside the International Space Station?",
+    "options": [
+      "They and the station are falling around Earth together",
+      "There is no gravity at that height",
+      "Magnets in the station cancel gravity",
+      "Air pressure inside pushes them upward"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Gravity at the station is still about 90% of surface gravity; everything is in continuous free fall.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Weightlessness"
+  },
+  {
+    "id": "v5-en-challenging-science-blue-sky",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "science",
+    "prompt": "Why is a clear daytime sky blue?",
+    "options": [
+      "Air molecules scatter blue light more than red light",
+      "The sky reflects the colour of the oceans",
+      "Ozone gas is blue",
+      "Sunlight is mostly blue"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Shorter wavelengths are scattered much more strongly by air molecules (Rayleigh scattering).",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Rayleigh_scattering"
+  },
+  {
+    "id": "v5-en-challenging-science-ice-floats",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "science",
+    "prompt": "Why does ice float on liquid water?",
+    "options": [
+      "Ice is less dense than liquid water",
+      "Ice always contains trapped air bubbles",
+      "Cold objects are pushed upward by warm water",
+      "Ice has no weight"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Water molecules form an open crystal structure when frozen, so ice takes up more space than the same mass of liquid.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Ice"
+  },
+  {
+    "id": "v5-en-challenging-health-antibiotics-cold",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "health",
+    "prompt": "Why do antibiotics not cure the common cold?",
+    "options": [
+      "Colds are caused by viruses, and antibiotics act on bacteria",
+      "Colds are too mild for antibiotics to notice",
+      "Cold viruses are too large for medicine",
+      "Antibiotics only work in children"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Common colds are viral infections. Unneeded antibiotics also add to antibiotic resistance.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Common_cold"
+  },
+  {
+    "id": "v5-en-challenging-health-altitude-breathing",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "health",
+    "prompt": "Why do people often breathe faster when they first arrive at high altitude?",
+    "options": [
+      "Lower air pressure means each breath carries fewer oxygen molecules",
+      "Air at altitude has a much lower percentage of oxygen",
+      "Cold air blocks oxygen from entering the lungs",
+      "The lungs shrink at high altitude"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Oxygen is still about 21% of the air, but lower pressure means less oxygen in each breath.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Effects_of_high_altitude_on_humans"
+  },
+  {
+    "id": "v5-en-challenging-technology-two-factor",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "technology",
+    "prompt": "What is the main benefit of two-factor authentication?",
+    "options": [
+      "A stolen password alone is not enough to sign in",
+      "Passwords no longer need to be secret",
+      "The device runs faster",
+      "All files on the device are encrypted"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A second factor, such as a code on your phone, is needed in addition to the password.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Multi-factor_authentication"
+  },
+  {
+    "id": "v5-en-challenging-technology-ram-role",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "technology",
+    "prompt": "In a computer, what does RAM mainly provide?",
+    "options": [
+      "Fast temporary memory for programs that are running",
+      "Permanent storage that keeps files when power is off",
+      "The connection to the internet",
+      "The picture shown on the screen"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "RAM is fast working memory; its contents are lost when power is removed.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Random-access_memory"
+  },
+  {
+    "id": "v5-en-challenging-technology-mah-rating",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "technology",
+    "prompt": "A phone battery is rated in milliampere-hours (mAh). What does this measure?",
+    "options": [
+      "How much electric charge it can deliver over time",
+      "Its voltage",
+      "How fast it charges",
+      "Its weight"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "mAh is a unit of charge: a 4000 mAh battery could supply 4000 mA for one hour in principle.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Ampere-hour"
+  },
+  {
+    "id": "v5-en-challenging-mathematics-percent-down-up",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "mathematics",
+    "prompt": "A price is cut by 20%, and the new price is then raised by 20%. How does the final price compare with the original?",
+    "options": ["4% lower", "The same", "4% higher", "2% lower"],
+    "correctOptionIndex": 0,
+    "explanation": "0.8 x 1.2 = 0.96, so the final price is 4% below the original.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Percentage"
+  },
+  {
+    "id": "v5-en-challenging-mathematics-pronic-sequence",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "mathematics",
+    "prompt": "What is the next number in the sequence 2, 6, 12, 20, 30, ...?",
+    "options": ["42", "40", "36", "44"],
+    "correctOptionIndex": 0,
+    "explanation": "The gaps grow by 2 each time (4, 6, 8, 10), so the next gap is 12: 30 + 12 = 42.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Pronic_number"
+  },
+  {
+    "id": "v5-en-challenging-mathematics-train-speed",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "mathematics",
+    "prompt": "A train travels 180 km in 2 hours 15 minutes. What is its average speed?",
+    "options": ["80 km/h", "90 km/h", "75 km/h", "85 km/h"],
+    "correctOptionIndex": 0,
+    "explanation": "2 hours 15 minutes is 2.25 hours, and 180 / 2.25 = 80.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Speed"
+  },
+  {
+    "id": "v5-en-challenging-economics-bank-run",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "economics",
+    "prompt": "Many customers rush to withdraw their deposits from a bank because they fear it will fail. What is this called?",
+    "options": ["A bank run", "Quantitative easing", "A stock split", "A trade deficit"],
+    "correctOptionIndex": 0,
+    "explanation": "A bank run can itself cause a bank to fail, since banks lend out most deposits.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Bank_run"
+  },
+  {
+    "id": "v5-en-challenging-economics-weak-currency",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "economics",
+    "prompt": "A country's currency weakens against the US dollar. What usually happens to the local price of goods imported in dollars?",
+    "options": ["It rises", "It falls", "It stays the same", "It becomes tax free"],
+    "correctOptionIndex": 0,
+    "explanation": "Each dollar now costs more local currency, so dollar-priced imports become more expensive.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Exchange_rate"
+  },
+  {
+    "id": "v5-en-challenging-economics-gdp-meaning",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "economics",
+    "prompt": "What does gross domestic product (GDP) measure?",
+    "options": [
+      "The value of final goods and services produced in a country in a period",
+      "The government's total debt",
+      "The total money held in banks",
+      "Exports minus imports"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "GDP sums the market value of final output; it is often used to compare the size of economies.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Gross_domestic_product"
+  },
+  {
+    "id": "v5-en-challenging-history-berlin-conference",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "history",
+    "prompt": "The Berlin Conference of 1884 to 1885 is most associated with what?",
+    "options": [
+      "Setting rules for European colonial claims in Africa",
+      "Ending the First World War",
+      "Founding the United Nations",
+      "Building the Suez Canal"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "European powers met in Berlin to regulate colonisation and trade in Africa.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Berlin_Conference"
+  },
+  {
+    "id": "v5-en-challenging-history-uganda-railway",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "history",
+    "prompt": "The Uganda Railway, built from Mombasa in the late 1890s, first reached which lake?",
+    "options": ["Lake Victoria", "Lake Turkana", "Lake Tanganyika", "Lake Albert"],
+    "correctOptionIndex": 0,
+    "explanation": "The line reached Port Florence (Kisumu) on Lake Victoria in 1901.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Uganda_Railway"
+  },
+  {
+    "id": "v5-en-challenging-history-rosetta-stone",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "history",
+    "prompt": "The Rosetta Stone was key to deciphering which writing system?",
+    "options": ["Egyptian hieroglyphs", "Cuneiform", "Linear B", "Maya glyphs"],
+    "correctOptionIndex": 0,
+    "explanation": "It carries the same decree in hieroglyphic, Demotic and Greek scripts.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Rosetta_Stone"
+  },
+  {
+    "id": "v5-en-challenging-environment-green-belt",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "environment",
+    "prompt": "Wangari Maathai, the first African woman to win the Nobel Peace Prize, founded which movement?",
+    "options": [
+      "The Green Belt Movement",
+      "The Chipko movement",
+      "Greenpeace",
+      "The Pan-African Congress"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The Green Belt Movement, founded in Kenya in 1977, has planted tens of millions of trees.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Wangari_Maathai"
+  },
+  {
+    "id": "v5-en-challenging-geography-sahara-dry",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "geography",
+    "prompt": "What is the main reason the Sahara receives so little rain?",
+    "options": [
+      "Sinking dry air in the subtropical high-pressure belt",
+      "It lies far below sea level",
+      "It is close to the North Pole",
+      "Mountains surround it on every side"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Air descending around 20 to 30 degrees latitude warms and dries, suppressing cloud formation.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Sahara"
+  },
+  {
+    "id": "v5-en-challenging-geography-most-populous-africa",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "geography",
+    "prompt": "Which African country has the largest population?",
+    "options": ["Nigeria", "Ethiopia", "Egypt", "DR Congo"],
+    "correctOptionIndex": 0,
+    "explanation": "Nigeria has the largest population in Africa, followed by Ethiopia.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Nigeria"
+  },
+  {
+    "id": "v5-en-challenging-geography-equator-country",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "geography",
+    "prompt": "The equator passes through which of these countries?",
+    "options": ["Kenya", "Tanzania", "Ethiopia", "Zambia"],
+    "correctOptionIndex": 0,
+    "explanation": "The equator crosses Kenya and Uganda; Tanzania lies entirely south of it.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Equator"
+  },
+  {
+    "id": "v5-en-challenging-literature-weep-not-child",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "literature",
+    "prompt": "Ngugi wa Thiong'o's novel 'Weep Not, Child' is set mainly during which period?",
+    "options": [
+      "The Mau Mau uprising in colonial Kenya",
+      "Kenya's 2007 election",
+      "The Second World War in Europe",
+      "Ghana's independence"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The 1964 novel follows a Kikuyu family during the Emergency and the Mau Mau uprising.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Weep_Not,_Child"
+  },
+  {
+    "id": "v5-en-challenging-literature-animal-farm",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "literature",
+    "prompt": "In 'Animal Farm', the pigs quietly change the farm's commandments. What does this mainly satirise?",
+    "options": [
+      "Propaganda rewriting rules to serve those in power",
+      "Modern farming methods",
+      "Religious festivals",
+      "Scientific discovery"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Orwell's fable criticises how leaders rewrite history and rules to keep control.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Animal_Farm"
+  },
+  {
+    "id": "v5-en-challenging-literature-first-person",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "literature",
+    "prompt": "A story is told by a narrator who says \"I\" and takes part in the events. Which point of view is this?",
+    "options": ["First person", "Third person omniscient", "Second person", "Third person limited"],
+    "correctOptionIndex": 0,
+    "explanation": "First-person narration comes from a character inside the story.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/First-person_narrative"
+  },
+  {
+    "id": "v5-en-challenging-art-vanishing-point",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "art",
+    "prompt": "In perspective drawing, parallel lines going into the distance appear to meet at what?",
+    "options": ["A vanishing point", "The focal length", "The golden ratio", "The picture frame"],
+    "correctOptionIndex": 0,
+    "explanation": "Linear perspective makes receding parallel lines converge at a vanishing point on the horizon line.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Vanishing_point"
+  },
+  {
+    "id": "v5-en-challenging-art-complementary-colours",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "art",
+    "prompt": "Which pair are complementary colours on the traditional painter's colour wheel?",
+    "options": ["Red and green", "Red and orange", "Blue and purple", "Yellow and orange"],
+    "correctOptionIndex": 0,
+    "explanation": "Complementary colours sit opposite each other on the wheel; on the traditional wheel red sits opposite green.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Complementary_colors"
+  },
+  {
+    "id": "v5-en-challenging-music-saxophone-family",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "music",
+    "prompt": "The saxophone is usually made of brass. Which instrument family does it belong to?",
+    "options": ["Woodwind", "Brass", "Percussion", "Strings"],
+    "correctOptionIndex": 0,
+    "explanation": "It produces sound with a reed, like a clarinet, so it is classed as a woodwind.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Saxophone"
+  },
+  {
+    "id": "v5-en-challenging-music-benga-origin",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "music",
+    "prompt": "Benga, a popular Kenyan music style, developed mainly among musicians from which community?",
+    "options": ["Luo", "Maasai", "Mijikenda", "Turkana"],
+    "correctOptionIndex": 0,
+    "explanation": "Benga grew out of Luo music, adapting the rhythms of the nyatiti to the electric guitar.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Benga_music"
+  },
+  {
+    "id": "v5-en-challenging-music-octave-frequency",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "music",
+    "prompt": "A note one octave above another has roughly what frequency?",
+    "options": [
+      "Double the frequency",
+      "Half the frequency",
+      "The same frequency",
+      "Ten times the frequency"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Raising a pitch by an octave doubles its frequency, for example 220 Hz to 440 Hz.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Octave"
+  },
+  {
+    "id": "v5-en-challenging-sports-offside-rule",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "sports",
+    "prompt": "In football, when is an attacker in an offside position as a teammate plays the ball to them?",
+    "options": [
+      "When nearer the opponents' goal line than both the ball and the second-last opponent",
+      "Whenever they are inside the penalty area",
+      "When they are standing in their own half",
+      "When they are behind the ball"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A player cannot be offside in their own half or when level with the second-last opponent.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Offside_(association_football)"
+  },
+  {
+    "id": "v5-en-challenging-sports-rugby-world-cup",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "sports",
+    "prompt": "Which country had won the most men's Rugby World Cup titles by the end of the 2023 tournament?",
+    "options": ["South Africa", "New Zealand", "Australia", "England"],
+    "correctOptionIndex": 0,
+    "explanation": "South Africa won in 1995, 2007, 2019 and 2023; New Zealand has three titles.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Rugby_World_Cup"
+  },
+  {
+    "id": "v5-en-challenging-sports-cricket-over",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "sports",
+    "prompt": "In cricket, how many legal deliveries make up a standard over?",
+    "options": ["Six", "Five", "Eight", "Ten"],
+    "correctOptionIndex": 0,
+    "explanation": "An over is six legal balls bowled by one bowler.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Over_(cricket)"
+  },
+  {
+    "id": "v5-en-challenging-environment-coral-bleaching",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "environment",
+    "prompt": "Why are warmer seas linked to coral bleaching?",
+    "options": [
+      "Heat stress makes corals expel the algae living in their tissues",
+      "Warm water dissolves coral skeletons immediately",
+      "Strong sunlight paints the coral white",
+      "Fish eat the colour from the coral"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Without their algae, corals lose their colour and main food source.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Coral_bleaching"
+  },
+  {
+    "id": "v5-en-challenging-environment-co2-source",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "environment",
+    "prompt": "Which human activity is the largest source of the carbon dioxide driving recent climate change?",
+    "options": [
+      "Burning fossil fuels",
+      "Human breathing",
+      "Volcanic eruptions",
+      "Using refrigerators"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Burning coal, oil and gas releases most of the extra carbon dioxide.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Climate_change"
+  },
+  {
+    "id": "v5-en-challenging-language-hakuna-matata",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "language",
+    "prompt": "The phrase 'Hakuna Matata', made famous by The Lion King, means what in Swahili?",
+    "options": ["No worries", "Long live the king", "Welcome home", "Let's go"],
+    "correctOptionIndex": 0,
+    "explanation": "Hakuna means \"there is not\" and matata means \"problems\" or \"worries\".",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Hakuna_matata"
+  },
+  {
+    "id": "v5-en-challenging-language-safari-origin",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "language",
+    "prompt": "The English word 'safari' comes from Swahili. What does it mean in Swahili?",
+    "options": ["A journey", "A wild animal", "A tent", "A hunter"],
+    "correctOptionIndex": 0,
+    "explanation": "Safari means a journey in Swahili; the word came into Swahili from Arabic.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Safari"
+  },
+  {
+    "id": "v5-en-challenging-film-montage",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "film",
+    "prompt": "In filmmaking, what is a 'montage'?",
+    "options": [
+      "A sequence of short shots edited together to condense time or ideas",
+      "A single long shot without cuts",
+      "The film's soundtrack",
+      "A behind-the-scenes documentary"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Montage editing joins brief shots to show change or meaning quickly.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Montage_(filmmaking)"
+  },
+  {
+    "id": "v5-en-challenging-culture-ramadan-month",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "culture",
+    "prompt": "Ramadan is observed during which month of the Islamic calendar?",
+    "options": ["The ninth", "The first", "The twelfth", "The sixth"],
+    "correctOptionIndex": 0,
+    "explanation": "Ramadan is the ninth month of the lunar Islamic calendar.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Ramadan"
+  },
+  {
+    "id": "v5-en-challenging-culture-adumu",
+    "language": "en",
+    "difficulty": "challenging",
+    "topic": "culture",
+    "prompt": "The Maasai jumping dance known as 'adumu' is traditionally performed by which group?",
+    "options": ["Young warriors", "Elders", "Young children", "Brides"],
+    "correctOptionIndex": 0,
+    "explanation": "Young Maasai warriors (morans) perform the jumping dance during ceremonies.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Maasai_people"
+  },
+  {
+    "id": "v5-sw-challenging-language-uwanjani-mahali",
+    "language": "sw",
+    "difficulty": "challenging",
+    "topic": "language",
+    "prompt": "Katika sentensi 'Watoto wanacheza uwanjani', neno 'uwanjani' linaonyesha nini?",
+    "options": ["Mahali", "Wakati", "Idadi", "Namna"],
+    "correctOptionIndex": 0,
+    "explanation": "Kiambishi '-ni' mwishoni mwa 'uwanja' huonyesha mahali kitendo kinapofanyika.",
+    "sourceUrl": "https://kiswahili.ku.edu/lessons"
+  },
+  {
+    "id": "v5-sw-challenging-language-kuziba-ufa",
+    "language": "sw",
+    "difficulty": "challenging",
+    "topic": "language",
+    "prompt": "Methali 'Usipoziba ufa utajenga ukuta' inamaanisha nini?",
+    "options": [
+      "Shughulikia tatizo dogo mapema kabla halijawa kubwa",
+      "Jenga nyumba yako kwa mawe imara",
+      "Usiwaamini majirani zako",
+      "Kazi ya ujenzi ni ngumu"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Tatizo dogo likiachwa, baadaye litahitaji kazi kubwa zaidi kulitatua.",
+    "sourceUrl": "https://en.wiktionary.org/wiki/usipoziba_ufa_utajenga_ukuta"
+  },
+  {
+    "id": "v5-sw-challenging-history-vita-maji-maji",
+    "language": "sw",
+    "difficulty": "challenging",
+    "topic": "history",
+    "prompt": "Vita vya Maji Maji (1905 hadi 1907) vilipiganwa dhidi ya utawala wa kikoloni wa nchi gani?",
+    "options": ["Ujerumani", "Uingereza", "Ureno", "Ufaransa"],
+    "correctOptionIndex": 0,
+    "explanation": "Wakazi wa kusini mwa Tanganyika waliupinga utawala wa Kijerumani katika vita vya Maji Maji.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Maji_Maji_Rebellion"
+  },
+  {
+    "id": "v5-sw-challenging-science-radi-sauti",
+    "language": "sw",
+    "difficulty": "challenging",
+    "topic": "science",
+    "prompt": "Kwa nini huona mwanga wa radi kabla ya kusikia mngurumo wake?",
+    "options": [
+      "Mwanga husafiri kwa kasi zaidi kuliko sauti",
+      "Sauti husafiri kwa kasi zaidi kuliko mwanga",
+      "Mngurumo hutokea dakika kadhaa baadaye",
+      "Masikio hufanya kazi polepole kuliko macho"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Mwanga husafiri karibu mara milioni moja kwa kasi zaidi kuliko sauti hewani.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Thunder"
+  },
+  {
+    "id": "v5-sw-challenging-geography-ziwa-tanganyika",
+    "language": "sw",
+    "difficulty": "challenging",
+    "topic": "geography",
+    "prompt": "Ziwa Tanganyika linajulikana kwa sifa gani?",
+    "options": [
+      "Ni ziwa refu zaidi la maji baridi duniani na la pili kwa kina",
+      "Ni ziwa kubwa zaidi la maji ya chumvi duniani",
+      "Liko katikati ya jangwa la Sahara",
+      "Huganda kila mwaka wakati wa baridi"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Ziwa Tanganyika lina urefu wa takriban kilomita 670 na kina cha zaidi ya mita 1,400.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Lake_Tanganyika"
+  },
+  {
+    "id": "v5-sw-challenging-economics-mfumuko-wa-bei",
+    "language": "sw",
+    "difficulty": "challenging",
+    "topic": "economics",
+    "prompt": "Mfumuko wa bei ukiongezeka kwa kasi, nini hutokea kwa thamani ya pesa uliyoweka nyumbani?",
+    "options": [
+      "Inapungua kwa sababu inanunua vitu vichache",
+      "Inaongezeka kila mwezi",
+      "Haibadiliki kamwe",
+      "Inakuwa mara mbili"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Bei zikipanda, kiasi kilekile cha pesa hununua bidhaa chache kuliko awali.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Inflation"
+  },
+  {
+    "id": "v5-sw-challenging-literature-shaaban-robert",
+    "language": "sw",
+    "difficulty": "challenging",
+    "topic": "literature",
+    "prompt": "Shaaban Robert anajulikana zaidi kama nani katika fasihi ya Kiswahili?",
+    "options": [
+      "Mshairi na mwandishi mashuhuri wa Tanzania",
+      "Rais wa kwanza wa Kenya",
+      "Mwanamuziki maarufu wa taarab",
+      "Mwanasayansi wa anga"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Shaaban Robert (1909 hadi 1962) aliandika mashairi, insha na riwaya zilizokuza Kiswahili.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Shaaban_Robert"
+  },
+  {
+    "id": "v5-sw-hard-language-kiambishi-m",
+    "language": "sw",
+    "difficulty": "hard",
+    "topic": "language",
+    "prompt": "Katika sentensi 'Nilimwandikia barua', kiambishi '-m-' kinawakilisha nini?",
+    "options": [
+      "Mtendewa, yaani yeye aliyeandikiwa barua",
+      "Mtendaji wa kitendo",
+      "Wakati uliopita",
+      "Hali ya kukanusha"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "'Ni-' ni mtendaji, '-li-' ni wakati uliopita, na '-m-' ni kiambishi cha mtendewa (yeye).",
+    "sourceUrl": "https://kiswahili.ku.edu/lessons"
+  },
+  {
+    "id": "v5-sw-hard-history-kilwa-biashara",
+    "language": "sw",
+    "difficulty": "hard",
+    "topic": "history",
+    "prompt": "Mji wa kale wa Kilwa Kisiwani ulistawi hasa kutokana na biashara ya nini?",
+    "options": [
+      "Dhahabu iliyotoka kusini kupitia Sofala",
+      "Mafuta ya petroli",
+      "Kahawa kutoka Ethiopia",
+      "Chai kutoka India"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Kilwa ilidhibiti biashara ya dhahabu kutoka eneo la Zimbabwe kupitia bandari ya Sofala.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Kilwa_Kisiwani"
+  },
+  {
+    "id": "v5-sw-hard-literature-utenzi-maana",
+    "language": "sw",
+    "difficulty": "hard",
+    "topic": "literature",
+    "prompt": "Utenzi ni aina gani ya utungo katika fasihi ya Kiswahili?",
+    "options": [
+      "Shairi refu la masimulizi lenye beti nyingi",
+      "Hadithi fupi ya nathari",
+      "Tamthilia ya jukwaani",
+      "Kitendawili cha watoto"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Utenzi (utendi) ni shairi refu linalosimulia tukio au historia kwa beti nyingi.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Utendi"
+  }
+]

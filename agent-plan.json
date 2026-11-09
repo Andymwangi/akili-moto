@@ -4,7 +4,7 @@
   "project": {
     "name": "Akili Moto",
     "workingTitle": true,
-    "summary": "Daily shared trivia challenge with two rounds of ten questions, seven in English and three in Swahili per round, server-scored points, separate round leaderboards, and a combined leaderboard.",
+    "summary": "Daily shared trivia challenge with two rounds of fifteen questions, eleven in English and four in Swahili per round, server-timed multiplier scoring, separate round leaderboards, and a combined leaderboard.",
     "owner": "Anderson Mwangi",
     "created": "2026-10-30",
     "stack": [
@@ -107,7 +107,7 @@
     {
       "id": "D9",
       "question": "Daily quiz format",
-      "default": "Two rounds of ten four-option questions per Nairobi day, seven English and three Swahili per round; both sets are shared and disjoint",
+      "default": "Two rounds of fifteen four-option questions per Nairobi day, eleven English and four Swahili per round; both sets are shared and disjoint",
       "alternatives": ["Different questions per player", "Other language ratio"],
       "status": "confirmed",
       "resolveIn": "Q1-01"
@@ -115,7 +115,7 @@
     {
       "id": "D10",
       "question": "Scoring",
-      "default": "100 points for a correct answer and a server-measured speed bonus up to 20 points during the first 20 seconds",
+      "default": "Correct answers score from 200 down to 100 over a server-timed 30-second window; late answers score zero",
       "alternatives": ["Correctness only"],
       "status": "confirmed",
       "resolveIn": "Q1-01"
@@ -190,8 +190,8 @@
       "tasks": [
         {
           "id": "Q3-01",
-          "title": "Add two daily rounds, round rankings, and broad question coverage",
-          "description": "Hide player management during play. Add a second shared round that unlocks after round one is complete, enforce a maximum of two rounds per player per Nairobi day, use disjoint question IDs across the two rounds, show separate round leaderboards and a combined leaderboard for players who completed both, preserve existing round-one history, and diversify sourced question topics with plausible distractors.",
+          "title": "Expand daily rounds to 15 questions with timed multiplier scoring",
+          "description": "Use 15 shared questions per round with five medium, seven challenging, and three hard questions; keep an 11:4 English/Swahili mix and broaden sourced topics. Persist a server-owned 30-second timer and award up to a 2x correct-answer multiplier, with zero points after timeout. Preserve ten-question assignments already in progress for that Nairobi day.",
           "dependsOn": ["Q2-01", "P2-01"],
           "skills": [
             "hono-workers-api",
@@ -210,7 +210,7 @@
             "docs/DECISIONS.md",
             "docs/openapi.yaml",
             "docs/postman_collection.json",
-            "data/quiz-questions-v4.json",
+            "data/quiz-questions-v5.json",
             "src/shared/constants.ts",
             "src/shared/schemas/quiz.ts",
             "src/worker/db/schema.ts",
@@ -223,8 +223,8 @@
             "src/client/pages/GamePage.tsx",
             "src/client/styles.css",
             "migrations/",
-            "test/quiz-logic.test.ts",
-            "test/quiz-endpoints.test.ts"
+            "migrations/0006_free_vermin.sql",
+            "migrations/meta/_journal.json"
           ],
           "acceptance": [
             "A player can complete round one and then round two, but cannot start round two early or create a third round.",
@@ -232,7 +232,8 @@
             "Round one and round two have separate completed-player leaderboards; the combined leaderboard includes only players who completed both rounds and ranks their summed scores.",
             "Existing completed round-one data is preserved through an additive, locally applied migration.",
             "Player name and recovery controls are absent while playing, while setup and recovery remain available before a round starts.",
-            "The current question bank has broad topic tags and balanced topics, retains the seven-English/three-Swahili ratio and increasing difficulty, and uses plausible answer choices.",
+            "New daily rounds contain 15 questions, 11 English and four Swahili, with five medium, seven challenging, and three hard questions across broad topics.",
+            "The server persists each active question's open time, rejects early timeout submissions, accepts late submissions only as zero-point timeouts, and scores correct answers from 200 down to 100 points over 30 seconds.",
             "Question bank content includes institutional sources and remains marked for human review before production use."
           ],
           "verify": [
@@ -244,7 +245,7 @@
           ],
           "humanReview": true,
           "status": "needs_review",
-          "notes": "Implemented two shared rounds per Nairobi day, separate round leaderboards, and a combined ranking for players who complete both. Local migration and automated checks passed. Question content is still draft material requiring owner and fluent Swahili review. No production migration or deployment was run."
+          "notes": "Added the 15-question 11:4 schedule, five-medium/seven-challenging/three-hard progression, broader v5 sourced topics, server-persisted 30-second answer window, and 2x-to-1x scoring with zero-point timeout. Existing ten-question assignments remain playable for their Nairobi day. Local migration 0006 was applied; typecheck, changed-file Biome lint, and production build passed. Repository-wide Biome check still reports formatting diagnostics in this repository, including formatting-only diagnostics in touched files; changed-file lint passes. Tests were not run under the session-level instruction. Human review of question wording and Swahili remains required. No remote migration, deploy, commit, or push was performed. Follow-up review (2026-11-09): the committed version did not typecheck (TS18004 in routes/quiz.ts), returned 503 after saving every answer, failed daily selection on 168 of 365 days, revealed the next question before its timer started, and migration 0006 copied two missing columns as string literals. Fixed all of these; rewrote 0006 (only ever applied locally; local D1 reset); added a per-round shared bonus question (x2), a 1.5 s network grace window, a 6/7/2 difficulty mix, 86 new draft questions (139 active, 15 topics), and three-day repeat avoidance. Tests now apply the real migrations, including an upgrade test that fails on the original 0006. Fixed the flaky cookie-tamper tests. Verified: corepack pnpm typecheck (passed), corepack pnpm test (54 passed, three consecutive runs), corepack pnpm build (passed, client leak check passed), Biome lint and format clean on changed files as LF, local D1 migrate (0000-0006 applied), and an API run against the dev server including a real 31 s timeout. Not verified: browser UI visually, remote migration, most new source URLs, Swahili review."
         }
       ]
     },
@@ -472,6 +473,40 @@
           "humanReview": true,
           "status": "needs_review",
           "notes": "Implemented compact name-first setup, explicit Start, and same-browser resume using a local display name plus resume preference. The server profile must match the cached name before resuming; the player UUID is not stored in the browser cache. Existing named profiles without a cache are treated as returning players; new and recovered profiles remain at setup until Start. Verification passed: corepack pnpm typecheck, corepack pnpm lint, corepack pnpm build including the client leak scan, and git diff --check. Tests were not run."
+        },
+        {
+          "id": "P2-03",
+          "title": "Assign friendly names and simplify player recovery",
+          "description": "Give new players a unique friendly random name on their first visit, allow them to start with it or edit it, keep the saved name when they return in the same browser, and explain recovery in plain language.",
+          "dependsOn": ["P2-02"],
+          "skills": [
+            "auth-patterns",
+            "hono-workers-api",
+            "drizzle-orm",
+            "react-data-fetching",
+            "security-review",
+            "agent-honesty-and-verification"
+          ],
+          "files": [
+            "agent-plan.json",
+            "README.md",
+            "src/worker/lib/identity/random-player-name.ts",
+            "src/worker/db/queries/player-repository.ts",
+            "src/client/pages/GamePage.tsx",
+            "src/client/styles.css"
+          ],
+          "acceptance": [
+            "A new profile receives a friendly English adjective-animal name with a short numeric suffix, generated server-side and protected by the existing case-insensitive unique index.",
+            "A player may start with the generated name or replace it with another valid unique name.",
+            "Existing profiles retain their current name; returning browsers use the saved server profile name and resume preference.",
+            "The setup screen explains that the player name can be changed and appears on the leaderboard.",
+            "Recovery copy explains that the code restores the saved name and game history on another device, and that creating a new code replaces the old one.",
+            "The recovery form is labeled by the code it requires and the progress it restores, not by the player's display name alone."
+          ],
+          "verify": ["corepack pnpm typecheck", "corepack pnpm lint", "corepack pnpm build"],
+          "humanReview": true,
+          "status": "needs_review",
+          "notes": "Implemented server-generated friendly names with collision retries, retained existing profile names, allowed starting unchanged, preserved same-browser resume behavior, and simplified recovery copy. Verified with corepack pnpm typecheck (passed), corepack pnpm build (passed, client leak check passed), and git diff --check (passed). corepack pnpm lint reports 22 repository-wide formatting diagnostics; focused Biome found the same baseline CRLF formatting issues and one import order issue, which was corrected. Tests were not run. Human review required. Follow-up review: added unit tests for name format and validation (test/player-names.test.ts), repository tests for case-insensitive collision retry, returning-player name retention and fail-closed exhaustion (test/player-repository.test.ts), and a friendly-name assertion on profile creation; fixed one Biome formatting issue in GamePage.tsx. Verified with corepack pnpm typecheck (passed), corepack pnpm test (47 passed), corepack pnpm build (passed, client leak check passed). The 22 repository lint diagnostics are CRLF line endings from the Windows checkout (core.autocrlf=true); committed files are LF. Second follow-up: a first-time player never auto-resumed (pressing Start rewrote the cached profile, which re-ran the new-player branch and reset resume to false), and the recovery code vanished on any profile refetch. Resume is now decided once per player id through decideResume, and the profile query keeps the code for the same player for the page session (never stored). Unit tests cover both; the once-per-player effect guard has no DOM test."
         }
       ]
     }

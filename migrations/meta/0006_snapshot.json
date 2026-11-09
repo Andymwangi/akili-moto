@@ -1,0 +1,912 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "12cda2ae-7325-417a-940a-08928fd2bd2f",
+  "prevId": "36d64d69-33c7-44f8-b8d8-09270565b790",
+  "tables": {
+    "allowed_guesses": {
+      "name": "allowed_guesses",
+      "columns": {
+        "word": {
+          "name": "word",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "answer_pool": {
+      "name": "answer_pool",
+      "columns": {
+        "word": {
+          "name": "word",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "daily_answers": {
+      "name": "daily_answers",
+      "columns": {
+        "day": {
+          "name": "day",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "word": {
+          "name": "word",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "daily_answers_word_unique": {
+          "name": "daily_answers_word_unique",
+          "columns": [
+            "word"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "daily_answers_word_answer_pool_word_fk": {
+          "name": "daily_answers_word_answer_pool_word_fk",
+          "tableFrom": "daily_answers",
+          "tableTo": "answer_pool",
+          "columnsFrom": [
+            "word"
+          ],
+          "columnsTo": [
+            "word"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "daily_quizzes": {
+      "name": "daily_quizzes",
+      "columns": {
+        "day": {
+          "name": "day",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "question_ids": {
+          "name": "question_ids",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "question_set_key": {
+          "name": "question_set_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "round_two_question_ids": {
+          "name": "round_two_question_ids",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "round_two_question_set_key": {
+          "name": "round_two_question_set_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "round_two_question_set_version": {
+          "name": "round_two_question_set_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "question_set_version": {
+          "name": "question_set_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "daily_quizzes_question_set_key_unique": {
+          "name": "daily_quizzes_question_set_key_unique",
+          "columns": [
+            "question_set_key"
+          ],
+          "isUnique": true,
+          "where": "\"daily_quizzes\".\"question_set_key\" IS NOT NULL"
+        },
+        "daily_quizzes_round_two_question_set_key_unique": {
+          "name": "daily_quizzes_round_two_question_set_key_unique",
+          "columns": [
+            "round_two_question_set_key"
+          ],
+          "isUnique": true,
+          "where": "\"daily_quizzes\".\"round_two_question_set_key\" IS NOT NULL"
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "guesses": {
+      "name": "guesses",
+      "columns": {
+        "day": {
+          "name": "day",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "attempt_no": {
+          "name": "attempt_no",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "guess": {
+          "name": "guess",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "feedback": {
+          "name": "feedback",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "idempotency_key": {
+          "name": "idempotency_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "guesses_player_day_idempotency_unique": {
+          "name": "guesses_player_day_idempotency_unique",
+          "columns": [
+            "day",
+            "player_id",
+            "idempotency_key"
+          ],
+          "isUnique": true
+        },
+        "guesses_player_day_index": {
+          "name": "guesses_player_day_index",
+          "columns": [
+            "player_id",
+            "day"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "guesses_day_player_id_attempt_no_pk": {
+          "columns": [
+            "day",
+            "player_id",
+            "attempt_no"
+          ],
+          "name": "guesses_day_player_id_attempt_no_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "guesses_attempt_no_range": {
+          "name": "guesses_attempt_no_range",
+          "value": "\"guesses\".\"attempt_no\" BETWEEN 1 AND 6"
+        }
+      }
+    },
+    "player_recovery_rate_limits": {
+      "name": "player_recovery_rate_limits",
+      "columns": {
+        "address_hash": {
+          "name": "address_hash",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "window_started_at": {
+          "name": "window_started_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "hit_count": {
+          "name": "hit_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "player_recovery_rate_limits_window_index": {
+          "name": "player_recovery_rate_limits_window_index",
+          "columns": [
+            "window_started_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "players": {
+      "name": "players",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "recovery_code_hash": {
+          "name": "recovery_code_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "players_recovery_code_hash_unique": {
+          "name": "players_recovery_code_hash_unique",
+          "columns": [
+            "recovery_code_hash"
+          ],
+          "isUnique": true
+        },
+        "players_display_name_unique": {
+          "name": "players_display_name_unique",
+          "columns": [
+            "lower(\"display_name\")"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "quiz_answers": {
+      "name": "quiz_answers",
+      "columns": {
+        "day": {
+          "name": "day",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "question_index": {
+          "name": "question_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "question_id": {
+          "name": "question_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "selected_option_id": {
+          "name": "selected_option_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "correct_option_id": {
+          "name": "correct_option_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "is_correct": {
+          "name": "is_correct",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "points": {
+          "name": "points",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "response_ms": {
+          "name": "response_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "idempotency_key": {
+          "name": "idempotency_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "submitted_at": {
+          "name": "submitted_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "quiz_answers_player_day_idempotency_unique": {
+          "name": "quiz_answers_player_day_idempotency_unique",
+          "columns": [
+            "day",
+            "player_id",
+            "idempotency_key"
+          ],
+          "isUnique": true
+        },
+        "quiz_answers_player_day_index": {
+          "name": "quiz_answers_player_day_index",
+          "columns": [
+            "player_id",
+            "day"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "quiz_answers_day_player_id_question_index_pk": {
+          "columns": [
+            "day",
+            "player_id",
+            "question_index"
+          ],
+          "name": "quiz_answers_day_player_id_question_index_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "quiz_answers_question_index_range": {
+          "name": "quiz_answers_question_index_range",
+          "value": "\"quiz_answers\".\"question_index\" BETWEEN 0 AND 9"
+        },
+        "quiz_answers_option_id_range": {
+          "name": "quiz_answers_option_id_range",
+          "value": "\"quiz_answers\".\"selected_option_id\" IN ('a', 'b', 'c', 'd')"
+        },
+        "quiz_answers_correct_option_id_range": {
+          "name": "quiz_answers_correct_option_id_range",
+          "value": "\"quiz_answers\".\"correct_option_id\" IN ('a', 'b', 'c', 'd')"
+        },
+        "quiz_answers_points_range": {
+          "name": "quiz_answers_points_range",
+          "value": "\"quiz_answers\".\"points\" BETWEEN 0 AND 120"
+        },
+        "quiz_answers_response_ms_range": {
+          "name": "quiz_answers_response_ms_range",
+          "value": "\"quiz_answers\".\"response_ms\" BETWEEN 0 AND 86400000"
+        }
+      }
+    },
+    "quiz_round_answers": {
+      "name": "quiz_round_answers",
+      "columns": {
+        "day": {
+          "name": "day",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "round_no": {
+          "name": "round_no",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "question_index": {
+          "name": "question_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "question_id": {
+          "name": "question_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "selected_option_id": {
+          "name": "selected_option_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "correct_option_id": {
+          "name": "correct_option_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "is_correct": {
+          "name": "is_correct",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "points": {
+          "name": "points",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "response_ms": {
+          "name": "response_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "idempotency_key": {
+          "name": "idempotency_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "submitted_at": {
+          "name": "submitted_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "quiz_round_answers_player_day_idempotency_unique": {
+          "name": "quiz_round_answers_player_day_idempotency_unique",
+          "columns": [
+            "day",
+            "player_id",
+            "round_no",
+            "idempotency_key"
+          ],
+          "isUnique": true
+        },
+        "quiz_round_answers_player_day_index": {
+          "name": "quiz_round_answers_player_day_index",
+          "columns": [
+            "player_id",
+            "day",
+            "round_no"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "quiz_round_answers_day_player_id_round_no_question_index_pk": {
+          "columns": [
+            "day",
+            "player_id",
+            "round_no",
+            "question_index"
+          ],
+          "name": "quiz_round_answers_day_player_id_round_no_question_index_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "quiz_round_answers_round_range": {
+          "name": "quiz_round_answers_round_range",
+          "value": "\"quiz_round_answers\".\"round_no\" BETWEEN 1 AND 2"
+        },
+        "quiz_round_answers_question_index_range": {
+          "name": "quiz_round_answers_question_index_range",
+          "value": "\"quiz_round_answers\".\"question_index\" BETWEEN 0 AND 14"
+        },
+        "quiz_round_answers_option_id_range": {
+          "name": "quiz_round_answers_option_id_range",
+          "value": "\"quiz_round_answers\".\"selected_option_id\" IS NULL OR \"quiz_round_answers\".\"selected_option_id\" IN ('a', 'b', 'c', 'd')"
+        },
+        "quiz_round_answers_correct_option_id_range": {
+          "name": "quiz_round_answers_correct_option_id_range",
+          "value": "\"quiz_round_answers\".\"correct_option_id\" IN ('a', 'b', 'c', 'd')"
+        },
+        "quiz_round_answers_points_range": {
+          "name": "quiz_round_answers_points_range",
+          "value": "\"quiz_round_answers\".\"points\" BETWEEN 0 AND 400"
+        },
+        "quiz_round_answers_response_ms_range": {
+          "name": "quiz_round_answers_response_ms_range",
+          "value": "\"quiz_round_answers\".\"response_ms\" BETWEEN 0 AND 86400000"
+        }
+      }
+    },
+    "quiz_round_sessions": {
+      "name": "quiz_round_sessions",
+      "columns": {
+        "day": {
+          "name": "day",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "round_no": {
+          "name": "round_no",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "current_question_index": {
+          "name": "current_question_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "current_question_opened_at": {
+          "name": "current_question_opened_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "score": {
+          "name": "score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "correct_count": {
+          "name": "correct_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "quiz_round_sessions_daily_leaderboard_index": {
+          "name": "quiz_round_sessions_daily_leaderboard_index",
+          "columns": [
+            "day",
+            "round_no",
+            "completed_at",
+            "score",
+            "correct_count"
+          ],
+          "isUnique": false
+        },
+        "quiz_round_sessions_player_day_index": {
+          "name": "quiz_round_sessions_player_day_index",
+          "columns": [
+            "player_id",
+            "day"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "quiz_round_sessions_day_player_id_round_no_pk": {
+          "columns": [
+            "day",
+            "player_id",
+            "round_no"
+          ],
+          "name": "quiz_round_sessions_day_player_id_round_no_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "quiz_round_sessions_round_range": {
+          "name": "quiz_round_sessions_round_range",
+          "value": "\"quiz_round_sessions\".\"round_no\" BETWEEN 1 AND 2"
+        },
+        "quiz_round_sessions_score_range": {
+          "name": "quiz_round_sessions_score_range",
+          "value": "\"quiz_round_sessions\".\"score\" BETWEEN 0 AND 3200"
+        },
+        "quiz_round_sessions_correct_range": {
+          "name": "quiz_round_sessions_correct_range",
+          "value": "\"quiz_round_sessions\".\"correct_count\" BETWEEN 0 AND 15"
+        }
+      }
+    },
+    "quiz_sessions": {
+      "name": "quiz_sessions",
+      "columns": {
+        "day": {
+          "name": "day",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "score": {
+          "name": "score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "correct_count": {
+          "name": "correct_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "quiz_sessions_daily_leaderboard_index": {
+          "name": "quiz_sessions_daily_leaderboard_index",
+          "columns": [
+            "day",
+            "completed_at",
+            "score",
+            "correct_count"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "quiz_sessions_day_player_id_pk": {
+          "columns": [
+            "day",
+            "player_id"
+          ],
+          "name": "quiz_sessions_day_player_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "quiz_sessions_score_range": {
+          "name": "quiz_sessions_score_range",
+          "value": "\"quiz_sessions\".\"score\" BETWEEN 0 AND 1200"
+        },
+        "quiz_sessions_correct_range": {
+          "name": "quiz_sessions_correct_range",
+          "value": "\"quiz_sessions\".\"correct_count\" BETWEEN 0 AND 10"
+        }
+      }
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {
+      "players_display_name_unique": {
+        "columns": {
+          "lower(\"display_name\")": {
+            "isExpression": true
+          }
+        }
+      }
+    }
+  }
+}

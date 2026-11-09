@@ -1,5 +1,4 @@
-import { and, asc, count, desc, eq, gt, isNotNull, lt, sql } from 'drizzle-orm';
-import { QUIZ_QUESTION_COUNT } from '../../../shared/constants';
+import { and, asc, count, desc, eq, gt, gte, isNotNull, isNull, lt, sql } from 'drizzle-orm';
 import { createDatabase, type Database } from '../client';
 import { dailyQuizzes, players, quizRoundAnswers, quizRoundSessions } from '../schema';
 
@@ -43,6 +42,21 @@ export class QuizRepository {
       roundTwoIds: parseIds(row.roundTwoQuestionIds),
       roundTwoVersion: row.roundTwoQuestionSetVersion,
     };
+  }
+
+  /** Question IDs assigned on the `days` days before `day` (both rounds). */
+  async getRecentQuestionIds(day: string, days: number): Promise<Set<string>> {
+    const start = new Date(`${day}T00:00:00Z`);
+    start.setUTCDate(start.getUTCDate() - days);
+    const rows = await this.db
+      .select({ first: dailyQuizzes.questionIds, second: dailyQuizzes.roundTwoQuestionIds })
+      .from(dailyQuizzes)
+      .where(
+        and(gte(dailyQuizzes.day, start.toISOString().slice(0, 10)), lt(dailyQuizzes.day, day)),
+      );
+    return new Set(
+      rows.flatMap((row) => [...(parseIds(row.first) ?? []), ...(parseIds(row.second) ?? [])]),
+    );
   }
 
   async getUsedQuestionSetKeys(): Promise<Set<string>> {
@@ -126,6 +140,40 @@ export class QuizRepository {
     return session;
   }
 
+  async openCurrentQuestion(
+    day: string,
+    playerId: string,
+    round: QuizRoundNumber,
+    questionIndex: number,
+  ) {
+    const session = await this.getRoundSession(day, playerId, round);
+    if (!session) throw new Error('QUIZ_SESSION_UNAVAILABLE');
+    if (session.currentQuestionIndex !== questionIndex || !session.currentQuestionOpenedAt) {
+      const now = new Date().toISOString();
+      await this.db
+        .update(quizRoundSessions)
+        .set({
+          currentQuestionIndex: questionIndex,
+          currentQuestionOpenedAt: now,
+          updatedAt: now,
+        })
+        .where(
+          and(
+            eq(quizRoundSessions.day, day),
+            eq(quizRoundSessions.playerId, playerId),
+            eq(quizRoundSessions.round, round),
+            eq(quizRoundSessions.currentQuestionIndex, session.currentQuestionIndex),
+            ...(session.currentQuestionIndex === questionIndex
+              ? [isNull(quizRoundSessions.currentQuestionOpenedAt)]
+              : []),
+          ),
+        );
+    }
+    const opened = await this.getRoundSession(day, playerId, round);
+    if (!opened) throw new Error('QUIZ_SESSION_UNAVAILABLE');
+    return opened;
+  }
+
   async getRoundAnswers(
     day: string,
     playerId: string,
@@ -144,8 +192,13 @@ export class QuizRepository {
       .orderBy(asc(quizRoundAnswers.questionIndex));
   }
 
-  async reconcileRoundTotals(day: string, playerId: string, round: QuizRoundNumber): Promise<void> {
-    await this.refreshRoundTotals(day, playerId, round);
+  async reconcileRoundTotals(
+    day: string,
+    playerId: string,
+    round: QuizRoundNumber,
+    questionCount: number,
+  ): Promise<void> {
+    await this.refreshRoundTotals(day, playerId, round, questionCount, false);
   }
 
   async getIdempotentRoundAnswer(
@@ -175,20 +228,27 @@ export class QuizRepository {
     round: QuizRoundNumber;
     questionIndex: number;
     questionId: string;
-    selectedOptionId: 'a' | 'b' | 'c' | 'd';
+    selectedOptionId: 'a' | 'b' | 'c' | 'd' | null;
     correctOptionId: 'a' | 'b' | 'c' | 'd';
     isCorrect: boolean;
     points: number;
     responseMs: number;
     idempotencyKey: string;
     submittedAt: string;
+    questionCount: number;
   }): Promise<boolean> {
     const inserted = await this.db
       .insert(quizRoundAnswers)
       .values(input)
       .onConflictDoNothing()
       .returning({ questionIndex: quizRoundAnswers.questionIndex });
-    await this.refreshRoundTotals(input.day, input.playerId, input.round);
+    await this.refreshRoundTotals(
+      input.day,
+      input.playerId,
+      input.round,
+      input.questionCount,
+      true,
+    );
     return inserted.length === 1;
   }
 
@@ -375,20 +435,34 @@ export class QuizRepository {
     day: string,
     playerId: string,
     round: QuizRoundNumber,
+    questionCount: number,
+    advanceQuestion: boolean,
   ): Promise<void> {
     const answers = await this.getRoundAnswers(day, playerId, round);
     const score = answers.reduce((total, answer) => total + answer.points, 0);
     const correctCount = answers.reduce((total, answer) => total + Number(answer.isCorrect), 0);
-    const completedAt = answers.length === QUIZ_QUESTION_COUNT ? answers.at(-1)?.submittedAt : null;
+    const completedAt = answers.length === questionCount ? answers.at(-1)?.submittedAt : null;
+    const now = new Date().toISOString();
+    const sessionScope = and(
+      eq(quizRoundSessions.day, day),
+      eq(quizRoundSessions.playerId, playerId),
+      eq(quizRoundSessions.round, round),
+    );
     await this.db
       .update(quizRoundSessions)
-      .set({ score, correctCount, completedAt, updatedAt: new Date().toISOString() })
-      .where(
-        and(
-          eq(quizRoundSessions.day, day),
-          eq(quizRoundSessions.playerId, playerId),
-          eq(quizRoundSessions.round, round),
-        ),
-      );
+      .set({ score, correctCount, completedAt, updatedAt: now })
+      .where(sessionScope);
+    if (advanceQuestion) {
+      // Only move forward. A late duplicate save must not clear a timer the
+      // player has already started on the next question.
+      await this.db
+        .update(quizRoundSessions)
+        .set({
+          currentQuestionIndex: answers.length,
+          currentQuestionOpenedAt: null,
+          updatedAt: now,
+        })
+        .where(and(sessionScope, lt(quizRoundSessions.currentQuestionIndex, answers.length)));
+    }
   }
 }

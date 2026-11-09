@@ -64,11 +64,11 @@ export async function getQuiz(round: 1 | 2 = 1): Promise<QuizState> {
 export async function submitQuizAnswer(
   round: 1 | 2,
   questionId: string,
-  selectedOptionId: 'a' | 'b' | 'c' | 'd',
+  selectedOptionId: 'a' | 'b' | 'c' | 'd' | undefined,
   idempotencyKey: string,
 ): Promise<QuizState> {
   const response = await client.api.quiz.answer.$post({
-    json: { round, questionId, selectedOptionId },
+    json: { round, questionId, ...(selectedOptionId ? { selectedOptionId } : {}) },
     header: { 'idempotency-key': idempotencyKey },
   });
   return parseResponse(response, QuizStateSchema);

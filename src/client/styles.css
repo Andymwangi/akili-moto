@@ -277,6 +277,13 @@ a:focus-visible {
   font-size: 0.86rem;
 }
 
+.recovery-panel .recovery-code-hint {
+  max-width: 28rem;
+  margin-top: 0.45rem;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
 .recovery-code {
   display: inline-block;
   margin-top: 0.75rem;
@@ -588,6 +595,7 @@ h1 {
 }
 .language-pill,
 .difficulty-pill,
+.bonus-pill,
 .speed-pill {
   display: inline-flex;
   min-height: 25px;
@@ -611,6 +619,11 @@ h1 {
   border-color: transparent;
   background: var(--accent-soft);
   color: var(--accent-strong);
+}
+.bonus-pill {
+  border-color: var(--gold);
+  color: var(--gold);
+  letter-spacing: 0.04em;
 }
 .speed-pill {
   margin-left: auto;
