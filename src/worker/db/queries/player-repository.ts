@@ -16,7 +16,10 @@ export type PlayerProfile = Readonly<{
 export class PlayerRepository {
   private readonly db;
 
-  constructor(binding: D1Database) {
+  constructor(
+    binding: D1Database,
+    private readonly createName: () => string = createRandomPlayerName,
+  ) {
     this.db = createDatabase(binding);
   }
 
@@ -28,7 +31,7 @@ export class PlayerRepository {
         .insert(players)
         .values({
           id,
-          displayName: createRandomPlayerName(),
+          displayName: this.createName(),
           recoveryCodeHash: await hashRecoveryCode(recoveryCode),
           createdAt: now,
           updatedAt: now,

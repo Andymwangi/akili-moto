@@ -1,12 +1,12 @@
 import { env } from 'cloudflare:workers';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { PlayerRepository } from '../src/worker/db/queries/player-repository';
 
-const names = vi.hoisted(() => ({ queue: [] as string[] }));
-
-vi.mock('../src/worker/lib/identity/random-player-name', () => ({
-  createRandomPlayerName: () => names.queue.shift() ?? 'Fallback Name 9999',
-}));
+/** Returns the given names in order, then a fixed fallback. */
+function scriptedNames(...names: string[]): () => string {
+  const queue = [...names];
+  return () => queue.shift() ?? 'Fallback Name 9999';
+}
 
 beforeEach(async () => {
   await env.DB.batch([
@@ -23,17 +23,17 @@ beforeEach(async () => {
       ON players(lower(display_name))`),
     env.DB.prepare('DELETE FROM players'),
   ]);
-  names.queue = [];
 });
 
 describe('player profile creation', () => {
   it('retries with a new name when the generated name is already taken', async () => {
-    const repository = new PlayerRepository(env.DB);
-    names.queue = ['Bright Otter 0001'];
-    const first = await repository.getOrCreate(crypto.randomUUID());
-
-    names.queue = ['bright otter 0001', 'BRIGHT OTTER 0001', 'Calm Heron 0002'];
-    const second = await repository.getOrCreate(crypto.randomUUID());
+    const first = await new PlayerRepository(env.DB, scriptedNames('Bright Otter 0001')).getOrCreate(
+      crypto.randomUUID(),
+    );
+    const second = await new PlayerRepository(
+      env.DB,
+      scriptedNames('bright otter 0001', 'BRIGHT OTTER 0001', 'Calm Heron 0002'),
+    ).getOrCreate(crypto.randomUUID());
 
     expect(first.profile.displayName).toBe('Bright Otter 0001');
     expect(first.recoveryCode).toBeDefined();
@@ -42,24 +42,23 @@ describe('player profile creation', () => {
   });
 
   it('keeps the existing name for a returning player', async () => {
-    const repository = new PlayerRepository(env.DB);
     const id = crypto.randomUUID();
-    names.queue = ['Kind Zebra 0003'];
-    await repository.getOrCreate(id);
-    names.queue = ['Other Name 0004'];
-    const again = await repository.getOrCreate(id);
+    await new PlayerRepository(env.DB, scriptedNames('Kind Zebra 0003')).getOrCreate(id);
+    const again = await new PlayerRepository(env.DB, scriptedNames('Other Name 0004')).getOrCreate(
+      id,
+    );
 
     expect(again.profile.displayName).toBe('Kind Zebra 0003');
     expect(again.recoveryCode).toBeUndefined();
   });
 
   it('fails closed after repeated name collisions', async () => {
-    const repository = new PlayerRepository(env.DB);
-    names.queue = ['Quick Lion 0005'];
-    await repository.getOrCreate(crypto.randomUUID());
-    names.queue = Array.from({ length: 8 }, () => 'Quick Lion 0005');
+    await new PlayerRepository(env.DB, scriptedNames('Quick Lion 0005')).getOrCreate(
+      crypto.randomUUID(),
+    );
+    const colliding = new PlayerRepository(env.DB, () => 'Quick Lion 0005');
 
-    await expect(repository.getOrCreate(crypto.randomUUID())).rejects.toThrow(
+    await expect(colliding.getOrCreate(crypto.randomUUID())).rejects.toThrow(
       'PLAYER_PROFILE_UNAVAILABLE',
     );
   });
