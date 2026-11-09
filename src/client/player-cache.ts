@@ -1,6 +1,6 @@
 const PLAYER_NAME_CACHE_KEY = 'akili-moto.player-state';
 
-type CachedPlayerState = Readonly<{
+export type CachedPlayerState = Readonly<{
   displayName: string;
   resume: boolean;
 }>;
@@ -37,4 +37,28 @@ export function cachePlayerName(displayName: string, resume = true): void {
   } catch {
     // The server profile remains authoritative when browser storage is unavailable.
   }
+}
+
+export type ResumeDecision = Readonly<{ startGame: boolean; cache?: CachedPlayerState }>;
+
+/**
+ * Decides, once per player identity, whether to skip the name screen.
+ * A profile created on this request starts on the name screen; a player who
+ * started before in this browser resumes; a signed-in identity with no browser
+ * record (storage was cleared) is treated as returning.
+ */
+export function decideResume(input: {
+  displayName: string;
+  isNewProfile: boolean;
+  cached: CachedPlayerState | null;
+}): ResumeDecision {
+  const { displayName, isNewProfile, cached } = input;
+  if (isNewProfile) return { startGame: false, cache: { displayName, resume: false } };
+  if (cached?.resume) {
+    return cached.displayName === displayName
+      ? { startGame: true }
+      : { startGame: true, cache: { displayName, resume: true } };
+  }
+  if (!cached) return { startGame: true, cache: { displayName, resume: true } };
+  return { startGame: false };
 }

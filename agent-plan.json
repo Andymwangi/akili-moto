@@ -473,6 +473,40 @@
           "humanReview": true,
           "status": "needs_review",
           "notes": "Implemented compact name-first setup, explicit Start, and same-browser resume using a local display name plus resume preference. The server profile must match the cached name before resuming; the player UUID is not stored in the browser cache. Existing named profiles without a cache are treated as returning players; new and recovered profiles remain at setup until Start. Verification passed: corepack pnpm typecheck, corepack pnpm lint, corepack pnpm build including the client leak scan, and git diff --check. Tests were not run."
+        },
+        {
+          "id": "P2-03",
+          "title": "Assign friendly names and simplify player recovery",
+          "description": "Give new players a unique friendly random name on their first visit, allow them to start with it or edit it, keep the saved name when they return in the same browser, and explain recovery in plain language.",
+          "dependsOn": ["P2-02"],
+          "skills": [
+            "auth-patterns",
+            "hono-workers-api",
+            "drizzle-orm",
+            "react-data-fetching",
+            "security-review",
+            "agent-honesty-and-verification"
+          ],
+          "files": [
+            "agent-plan.json",
+            "README.md",
+            "src/worker/lib/identity/random-player-name.ts",
+            "src/worker/db/queries/player-repository.ts",
+            "src/client/pages/GamePage.tsx",
+            "src/client/styles.css"
+          ],
+          "acceptance": [
+            "A new profile receives a friendly English adjective-animal name with a short numeric suffix, generated server-side and protected by the existing case-insensitive unique index.",
+            "A player may start with the generated name or replace it with another valid unique name.",
+            "Existing profiles retain their current name; returning browsers use the saved server profile name and resume preference.",
+            "The setup screen explains that the player name can be changed and appears on the leaderboard.",
+            "Recovery copy explains that the code restores the saved name and game history on another device, and that creating a new code replaces the old one.",
+            "The recovery form is labeled by the code it requires and the progress it restores, not by the player's display name alone."
+          ],
+          "verify": ["corepack pnpm typecheck", "corepack pnpm lint", "corepack pnpm build"],
+          "humanReview": true,
+          "status": "needs_review",
+          "notes": "Implemented server-generated friendly names with collision retries, retained existing profile names, allowed starting unchanged, preserved same-browser resume behavior, and simplified recovery copy. Verified with corepack pnpm typecheck (passed), corepack pnpm build (passed, client leak check passed), and git diff --check (passed). corepack pnpm lint reports 22 repository-wide formatting diagnostics; focused Biome found the same baseline CRLF formatting issues and one import order issue, which was corrected. Tests were not run. Human review required. Follow-up review: added unit tests for name format and validation (test/player-names.test.ts), repository tests for case-insensitive collision retry, returning-player name retention and fail-closed exhaustion (test/player-repository.test.ts), and a friendly-name assertion on profile creation; fixed one Biome formatting issue in GamePage.tsx. Verified with corepack pnpm typecheck (passed), corepack pnpm test (47 passed), corepack pnpm build (passed, client leak check passed). The 22 repository lint diagnostics are CRLF line endings from the Windows checkout (core.autocrlf=true); committed files are LF. Second follow-up: a first-time player never auto-resumed (pressing Start rewrote the cached profile, which re-ran the new-player branch and reset resume to false), and the recovery code vanished on any profile refetch. Resume is now decided once per player id through decideResume, and the profile query keeps the code for the same player for the page session (never stored). Unit tests cover both; the once-per-player effect guard has no DOM test."
         }
       ]
     }
