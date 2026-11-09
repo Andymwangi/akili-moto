@@ -201,6 +201,7 @@ describe('daily quiz routes', () => {
     const secondProfile = (await secondResponse.json()) as { playerId: string };
     expect(firstResponse.status).toBe(200);
     expect(firstProfile.playerId).toMatch(/^[0-9a-f-]{36}$/i);
+    expect(firstProfile.displayName).toMatch(/^[A-Z][a-z]+ [A-Z][a-z]+ \d{4}$/);
     expect(firstProfile.recoveryCode).toMatch(/^(?:[A-F0-9]{5}-){7}[A-F0-9]{5}$/);
     expect(secondProfile.playerId).not.toBe(firstProfile.playerId);
 

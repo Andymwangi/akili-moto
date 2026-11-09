@@ -401,9 +401,7 @@ export function GamePage() {
 
           <details className="recover-form start-recovery">
             <summary>Have a code? Restore your progress</summary>
-            <p>
-              Enter the code you saved to bring back your name and game history.
-            </p>
+            <p>Enter the code you saved to bring back your name and game history.</p>
             <form
               onSubmit={(event: FormEvent<HTMLFormElement>) => {
                 event.preventDefault();
