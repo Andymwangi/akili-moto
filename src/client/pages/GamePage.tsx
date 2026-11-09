@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { type FormEvent, useEffect, useLayoutEffect, useState } from 'react';
+import { type FormEvent, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { QUIZ_SPEED_BONUS_WINDOW_SECONDS } from '../../shared/constants';
 import type { QuizAnswer, QuizState } from '../../shared/schemas/quiz';
 import {
@@ -13,7 +13,13 @@ import {
   submitQuizAnswer,
   updatePlayerName,
 } from '../api';
-import { cachePlayerName, getCachedPlayerName, getCachedPlayerState } from '../player-cache';
+import {
+  cachePlayerName,
+  decideResume,
+  getCachedPlayerName,
+  getCachedPlayerState,
+} from '../player-cache';
+import { shareProfileData } from '../profile-data';
 import { persistTheme, resolveTheme } from '../theme';
 
 type ChoiceId = 'a' | 'b' | 'c' | 'd';
@@ -75,7 +81,13 @@ export function GamePage() {
       window.matchMedia('(prefers-color-scheme: light)').matches,
     );
   });
-  const profileQuery = useQuery({ queryKey: ['player'], queryFn: getPlayerProfile, staleTime: 0 });
+  const profileQuery = useQuery({
+    queryKey: ['player'],
+    queryFn: getPlayerProfile,
+    staleTime: 0,
+    structuralSharing: shareProfileData,
+  });
+  const resumeCheckedFor = useRef<string | null>(null);
   const quizQuery = useQuery({
     queryKey: ['quiz', activeRound],
     queryFn: () => getQuiz(activeRound),
@@ -225,26 +237,21 @@ export function GamePage() {
     }
   }, [profilePlayerId, profileDisplayName]);
 
+  const isNewProfile = Boolean(profileQuery.data?.recoveryCode);
   useEffect(() => {
     if (!profilePlayerId || !profileDisplayName) return;
-    const cachedPlayer = getCachedPlayerState();
-    if (profileQuery.data?.recoveryCode) {
-      cachePlayerName(profileDisplayName, false);
-      return;
-    }
-    if (cachedPlayer?.resume) {
-      if (cachedPlayer.displayName !== profileDisplayName) {
-        cachePlayerName(profileDisplayName, true);
-      }
-      setGameStarted(true);
-      return;
-    }
-    if (!cachedPlayer) {
-      // The signed cookie identifies a returning player when browser storage is absent.
-      cachePlayerName(profileDisplayName, true);
-      setGameStarted(true);
-    }
-  }, [profilePlayerId, profileDisplayName, profileQuery.data]);
+    // Decide once per identity. Later profile updates (pressing Start, renaming, or a
+    // background refetch) must not reset the player's saved resume choice.
+    if (resumeCheckedFor.current === profilePlayerId) return;
+    resumeCheckedFor.current = profilePlayerId;
+    const decision = decideResume({
+      displayName: profileDisplayName,
+      isNewProfile,
+      cached: getCachedPlayerState(),
+    });
+    if (decision.cache) cachePlayerName(decision.cache.displayName, decision.cache.resume);
+    if (decision.startGame) setGameStarted(true);
+  }, [profilePlayerId, profileDisplayName, isNewProfile]);
 
   useEffect(() => {
     if (!quiz || quiz.status === 'finished' || quiz.answers.length === 0) return;
