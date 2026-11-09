@@ -1254,5 +1254,81 @@
     "correctOptionIndex": 0,
     "explanation": "Utenzi (utendi) ni shairi refu linalosimulia tukio au historia kwa beti nyingi.",
     "sourceUrl": "https://en.wikipedia.org/wiki/Utendi"
+  },
+  {
+    "id": "v5-sw-hard-language-kauli-kutendwa",
+    "language": "sw",
+    "difficulty": "hard",
+    "topic": "language",
+    "prompt": "Katika sentensi 'Kitabu kimesomwa na mwanafunzi', kitenzi 'kimesomwa' kiko katika kauli gani?",
+    "options": ["Kauli ya kutendwa", "Kauli ya kutenda", "Kauli ya kutendea", "Kauli ya kutendana"],
+    "correctOptionIndex": 0,
+    "explanation": "Kiambishi '-w-' katika 'kimesomwa' huonyesha kauli ya kutendwa: kitabu ndicho kilichofanyiwa kitendo.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Swahili_grammar"
+  },
+  {
+    "id": "v5-sw-hard-language-wingi-ukuta",
+    "language": "sw",
+    "difficulty": "hard",
+    "topic": "language",
+    "prompt": "Wingi wa neno 'ukuta' ni upi?",
+    "options": ["Kuta", "Mikuta", "Makuta", "Vikuta"],
+    "correctOptionIndex": 0,
+    "explanation": "Nomino nyingi za ngeli ya U huunda wingi kwa kuondoa 'u-': ukuta huwa kuta.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Swahili_grammar"
+  },
+  {
+    "id": "v5-sw-hard-history-azimio-la-arusha",
+    "language": "sw",
+    "difficulty": "hard",
+    "topic": "history",
+    "prompt": "Azimio la Arusha la mwaka 1967 lilihusu zaidi sera gani nchini Tanzania?",
+    "options": [
+      "Ujamaa na kujitegemea",
+      "Muungano wa Afrika Mashariki",
+      "Uhuru wa Zanzibar",
+      "Kiswahili kuwa lugha ya taifa"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Azimio la Arusha lilieleza sera ya chama cha TANU ya ujamaa na kujitegemea.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Arusha_Declaration"
+  },
+  {
+    "id": "v5-sw-hard-literature-rosa-mistika",
+    "language": "sw",
+    "difficulty": "hard",
+    "topic": "literature",
+    "prompt": "Riwaya ya Kiswahili 'Rosa Mistika' (1971) iliandikwa na nani?",
+    "options": [
+      "Euphrase Kezilahabi",
+      "Shaaban Robert",
+      "Said Ahmed Mohamed",
+      "Mohammed Said Abdulla"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Rosa Mistika ni riwaya ya Euphrase Kezilahabi iliyochapishwa mwaka 1971.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Euphrase_Kezilahabi"
+  },
+  {
+    "id": "v5-sw-hard-geography-kilele-uhuru",
+    "language": "sw",
+    "difficulty": "hard",
+    "topic": "geography",
+    "prompt": "Kilele cha Uhuru, sehemu ya juu kabisa ya Mlima Kilimanjaro, kiko kwenye volkano ipi kati ya hizi?",
+    "options": ["Kibo", "Mawenzi", "Shira", "Meru"],
+    "correctOptionIndex": 0,
+    "explanation": "Kilimanjaro ina volkano tatu: Kibo, Mawenzi na Shira. Kilele cha Uhuru kiko ukingoni mwa kasoko ya Kibo. Meru ni mlima tofauti.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Mount_Kilimanjaro"
+  },
+  {
+    "id": "v5-sw-hard-science-kloroplasti",
+    "language": "sw",
+    "difficulty": "hard",
+    "topic": "science",
+    "prompt": "Usanisinuru (photosynthesis) hufanyika katika sehemu gani ya seli ya mmea?",
+    "options": ["Kloroplasti", "Mitokondria", "Kiini", "Ukuta wa seli"],
+    "correctOptionIndex": 0,
+    "explanation": "Kloroplasti zina klorofili inayonasa mwanga wa jua kutengeneza sukari. Mitokondria hutoa nishati kwa kuvunja sukari.",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Chloroplast"
   }
 ]

@@ -246,6 +246,34 @@
           "humanReview": true,
           "status": "needs_review",
           "notes": "Added the 15-question 11:4 schedule, five-medium/seven-challenging/three-hard progression, broader v5 sourced topics, server-persisted 30-second answer window, and 2x-to-1x scoring with zero-point timeout. Existing ten-question assignments remain playable for their Nairobi day. Local migration 0006 was applied; typecheck, changed-file Biome lint, and production build passed. Repository-wide Biome check still reports formatting diagnostics in this repository, including formatting-only diagnostics in touched files; changed-file lint passes. Tests were not run under the session-level instruction. Human review of question wording and Swahili remains required. No remote migration, deploy, commit, or push was performed. Follow-up review (2026-11-09): the committed version did not typecheck (TS18004 in routes/quiz.ts), returned 503 after saving every answer, failed daily selection on 168 of 365 days, revealed the next question before its timer started, and migration 0006 copied two missing columns as string literals. Fixed all of these; rewrote 0006 (only ever applied locally; local D1 reset); added a per-round shared bonus question (x2), a 1.5 s network grace window, a 6/7/2 difficulty mix, 86 new draft questions (139 active, 15 topics), and three-day repeat avoidance. Tests now apply the real migrations, including an upgrade test that fails on the original 0006. Fixed the flaky cookie-tamper tests. Verified: corepack pnpm typecheck (passed), corepack pnpm test (54 passed, three consecutive runs), corepack pnpm build (passed, client leak check passed), Biome lint and format clean on changed files as LF, local D1 migrate (0000-0006 applied), and an API run against the dev server including a real 31 s timeout. Not verified: browser UI visually, remote migration, most new source URLs, Swahili review."
+        },
+        {
+          "id": "Q3-02",
+          "title": "Line endings, leak check coverage, and more hard Swahili questions",
+          "description": "Pin LF line endings so pnpm lint passes on Windows checkouts, make the client leak check scan every quiz question bank, and add hard Swahili questions so they repeat less often.",
+          "dependsOn": ["Q3-01"],
+          "skills": ["testing-strategy", "agent-honesty-and-verification"],
+          "files": [
+            ".gitattributes",
+            "scripts/check-bundle-leaks.ts",
+            "data/quiz-questions-v5.json",
+            "docs/openapi.yaml",
+            "agent-plan.json"
+          ],
+          "acceptance": [
+            "corepack pnpm lint passes on a Windows checkout with core.autocrlf=true.",
+            "The build leak check scans every data/*quiz-questions*.json file and fails when any of their text appears in client assets.",
+            "The active bank has at least 15 hard Swahili questions, each sourced and marked for review."
+          ],
+          "verify": [
+            "corepack pnpm typecheck",
+            "corepack pnpm lint",
+            "corepack pnpm test",
+            "corepack pnpm build"
+          ],
+          "humanReview": true,
+          "status": "needs_review",
+          "notes": "Added .gitattributes (* text=auto eol=lf) and converted 35 CRLF working copies; repo-wide lint went from 27 errors to 0 (the last was formatting in docs/openapi.yaml). The leak check previously omitted quiz-questions-v5.json, so none of its questions were checked; it now discovers every bank file (846 strings, was 546), and a planted v5 prompt made it fail as expected. Added six hard Swahili questions (15 total; median repeat gap 6 days, minimum 4, zero repeats within 3 days over a simulated year). Facts were checked against Wikipedia except the passive-voice example, which relies on standard grammar. Verified: typecheck, lint, test (54 passed), build."
         }
       ]
     },
